@@ -123,6 +123,25 @@ Lo que conviene saber sin abrir ese documento:
   de lo que calculemos nosotros.
 - **Las notas no tienen GRANT de UPDATE**: se agregan, no se editan.
 
+### `appointments`, `appointment_services`, `appointment_status_history`, `agenda_blocks`
+
+La agenda. Detalle completo en [Agenda](modulos/agenda.md).
+
+Lo que conviene saber sin abrir ese documento:
+
+- **`ends_at` vs `blocks_until`**: el primero es cuando termina la atención, el
+  segundo incluye la limpieza. La verificación de cupos usa el segundo.
+- **Los cupos los verifica un trigger diferido** con `pg_advisory_xact_lock`
+  por servicio. El bloqueo no es paranoia: sin él, dos reservas simultáneas
+  pasarían las dos.
+- **`price_cents` es una foto** del precio al agendar.
+- **`public.book_appointment()`** es el único camino para agendar desde la
+  aplicación: turno y servicios en una sola transacción, porque las
+  verificaciones diferidas corren al cerrar y dos llamadas HTTP son dos
+  transacciones.
+- Los turnos **no se borran**, se cancelan. Sólo el dueño tiene permiso de
+  DELETE, y para casos de error grosero.
+
 ## Trabajar con migraciones
 
 ```bash

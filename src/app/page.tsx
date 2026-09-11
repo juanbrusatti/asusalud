@@ -75,14 +75,13 @@ export default async function InicioPage() {
 
         <Card>
           <CardBody className="grid justify-items-start gap-2">
-            <CardTitle>Empezá por los servicios</CardTitle>
+            <CardTitle>Tu día</CardTitle>
             <p className="max-w-prose text-[14.5px] leading-relaxed text-muted">
-              Cargá lo que ofrecés con su duración y su precio. Es lo que hace
-              falta para poder agendar turnos, y lo que van a ver tus clientas
-              cuando reserven online.
+              La agenda muestra a quién atendés hoy, qué le hacés y cuánto dura.
+              Los turnos que se superponen se agrupan por hora.
             </p>
             <Button asChild className="mt-1">
-              <Link href="/servicios">Ir a servicios</Link>
+              <Link href="/agenda">Ver la agenda</Link>
             </Button>
           </CardBody>
         </Card>
@@ -91,9 +90,9 @@ export default async function InicioPage() {
           <CardBody className="grid gap-2">
             <CardTitle>Lo que viene</CardTitle>
             <ul className="grid gap-1.5 text-[14.5px] text-muted">
-              <li>· Clientes, con importación desde el sistema anterior.</li>
-              <li>· Agenda del día y de la semana.</li>
-              <li>· Recordatorios automáticos por email y WhatsApp.</li>
+              <li>· Recordatorios automáticos por correo y WhatsApp.</li>
+              <li>· Reserva online para tus clientas.</li>
+              <li>· Caja, señas e informes.</li>
             </ul>
           </CardBody>
         </Card>

@@ -72,6 +72,21 @@ export async function createAuthUser(email: string, fullName: string) {
   });
 }
 
+/**
+ * Fuerza a que corran los triggers diferidos.
+ *
+ * Las verificaciones de la agenda (ventana y cupos) son CONSTRAINT TRIGGERs
+ * diferidos: recién saltan al cerrar la transacción. Como las pruebas siempre
+ * revierten, sin esto los errores no aparecerían nunca.
+ */
+export async function flush(c: PoolClient) {
+  // IMMEDIATE dispara lo pendiente; volver a DEFERRED es imprescindible porque
+  // el modo queda fijado para el resto de la transacción, y si no, el próximo
+  // INSERT de un turno se verificaría antes de que existan sus servicios.
+  await c.query("set constraints all immediate");
+  await c.query("set constraints all deferred");
+}
+
 /** Espera que una consulta sea rechazada por la base. Devuelve el SQLSTATE. */
 export async function expectRejected(
   fn: () => Promise<unknown>,
