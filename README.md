@@ -13,7 +13,7 @@ Cliente piloto: Estética Asusalud (Río Cuarto, Córdoba).
 | Fase | Contenido | Estado |
 | --- | --- | --- |
 | 0 | Proyecto, sistema de diseño, PWA, multi-tenant, RLS y pruebas de aislamiento | ✅ |
-| 1 | Servicios ✅ · Clientes e importador ✅ · agenda | 🔨 |
+| 1 | Servicios, clientes, importador y agenda | ✅ |
 | 2 | Canales, motor de reglas y reserva online | ⏳ |
 | 3 | Caja, señas e informes | ⏳ |
 | 4 | Stock, reseñas y campañas | ⏳ |
@@ -55,7 +55,7 @@ Mailpit: http://127.0.0.1:54324
 | --- | --- |
 | `npm run dev` | Servidor de desarrollo |
 | `npm run build` | Build de producción |
-| `npm test` | Suite de aislamiento entre estéticas |
+| `npm test` | Pruebas de aislamiento y de zonas horarias |
 | `npm run db:start` / `db:stop` | Supabase local |
 | `npm run db:reset` | Borra y reaplica todas las migraciones |
 | `npm run db:types` | Regenera `src/lib/supabase/types.ts` desde el esquema |
@@ -83,3 +83,4 @@ estética B. Si devuelve una sola fila, la función no está lista.
 
 - [Servicios](docs/modulos/servicios.md)
 - [Clientes](docs/modulos/clientes.md)
+- [Agenda](docs/modulos/agenda.md)

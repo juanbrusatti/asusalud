@@ -5,6 +5,7 @@ import { Barra } from "@/app/_components/barra";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { getCurrentTenant } from "@/lib/auth/tenant";
+import { getClientAgenda } from "@/lib/data/agenda";
 import {
   countPhoneDuplicates,
   fullName,
@@ -15,6 +16,7 @@ import {
 } from "@/lib/data/clients";
 import { formatPrice } from "@/lib/money";
 import { formatPhone, whatsappLink } from "@/lib/phone";
+import { longDateIn, timeIn } from "@/lib/tz";
 import { SelectorCanal } from "../_components/canal";
 import { Etiquetas } from "../_components/etiquetas";
 import { Notas } from "../_components/notas";
@@ -50,12 +52,22 @@ export default async function FichaClientePage({
   const client = await getClient(id);
   if (!client) notFound();
 
-  const [notes, tags, assigned, duplicados] = await Promise.all([
+  const [notes, tags, assigned, duplicados, agenda] = await Promise.all([
     listNotes(id),
     listTags(),
     listTagIdsFor(id),
     countPhoneDuplicates(id),
+    getClientAgenda(id),
   ]);
+
+  const tz = membership.tenant.timezone;
+  const diaDe = (instante: string) =>
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: tz,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date(instante));
 
   const wa = whatsappLink(client.phone_e164);
 
@@ -77,7 +89,7 @@ export default async function FichaClientePage({
             </h1>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {wa && (
               <Button asChild variant="outline">
                 <a href={wa} target="_blank" rel="noopener noreferrer">
@@ -85,8 +97,11 @@ export default async function FichaClientePage({
                 </a>
               </Button>
             )}
-            <Button asChild>
+            <Button asChild variant="outline">
               <Link href={`/clientes/${id}/editar`}>Editar</Link>
+            </Button>
+            <Button asChild>
+              <Link href={`/agenda/nuevo?cliente=${id}`}>Agendar turno</Link>
             </Button>
           </div>
         </div>
@@ -124,6 +139,56 @@ export default async function FichaClientePage({
                   : "—"}
               </Dato>
             </dl>
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardBody className="grid gap-4">
+            <CardTitle>Turnos</CardTitle>
+
+            <dl className="grid gap-4 sm:grid-cols-2">
+              <Dato label="Próximo turno">
+                {agenda.next ? (
+                  <Link
+                    href={`/agenda/${agenda.next.id}`}
+                    className="capitalize text-accent-text hover:underline"
+                  >
+                    {longDateIn(diaDe(agenda.next.starts_at), tz)} ·{" "}
+                    {timeIn(agenda.next.starts_at, tz)}
+                  </Link>
+                ) : (
+                  "Sin turnos a futuro"
+                )}
+              </Dato>
+
+              <Dato label="Última vez">
+                {agenda.last ? (
+                  <Link
+                    href={`/agenda/${agenda.last.id}`}
+                    className="capitalize text-accent-text hover:underline"
+                  >
+                    {longDateIn(diaDe(agenda.last.starts_at), tz)}
+                  </Link>
+                ) : (
+                  "Nunca vino"
+                )}
+              </Dato>
+
+              <Dato label="Atendidos">{agenda.attended}</Dato>
+
+              <Dato label="No vino">
+                <span className={agenda.noShows > 0 ? "text-warn" : undefined}>
+                  {agenda.noShows}
+                </span>
+              </Dato>
+            </dl>
+
+            {agenda.noShows > 0 && (
+              <p className="text-[12.5px] leading-snug text-muted">
+                Con faltas registradas conviene mandarle el recordatorio de 24
+                horas por WhatsApp, aunque el resto le llegue por correo.
+              </p>
+            )}
           </CardBody>
         </Card>
 

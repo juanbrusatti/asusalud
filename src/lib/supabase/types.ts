@@ -9,6 +9,277 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      agenda_blocks: {
+        Row: {
+          branch_id: string
+          created_at: string
+          created_by: string | null
+          ends_at: string
+          id: string
+          reason: string | null
+          staff_id: string | null
+          starts_at: string
+          tenant_id: string
+        }
+        Insert: {
+          branch_id: string
+          created_at?: string
+          created_by?: string | null
+          ends_at: string
+          id?: string
+          reason?: string | null
+          staff_id?: string | null
+          starts_at: string
+          tenant_id: string
+        }
+        Update: {
+          branch_id?: string
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string
+          id?: string
+          reason?: string | null
+          staff_id?: string | null
+          starts_at?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agenda_blocks_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agenda_blocks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agenda_blocks_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agenda_blocks_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      appointment_services: {
+        Row: {
+          appointment_id: string
+          buffer_minutes: number
+          duration_minutes: number
+          id: string
+          position: number
+          price_cents: number | null
+          service_id: string
+          tenant_id: string
+        }
+        Insert: {
+          appointment_id: string
+          buffer_minutes?: number
+          duration_minutes: number
+          id?: string
+          position?: number
+          price_cents?: number | null
+          service_id: string
+          tenant_id: string
+        }
+        Update: {
+          appointment_id?: string
+          buffer_minutes?: number
+          duration_minutes?: number
+          id?: string
+          position?: number
+          price_cents?: number | null
+          service_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_services_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_services_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_services_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      appointment_status_history: {
+        Row: {
+          appointment_id: string
+          changed_by: string | null
+          created_at: string
+          from_status: Database["public"]["Enums"]["appointment_status"] | null
+          id: string
+          reason: string | null
+          tenant_id: string
+          to_status: Database["public"]["Enums"]["appointment_status"]
+        }
+        Insert: {
+          appointment_id: string
+          changed_by?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["appointment_status"] | null
+          id?: string
+          reason?: string | null
+          tenant_id: string
+          to_status: Database["public"]["Enums"]["appointment_status"]
+        }
+        Update: {
+          appointment_id?: string
+          changed_by?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["appointment_status"] | null
+          id?: string
+          reason?: string | null
+          tenant_id?: string
+          to_status?: Database["public"]["Enums"]["appointment_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_status_history_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_status_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_status_history_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      appointments: {
+        Row: {
+          blocks_until: string
+          branch_id: string
+          cancel_reason: string | null
+          cancelled_at: string | null
+          client_id: string
+          created_at: string
+          created_by: string | null
+          ends_at: string
+          id: string
+          notes: string | null
+          price_cents: number
+          source: Database["public"]["Enums"]["appointment_source"]
+          staff_id: string | null
+          starts_at: string
+          status: Database["public"]["Enums"]["appointment_status"]
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          blocks_until: string
+          branch_id: string
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          ends_at: string
+          id?: string
+          notes?: string | null
+          price_cents?: number
+          source?: Database["public"]["Enums"]["appointment_source"]
+          staff_id?: string | null
+          starts_at: string
+          status?: Database["public"]["Enums"]["appointment_status"]
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          blocks_until?: string
+          branch_id?: string
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string
+          id?: string
+          notes?: string | null
+          price_cents?: number
+          source?: Database["public"]["Enums"]["appointment_source"]
+          staff_id?: string | null
+          starts_at?: string
+          status?: Database["public"]["Enums"]["appointment_status"]
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string
@@ -553,6 +824,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      book_appointment: {
+        Args: {
+          p_client: string
+          p_notes?: string
+          p_service_ids: string[]
+          p_starts_at: string
+        }
+        Returns: string
+      }
       count_phone_duplicates: { Args: { p_client: string }; Returns: number }
       create_tenant: {
         Args: { p_name: string; p_slug: string }
@@ -577,6 +857,13 @@ export type Database = {
     }
     Enums: {
       app_role: "owner" | "admin" | "staff" | "reception"
+      appointment_source: "staff" | "online" | "import"
+      appointment_status:
+        | "pending"
+        | "confirmed"
+        | "attended"
+        | "no_show"
+        | "cancelled"
       channel_mode: "auto" | "email" | "whatsapp" | "none"
       membership_status: "active" | "invited" | "suspended"
       price_mode: "fixed" | "on_request"
@@ -708,6 +995,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["owner", "admin", "staff", "reception"],
+      appointment_source: ["staff", "online", "import"],
+      appointment_status: [
+        "pending",
+        "confirmed",
+        "attended",
+        "no_show",
+        "cancelled",
+      ],
       channel_mode: ["auto", "email", "whatsapp", "none"],
       membership_status: ["active", "invited", "suspended"],
       price_mode: ["fixed", "on_request"],
