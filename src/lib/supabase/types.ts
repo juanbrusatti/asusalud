@@ -610,6 +610,253 @@ export type Database = {
           },
         ]
       }
+      message_jobs: {
+        Row: {
+          appointment_id: string | null
+          attempts: number
+          channel: Database["public"]["Enums"]["message_channel"] | null
+          client_id: string
+          cost_cents: number
+          created_at: string
+          dedupe_key: string
+          id: string
+          last_error: string | null
+          provider_message_id: string | null
+          rule_id: string | null
+          scheduled_for: string
+          sent_at: string | null
+          skip_reason: string | null
+          status: Database["public"]["Enums"]["job_status"]
+          template_id: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          attempts?: number
+          channel?: Database["public"]["Enums"]["message_channel"] | null
+          client_id: string
+          cost_cents?: number
+          created_at?: string
+          dedupe_key: string
+          id?: string
+          last_error?: string | null
+          provider_message_id?: string | null
+          rule_id?: string | null
+          scheduled_for: string
+          sent_at?: string | null
+          skip_reason?: string | null
+          status?: Database["public"]["Enums"]["job_status"]
+          template_id?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          attempts?: number
+          channel?: Database["public"]["Enums"]["message_channel"] | null
+          client_id?: string
+          cost_cents?: number
+          created_at?: string
+          dedupe_key?: string
+          id?: string
+          last_error?: string | null
+          provider_message_id?: string | null
+          rule_id?: string | null
+          scheduled_for?: string
+          sent_at?: string | null
+          skip_reason?: string | null
+          status?: Database["public"]["Enums"]["job_status"]
+          template_id?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_jobs_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_jobs_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_jobs_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "reminder_rules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_jobs_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "message_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_jobs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_templates: {
+        Row: {
+          body: string
+          category: Database["public"]["Enums"]["message_category"]
+          channel: Database["public"]["Enums"]["message_channel"]
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          provider_language: string | null
+          provider_name: string | null
+          provider_status: string
+          subject: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          category?: Database["public"]["Enums"]["message_category"]
+          channel: Database["public"]["Enums"]["message_channel"]
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          provider_language?: string | null
+          provider_name?: string | null
+          provider_status?: string
+          subject?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          category?: Database["public"]["Enums"]["message_category"]
+          channel?: Database["public"]["Enums"]["message_channel"]
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          provider_language?: string | null
+          provider_name?: string | null
+          provider_status?: string
+          subject?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_templates_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messaging_settings: {
+        Row: {
+          created_at: string
+          max_per_client_per_day: number
+          max_per_client_per_week: number
+          monthly_budget_cents: number | null
+          paused_reason: string | null
+          quiet_end: string
+          quiet_start: string
+          sending_enabled: boolean
+          tenant_id: string
+          updated_at: string
+          whatsapp_marketing_cents: number
+          whatsapp_utility_cents: number
+        }
+        Insert: {
+          created_at?: string
+          max_per_client_per_day?: number
+          max_per_client_per_week?: number
+          monthly_budget_cents?: number | null
+          paused_reason?: string | null
+          quiet_end?: string
+          quiet_start?: string
+          sending_enabled?: boolean
+          tenant_id: string
+          updated_at?: string
+          whatsapp_marketing_cents?: number
+          whatsapp_utility_cents?: number
+        }
+        Update: {
+          created_at?: string
+          max_per_client_per_day?: number
+          max_per_client_per_week?: number
+          monthly_budget_cents?: number | null
+          paused_reason?: string | null
+          quiet_end?: string
+          quiet_start?: string
+          sending_enabled?: boolean
+          tenant_id?: string
+          updated_at?: string
+          whatsapp_marketing_cents?: number
+          whatsapp_utility_cents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messaging_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      opt_outs: {
+        Row: {
+          channel: Database["public"]["Enums"]["message_channel"] | null
+          client_id: string
+          created_at: string
+          reason: string | null
+          tenant_id: string
+        }
+        Insert: {
+          channel?: Database["public"]["Enums"]["message_channel"] | null
+          client_id: string
+          created_at?: string
+          reason?: string | null
+          tenant_id: string
+        }
+        Update: {
+          channel?: Database["public"]["Enums"]["message_channel"] | null
+          client_id?: string
+          created_at?: string
+          reason?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opt_outs_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opt_outs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -633,6 +880,163 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          client_id: string | null
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          tenant_id: string
+          user_id: string | null
+        }
+        Insert: {
+          auth: string
+          client_id?: string | null
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          tenant_id: string
+          user_id?: string | null
+        }
+        Update: {
+          auth?: string
+          client_id?: string | null
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          tenant_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_subscriptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reminder_rules: {
+        Row: {
+          channel_order: Database["public"]["Enums"]["message_channel"][]
+          created_at: string
+          enabled: boolean
+          id: string
+          name: string
+          offset_minutes: number
+          only_if_missed: boolean
+          send_window_end: string | null
+          send_window_start: string | null
+          service_ids: string[]
+          statuses: Database["public"]["Enums"]["appointment_status"][]
+          tenant_id: string
+          trigger: Database["public"]["Enums"]["reminder_trigger"]
+          updated_at: string
+        }
+        Insert: {
+          channel_order?: Database["public"]["Enums"]["message_channel"][]
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          name: string
+          offset_minutes: number
+          only_if_missed?: boolean
+          send_window_end?: string | null
+          send_window_start?: string | null
+          service_ids?: string[]
+          statuses?: Database["public"]["Enums"]["appointment_status"][]
+          tenant_id: string
+          trigger: Database["public"]["Enums"]["reminder_trigger"]
+          updated_at?: string
+        }
+        Update: {
+          channel_order?: Database["public"]["Enums"]["message_channel"][]
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          name?: string
+          offset_minutes?: number
+          only_if_missed?: boolean
+          send_window_end?: string | null
+          send_window_start?: string | null
+          service_ids?: string[]
+          statuses?: Database["public"]["Enums"]["appointment_status"][]
+          tenant_id?: string
+          trigger?: Database["public"]["Enums"]["reminder_trigger"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reminder_rules_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rule_templates: {
+        Row: {
+          channel: Database["public"]["Enums"]["message_channel"]
+          rule_id: string
+          template_id: string
+          tenant_id: string
+        }
+        Insert: {
+          channel: Database["public"]["Enums"]["message_channel"]
+          rule_id: string
+          template_id: string
+          tenant_id: string
+        }
+        Update: {
+          channel?: Database["public"]["Enums"]["message_channel"]
+          rule_id?: string
+          template_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rule_templates_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "reminder_rules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rule_templates_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "message_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rule_templates_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       service_categories: {
         Row: {
@@ -854,6 +1258,22 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      simulate_rule: {
+        Args: {
+          p_channel_order: Database["public"]["Enums"]["message_channel"][]
+          p_days_ahead?: number
+          p_offset_minutes: number
+          p_only_if_missed?: boolean
+          p_service_ids?: string[]
+          p_statuses?: Database["public"]["Enums"]["appointment_status"][]
+          p_trigger: Database["public"]["Enums"]["reminder_trigger"]
+        }
+        Returns: {
+          channel: Database["public"]["Enums"]["message_channel"]
+          cost_cents: number
+          recipients: number
+        }[]
+      }
     }
     Enums: {
       app_role: "owner" | "admin" | "staff" | "reception"
@@ -865,8 +1285,22 @@ export type Database = {
         | "no_show"
         | "cancelled"
       channel_mode: "auto" | "email" | "whatsapp" | "none"
+      job_status:
+        | "pending"
+        | "sending"
+        | "sent"
+        | "failed"
+        | "skipped"
+        | "cancelled"
       membership_status: "active" | "invited" | "suspended"
+      message_category: "utility" | "marketing"
+      message_channel: "push" | "email" | "whatsapp"
       price_mode: "fixed" | "on_request"
+      reminder_trigger:
+        | "before_appointment"
+        | "after_appointment"
+        | "birthday"
+        | "no_activity"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1004,8 +1438,24 @@ export const Constants = {
         "cancelled",
       ],
       channel_mode: ["auto", "email", "whatsapp", "none"],
+      job_status: [
+        "pending",
+        "sending",
+        "sent",
+        "failed",
+        "skipped",
+        "cancelled",
+      ],
       membership_status: ["active", "invited", "suspended"],
+      message_category: ["utility", "marketing"],
+      message_channel: ["push", "email", "whatsapp"],
       price_mode: ["fixed", "on_request"],
+      reminder_trigger: [
+        "before_appointment",
+        "after_appointment",
+        "birthday",
+        "no_activity",
+      ],
     },
   },
 } as const
