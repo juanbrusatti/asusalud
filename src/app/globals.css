@@ -1,0 +1,159 @@
+@import "tailwindcss";
+
+/* ===========================================================================
+   Dlay · sistema de diseño
+   ---------------------------------------------------------------------------
+   Paleta monocromática con un único acento índigo, que sólo aparece en bloques
+   sólidos: nunca en degradados ni acompañado de otros colores vivos.
+
+   El tema tiene TRES estados, no dos. Una elección explícita deja
+   data-theme="dark" o "light" en <html>, pero la opción por defecto del
+   sistema no deja nada: ahí sólo manda prefers-color-scheme. Por eso cada
+   token se declara completo en :root y después se redefine en los otros dos
+   bloques. Ningún color puede existir únicamente dentro de un media query.
+   =========================================================================== */
+
+:root {
+  /* Superficies */
+  --paper: #f5f3ee;
+  --surface: #ffffff;
+  --surface-2: #efede6;
+
+  /* Tinta */
+  --ink: #0a0a0a;
+  --ink-2: #2e2c28;
+  --muted: #55524b;
+  --faint: #8a857a;
+
+  /* Líneas */
+  --line: #e3dfd5;
+  --line-soft: #edeae2;
+
+  /* Acento único */
+  --accent: #3e3fe0;
+  --accent-text: #3e3fe0;
+  --accent-wash: #e9e9fb;
+  --on-accent: #ffffff;
+
+  /* Trazo de las ilustraciones dibujadas a mano */
+  --draw: #0a0a0a;
+
+  /* Semánticos: separados del acento a propósito */
+  --danger: #b3261e;
+  --danger-wash: #f7e4e2;
+  --warn: #8c6114;
+  --warn-wash: #f3ebda;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0a0a0a;
+    --surface: #141414;
+    --surface-2: #1c1c1c;
+    --ink: #f5f3ee;
+    --ink-2: #dad7d0;
+    --muted: #a3a099;
+    --faint: #78746c;
+    --line: #2a2a2a;
+    --line-soft: #1f1f1f;
+    --accent: #3e3fe0;
+    --accent-text: #9192f7;
+    --accent-wash: #16163a;
+    --on-accent: #ffffff;
+    --draw: #f5f3ee;
+    --danger: #f2b8b5;
+    --danger-wash: #2d1a18;
+    --warn: #d9ae62;
+    --warn-wash: #2a2216;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #0a0a0a;
+  --surface: #141414;
+  --surface-2: #1c1c1c;
+  --ink: #f5f3ee;
+  --ink-2: #dad7d0;
+  --muted: #a3a099;
+  --faint: #78746c;
+  --line: #2a2a2a;
+  --line-soft: #1f1f1f;
+  --accent: #3e3fe0;
+  --accent-text: #9192f7;
+  --accent-wash: #16163a;
+  --on-accent: #ffffff;
+  --draw: #f5f3ee;
+  --danger: #f2b8b5;
+  --danger-wash: #2d1a18;
+  --warn: #d9ae62;
+  --warn-wash: #2a2216;
+  color-scheme: dark;
+}
+
+/* Puente hacia Tailwind: `bg-surface`, `text-muted`, `rounded-card`, etc. */
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
+  --color-accent-wash: var(--accent-wash);
+  --color-on-accent: var(--on-accent);
+  --color-draw: var(--draw);
+  --color-danger: var(--danger);
+  --color-danger-wash: var(--danger-wash);
+  --color-warn: var(--warn);
+  --color-warn-wash: var(--warn-wash);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-hand: var(--font-caveat), "Comic Sans MS", cursive;
+
+  /* Esquinas generosas: es parte de la identidad, no una preferencia suelta. */
+  --radius-card: 22px;
+  --radius-pill: 999px;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    /* El fondo va explícito: el contenedor pinta su propio color detrás y un
+       body transparente toma prestado el tema equivocado. */
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    letter-spacing: -0.005em;
+    /* Respeta el notch en iOS cuando está instalada como app. */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right)
+      env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  :focus-visible {
+    outline: 2.5px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  /* Nadie dentro de una estética quiere que la pantalla haga acrobacias. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
