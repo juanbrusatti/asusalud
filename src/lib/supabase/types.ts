@@ -97,6 +97,210 @@ export type Database = {
           },
         ]
       }
+      client_notes: {
+        Row: {
+          author_id: string | null
+          body: string
+          client_id: string
+          created_at: string
+          id: string
+          tenant_id: string
+        }
+        Insert: {
+          author_id?: string | null
+          body: string
+          client_id: string
+          created_at?: string
+          id?: string
+          tenant_id: string
+        }
+        Update: {
+          author_id?: string | null
+          body?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_notes_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_notes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_notes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_tag_assignments: {
+        Row: {
+          client_id: string
+          created_at: string
+          tag_id: string
+          tenant_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          tag_id: string
+          tenant_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          tag_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tag_assignments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "client_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_tag_assignments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_tags: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tags_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          alert: string | null
+          birthdate: string | null
+          channel_decided_at: string | null
+          channel_decided_by: string | null
+          channel_mode: Database["public"]["Enums"]["channel_mode"]
+          created_at: string
+          document_id: string | null
+          email: string | null
+          first_name: string
+          id: string
+          is_active: boolean
+          last_name: string | null
+          legacy_last_visit_on: string | null
+          legacy_source: string | null
+          legacy_total_cents: number | null
+          legacy_visits_count: number | null
+          phone_e164: string | null
+          phone_raw: string | null
+          search_text: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          alert?: string | null
+          birthdate?: string | null
+          channel_decided_at?: string | null
+          channel_decided_by?: string | null
+          channel_mode?: Database["public"]["Enums"]["channel_mode"]
+          created_at?: string
+          document_id?: string | null
+          email?: string | null
+          first_name: string
+          id?: string
+          is_active?: boolean
+          last_name?: string | null
+          legacy_last_visit_on?: string | null
+          legacy_source?: string | null
+          legacy_total_cents?: number | null
+          legacy_visits_count?: number | null
+          phone_e164?: string | null
+          phone_raw?: string | null
+          search_text?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          alert?: string | null
+          birthdate?: string | null
+          channel_decided_at?: string | null
+          channel_decided_by?: string | null
+          channel_mode?: Database["public"]["Enums"]["channel_mode"]
+          created_at?: string
+          document_id?: string | null
+          email?: string | null
+          first_name?: string
+          id?: string
+          is_active?: boolean
+          last_name?: string | null
+          legacy_last_visit_on?: string | null
+          legacy_source?: string | null
+          legacy_total_cents?: number | null
+          legacy_visits_count?: number | null
+          phone_e164?: string | null
+          phone_raw?: string | null
+          search_text?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clients_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       memberships: {
         Row: {
           created_at: string
@@ -349,6 +553,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      count_phone_duplicates: { Args: { p_client: string }; Returns: number }
       create_tenant: {
         Args: { p_name: string; p_slug: string }
         Returns: {
@@ -372,6 +577,7 @@ export type Database = {
     }
     Enums: {
       app_role: "owner" | "admin" | "staff" | "reception"
+      channel_mode: "auto" | "email" | "whatsapp" | "none"
       membership_status: "active" | "invited" | "suspended"
       price_mode: "fixed" | "on_request"
     }
@@ -502,6 +708,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["owner", "admin", "staff", "reception"],
+      channel_mode: ["auto", "email", "whatsapp", "none"],
       membership_status: ["active", "invited", "suspended"],
       price_mode: ["fixed", "on_request"],
     },
