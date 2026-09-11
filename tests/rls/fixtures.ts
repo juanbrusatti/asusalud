@@ -9,6 +9,8 @@ export type Scenario = {
   reception: string;
   /** Administración en A. */
   admin: string;
+  /** Profesional en A. */
+  staff: string;
   tenantA: string;
   tenantB: string;
   emails: string[];
@@ -43,14 +45,18 @@ export async function setupScenario(prefix: string): Promise<Scenario> {
     `intruder-${prefix}@b.test`,
     `reception-${prefix}@a.test`,
     `admin-${prefix}@a.test`,
+    `staff-${prefix}@a.test`,
   ];
   const slugs = [`${prefix}-a`, `${prefix}-b`];
 
   await teardownScenario({ emails, slugs } as Scenario);
 
-  const [owner, intruder, reception, admin] = await Promise.all(
+  const [owner, intruder, reception, admin, staff] = await Promise.all(
     emails.map((e, i) =>
-      createAuthUser(e, ["Ana Ruiz", "Beto Paz", "Cora Diaz", "Dario Luna"][i]),
+      createAuthUser(
+        e,
+        ["Ana Ruiz", "Beto Paz", "Cora Diaz", "Dario Luna", "Eva Sosa"][i],
+      ),
     ),
   );
 
@@ -64,12 +70,22 @@ export async function setupScenario(prefix: string): Promise<Scenario> {
   await asAdmin(async (c) => {
     await c.query(
       `insert into public.memberships (tenant_id, user_id, role)
-       values ($1, $2, 'reception'), ($1, $3, 'admin')`,
-      [tenantA, reception, admin],
+       values ($1, $2, 'reception'), ($1, $3, 'admin'), ($1, $4, 'staff')`,
+      [tenantA, reception, admin, staff],
     );
   });
 
-  return { owner, intruder, reception, admin, tenantA, tenantB, emails, slugs };
+  return {
+    owner,
+    intruder,
+    reception,
+    admin,
+    staff,
+    tenantA,
+    tenantB,
+    emails,
+    slugs,
+  };
 }
 
 export async function teardownScenario(s: Pick<Scenario, "emails" | "slugs">) {

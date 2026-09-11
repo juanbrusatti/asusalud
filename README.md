@@ -13,7 +13,7 @@ Cliente piloto: Estética Asusalud (Río Cuarto, Córdoba).
 | Fase | Contenido | Estado |
 | --- | --- | --- |
 | 0 | Proyecto, sistema de diseño, PWA, multi-tenant, RLS y pruebas de aislamiento | ✅ |
-| 1 | Servicios ✅ · clientes, importador y agenda | 🔨 |
+| 1 | Servicios ✅ · Clientes e importador ✅ · agenda | 🔨 |
 | 2 | Canales, motor de reglas y reserva online | ⏳ |
 | 3 | Caja, señas e informes | ⏳ |
 | 4 | Stock, reseñas y campañas | ⏳ |
@@ -82,3 +82,4 @@ estética B. Si devuelve una sola fila, la función no está lista.
 ### Módulos
 
 - [Servicios](docs/modulos/servicios.md)
+- [Clientes](docs/modulos/clientes.md)
