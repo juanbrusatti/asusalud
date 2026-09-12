@@ -12,6 +12,8 @@ export type Job = {
   template_body: string | null;
   provider_name: string | null;
   provider_language: string | null;
+  quick_replies: string[] | null;
+  appointment_id: string | null;
   tenant_name: string;
   tenant_timezone: string;
   appointment_at: string | null;
@@ -203,6 +205,29 @@ async function sendWhatsApp(
     text: v,
   }));
 
+  const components: Array<Record<string, unknown>> = [];
+  if (parameters.length > 0) {
+    components.push({ type: "body", parameters });
+  }
+
+  // Los botones van con el turno adentro del payload: es lo que permite que
+  // "Confirmar" actualice la agenda sola cuando vuelve por el webhook.
+  (job.quick_replies ?? []).forEach((accion, index) => {
+    components.push({
+      type: "button",
+      sub_type: "quick_reply",
+      index: String(index),
+      parameters: [
+        {
+          type: "payload",
+          payload: job.appointment_id
+            ? `${accion}:${job.appointment_id}`
+            : accion,
+        },
+      ],
+    });
+  });
+
   const response = await fetch(
     `https://graph.facebook.com/${GRAPH_VERSION}/${job.phone_number_id}/messages`,
     {
@@ -219,10 +244,7 @@ async function sendWhatsApp(
         template: {
           name: job.provider_name,
           language: { code: job.provider_language ?? "es_AR" },
-          components:
-            parameters.length > 0
-              ? [{ type: "body", parameters }]
-              : undefined,
+          components: components.length > 0 ? components : undefined,
         },
       }),
     },

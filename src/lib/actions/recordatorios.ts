@@ -279,6 +279,7 @@ const templateSchema = z.object({
     .min(5, "El mensaje es demasiado corto.")
     .max(1024, "El mensaje es demasiado largo."),
   providerName: z.string().trim().max(80).optional(),
+  quickReplies: z.array(z.enum(["confirmar", "reprogramar", "baja"])),
 });
 
 export async function saveTemplate(
@@ -293,6 +294,7 @@ export async function saveTemplate(
     subject: String(formData.get("subject") ?? "").trim() || undefined,
     body: String(formData.get("body") ?? ""),
     providerName: String(formData.get("providerName") ?? "").trim() || undefined,
+    quickReplies: formData.getAll("quickReplies").map(String),
   });
 
   if (!parsed.success) {
@@ -324,6 +326,8 @@ export async function saveTemplate(
     subject: v.subject ?? null,
     body: v.body,
     provider_name: v.providerName ?? null,
+    // Los botones sólo existen en WhatsApp: el correo no los tiene.
+    quick_replies: v.channel === "whatsapp" ? v.quickReplies : [],
   };
 
   const { error } = templateId

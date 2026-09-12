@@ -619,9 +619,11 @@ export type Database = {
           cost_cents: number
           created_at: string
           dedupe_key: string
+          delivered_at: string | null
           id: string
           last_error: string | null
           provider_message_id: string | null
+          read_at: string | null
           rendered_body: string | null
           rendered_subject: string | null
           rule_id: string | null
@@ -642,9 +644,11 @@ export type Database = {
           cost_cents?: number
           created_at?: string
           dedupe_key: string
+          delivered_at?: string | null
           id?: string
           last_error?: string | null
           provider_message_id?: string | null
+          read_at?: string | null
           rendered_body?: string | null
           rendered_subject?: string | null
           rule_id?: string | null
@@ -665,9 +669,11 @@ export type Database = {
           cost_cents?: number
           created_at?: string
           dedupe_key?: string
+          delivered_at?: string | null
           id?: string
           last_error?: string | null
           provider_message_id?: string | null
+          read_at?: string | null
           rendered_body?: string | null
           rendered_subject?: string | null
           rule_id?: string | null
@@ -730,6 +736,7 @@ export type Database = {
           provider_language: string | null
           provider_name: string | null
           provider_status: string
+          quick_replies: string[]
           subject: string | null
           tenant_id: string
           updated_at: string
@@ -745,6 +752,7 @@ export type Database = {
           provider_language?: string | null
           provider_name?: string | null
           provider_status?: string
+          quick_replies?: string[]
           subject?: string | null
           tenant_id: string
           updated_at?: string
@@ -760,6 +768,7 @@ export type Database = {
           provider_language?: string | null
           provider_name?: string | null
           provider_status?: string
+          quick_replies?: string[]
           subject?: string | null
           tenant_id?: string
           updated_at?: string
@@ -1309,6 +1318,60 @@ export type Database = {
           },
         ]
       }
+      whatsapp_inbound: {
+        Row: {
+          action_taken: string | null
+          body: string | null
+          client_id: string | null
+          from_phone: string
+          id: string
+          kind: string
+          payload: string | null
+          received_at: string
+          tenant_id: string
+          wa_message_id: string
+        }
+        Insert: {
+          action_taken?: string | null
+          body?: string | null
+          client_id?: string | null
+          from_phone: string
+          id?: string
+          kind: string
+          payload?: string | null
+          received_at?: string
+          tenant_id: string
+          wa_message_id: string
+        }
+        Update: {
+          action_taken?: string | null
+          body?: string | null
+          client_id?: string | null
+          from_phone?: string
+          id?: string
+          kind?: string
+          payload?: string | null
+          received_at?: string
+          tenant_id?: string
+          wa_message_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_inbound_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_inbound_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       whatsapp_status: {
@@ -1391,9 +1454,11 @@ export type Database = {
           cost_cents: number
           created_at: string
           dedupe_key: string
+          delivered_at: string | null
           id: string
           last_error: string | null
           provider_message_id: string | null
+          read_at: string | null
           rendered_body: string | null
           rendered_subject: string | null
           rule_id: string | null
@@ -1426,11 +1491,23 @@ export type Database = {
         }
         Returns: undefined
       }
+      rpc_handle_inbound: {
+        Args: {
+          p_body?: string
+          p_from: string
+          p_kind: string
+          p_payload?: string
+          p_phone_number_id: string
+          p_wa_message_id: string
+        }
+        Returns: string
+      }
       rpc_jobs_payload: {
         Args: { p_ids: string[] }
         Returns: {
           access_token: string
           appointment_at: string
+          appointment_id: string
           channel: Database["public"]["Enums"]["message_channel"]
           client_email: string
           client_name: string
@@ -1439,6 +1516,7 @@ export type Database = {
           phone_number_id: string
           provider_language: string
           provider_name: string
+          quick_replies: string[]
           service_names: string
           template_body: string
           template_subject: string
@@ -1446,6 +1524,27 @@ export type Database = {
           tenant_name: string
           tenant_timezone: string
           test_mode: boolean
+        }[]
+      }
+      rpc_record_account_health: {
+        Args: {
+          p_limit?: string
+          p_phone_number_id: string
+          p_quality?: string
+          p_status?: string
+        }
+        Returns: undefined
+      }
+      rpc_record_delivery: {
+        Args: { p_error?: string; p_provider_id: string; p_status: string }
+        Returns: undefined
+      }
+      rpc_webhook_secrets: {
+        Args: { p_phone_number_id: string }
+        Returns: {
+          app_secret: string
+          tenant_id: string
+          verify_token: string
         }[]
       }
       simulate_rule: {
