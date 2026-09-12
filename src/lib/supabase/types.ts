@@ -926,9 +926,12 @@ export type Database = {
           client_id: string | null
           created_at: string
           endpoint: string
+          failures: number
           id: string
+          last_used_at: string | null
           p256dh: string
           tenant_id: string
+          user_agent: string | null
           user_id: string | null
         }
         Insert: {
@@ -936,9 +939,12 @@ export type Database = {
           client_id?: string | null
           created_at?: string
           endpoint: string
+          failures?: number
           id?: string
+          last_used_at?: string | null
           p256dh: string
           tenant_id: string
+          user_agent?: string | null
           user_id?: string | null
         }
         Update: {
@@ -946,9 +952,12 @@ export type Database = {
           client_id?: string | null
           created_at?: string
           endpoint?: string
+          failures?: number
           id?: string
+          last_used_at?: string | null
           p256dh?: string
           tenant_id?: string
+          user_agent?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -1444,6 +1453,16 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      register_push_subscription: {
+        Args: {
+          p_auth: string
+          p_client_id?: string
+          p_endpoint: string
+          p_p256dh: string
+          p_user_agent?: string
+        }
+        Returns: string
+      }
       rpc_claim_due_jobs: {
         Args: { p_limit?: number }
         Returns: {
@@ -1478,6 +1497,10 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      rpc_drop_push_subscription: {
+        Args: { p_endpoint: string }
+        Returns: undefined
+      }
       rpc_finish_job: {
         Args: {
           p_body?: string
@@ -1510,6 +1533,7 @@ export type Database = {
           appointment_id: string
           channel: Database["public"]["Enums"]["message_channel"]
           client_email: string
+          client_id: string
           client_name: string
           client_phone: string
           job_id: string
@@ -1524,6 +1548,14 @@ export type Database = {
           tenant_name: string
           tenant_timezone: string
           test_mode: boolean
+        }[]
+      }
+      rpc_push_targets: {
+        Args: { p_client: string }
+        Returns: {
+          auth: string
+          endpoint: string
+          p256dh: string
         }[]
       }
       rpc_record_account_health: {
@@ -1562,6 +1594,10 @@ export type Database = {
           cost_cents: number
           recipients: number
         }[]
+      }
+      unregister_push_subscription: {
+        Args: { p_endpoint: string }
+        Returns: undefined
       }
     }
     Enums: {
