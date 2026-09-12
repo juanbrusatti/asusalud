@@ -30,6 +30,24 @@ leer y escribir los datos de todas las estéticas.
 `npm run db:start` imprime las claves del proyecto local. Son siempre las
 mismas y no son secretas: valen únicamente contra el Postgres de tu máquina.
 
+## En las Edge Functions
+
+El emisor corre en Supabase, no en Vercel, así que tiene sus propias variables.
+Se cargan con `supabase secrets set`.
+
+| Variable | Obligatoria | Qué es |
+| --- | --- | --- |
+| `BREVO_API_KEY` | para enviar correos | Clave de la cuenta de Brevo |
+| `MAIL_FROM` | no | Remitente verificado. Por defecto `turnos@dlay.app` |
+| `DISPATCH_SECRET` | sí en producción | Sin esto, cualquiera puede forzar el vaciado de la cola |
+| `DISPATCH_BATCH` | no | Envíos por corrida. Por defecto 20 |
+| `DISPATCH_MIN_MS` / `DISPATCH_MAX_MS` | no | Pausa entre envíos. Por defecto 1500 y 4000 |
+
+`SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` las inyecta Supabase sola.
+
+Además, en la tabla `platform_settings` de la base van `dispatch_url` y
+`dispatch_secret`, que es lo que usa el reloj para llamar al emisor.
+
 ## En Vercel
 
 Las tres primeras van como variables de entorno del proyecto. La clave de

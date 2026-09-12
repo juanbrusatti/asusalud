@@ -10,11 +10,13 @@ import {
   CHANNEL_LABELS,
   getQueueSummary,
   getSettings,
+  getWhatsappStatus,
   listRules,
   listUpcoming,
 } from "@/lib/data/recordatorios";
 import { timeIn } from "@/lib/tz";
 import { Freno } from "./_components/freno";
+import { ModoPrueba } from "./_components/modo-prueba";
 import { ListaReglas } from "./_components/lista-reglas";
 
 export const metadata: Metadata = { title: "Recordatorios" };
@@ -23,11 +25,12 @@ export default async function RecordatoriosPage() {
   const membership = await getCurrentTenant();
   if (!membership) return null;
 
-  const [rules, settings, cola, proximos] = await Promise.all([
+  const [rules, settings, cola, proximos, whatsapp] = await Promise.all([
     listRules(),
     getSettings(),
     getQueueSummary(),
     listUpcoming(10),
+    getWhatsappStatus(),
   ]);
 
   const puedeEditar = atLeast(membership.role, "admin");
@@ -72,6 +75,38 @@ export default async function RecordatoriosPage() {
           <Freno enabled={false} reason={settings.paused_reason} />
         )}
 
+        <ModoPrueba
+          testMode={settings?.test_mode ?? true}
+          puedeEditar={puedeEditar}
+        />
+
+        {/* Sin cuenta conectada, todo lo que caiga en WhatsApp va a fallar.
+            Conviene decirlo antes y no en la bitácora de errores. */}
+        {!whatsapp?.has_token && (
+          <div className="rounded-card border-[1.5px] border-line bg-surface px-4 py-3">
+            <p className="text-[11.5px] font-semibold uppercase tracking-wider text-faint">
+              WhatsApp sin conectar
+            </p>
+            <p className="mt-0.5 max-w-prose text-[13.5px] leading-relaxed text-muted">
+              Los recordatorios que caigan en WhatsApp no van a poder salir
+              hasta que conectes la cuenta de Meta. Los que van por correo sí
+              funcionan.
+            </p>
+          </div>
+        )}
+
+        {whatsapp?.has_token && whatsapp.quality_rating === "RED" && (
+          <div className="rounded-card border-[1.5px] border-danger bg-danger-wash px-4 py-3">
+            <p className="text-[11.5px] font-semibold uppercase tracking-wider text-danger">
+              Calidad en rojo
+            </p>
+            <p className="mt-0.5 max-w-prose text-[13.5px] leading-relaxed text-ink">
+              Demasiada gente está bloqueando o reportando tus mensajes. Frená
+              los envíos y revisá los textos antes de que Meta limite la cuenta.
+            </p>
+          </div>
+        )}
+
         <div className="grid gap-3 sm:grid-cols-3">
           <Card>
             <CardBody className="grid gap-1">
@@ -87,16 +122,19 @@ export default async function RecordatoriosPage() {
             <CardBody className="grid gap-1">
               <CardFigure>{cola.sent}</CardFigure>
               <p className="text-[12.5px] text-muted">
-                enviados este mes · {formatPrice(cola.spentCents)}
+                enviados este mes ·{" "}
+                {settings?.test_mode ? "de prueba" : formatPrice(cola.spentCents)}
               </p>
             </CardBody>
           </Card>
 
           <Card>
             <CardBody className="grid gap-1">
-              <CardFigure>{cola.skipped}</CardFigure>
+              <CardFigure>{cola.skipped + cola.failed}</CardFigure>
               <p className="text-[12.5px] text-muted">
-                salteados por falta de canal o tope
+                {cola.failed > 0
+                  ? `sin salir · ${cola.failed} con problema a revisar`
+                  : "salteados por falta de canal o tope"}
               </p>
             </CardBody>
           </Card>

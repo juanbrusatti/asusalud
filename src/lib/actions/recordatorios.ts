@@ -209,6 +209,24 @@ export async function setSendingEnabled(enabled: boolean, reason?: string) {
   revalidatePath("/recordatorios");
 }
 
+/**
+ * Salir del modo de prueba es el acto más delicado del sistema: a partir de
+ * ahí los mensajes llegan a personas reales. Por eso es explícito y se
+ * registra quién lo hizo.
+ */
+export async function setTestMode(testMode: boolean) {
+  const membership = await getCurrentTenant();
+  if (!membership) return;
+
+  const supabase = await createClient();
+  await supabase
+    .from("messaging_settings")
+    .update({ test_mode: testMode })
+    .eq("tenant_id", membership.tenantId);
+
+  revalidatePath("/recordatorios");
+}
+
 /** Cancela un envío puntual que todavía no salió. */
 export async function cancelJob(id: string) {
   const supabase = await createClient();

@@ -622,6 +622,8 @@ export type Database = {
           id: string
           last_error: string | null
           provider_message_id: string | null
+          rendered_body: string | null
+          rendered_subject: string | null
           rule_id: string | null
           scheduled_for: string
           sent_at: string | null
@@ -630,6 +632,7 @@ export type Database = {
           template_id: string | null
           tenant_id: string
           updated_at: string
+          was_test: boolean
         }
         Insert: {
           appointment_id?: string | null
@@ -642,6 +645,8 @@ export type Database = {
           id?: string
           last_error?: string | null
           provider_message_id?: string | null
+          rendered_body?: string | null
+          rendered_subject?: string | null
           rule_id?: string | null
           scheduled_for: string
           sent_at?: string | null
@@ -650,6 +655,7 @@ export type Database = {
           template_id?: string | null
           tenant_id: string
           updated_at?: string
+          was_test?: boolean
         }
         Update: {
           appointment_id?: string | null
@@ -662,6 +668,8 @@ export type Database = {
           id?: string
           last_error?: string | null
           provider_message_id?: string | null
+          rendered_body?: string | null
+          rendered_subject?: string | null
           rule_id?: string | null
           scheduled_for?: string
           sent_at?: string | null
@@ -670,6 +678,7 @@ export type Database = {
           template_id?: string | null
           tenant_id?: string
           updated_at?: string
+          was_test?: boolean
         }
         Relationships: [
           {
@@ -776,6 +785,7 @@ export type Database = {
           quiet_start: string
           sending_enabled: boolean
           tenant_id: string
+          test_mode: boolean
           updated_at: string
           whatsapp_marketing_cents: number
           whatsapp_utility_cents: number
@@ -790,6 +800,7 @@ export type Database = {
           quiet_start?: string
           sending_enabled?: boolean
           tenant_id: string
+          test_mode?: boolean
           updated_at?: string
           whatsapp_marketing_cents?: number
           whatsapp_utility_cents?: number
@@ -804,6 +815,7 @@ export type Database = {
           quiet_start?: string
           sending_enabled?: boolean
           tenant_id?: string
+          test_mode?: boolean
           updated_at?: string
           whatsapp_marketing_cents?: number
           whatsapp_utility_cents?: number
@@ -856,6 +868,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      platform_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -1223,9 +1253,102 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_accounts: {
+        Row: {
+          access_token: string
+          app_secret: string | null
+          created_at: string
+          display_phone: string | null
+          last_checked_at: string | null
+          messaging_limit: string | null
+          phone_number_id: string
+          quality_rating: string | null
+          status: string
+          tenant_id: string
+          updated_at: string
+          verify_token: string | null
+          waba_id: string | null
+        }
+        Insert: {
+          access_token: string
+          app_secret?: string | null
+          created_at?: string
+          display_phone?: string | null
+          last_checked_at?: string | null
+          messaging_limit?: string | null
+          phone_number_id: string
+          quality_rating?: string | null
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          verify_token?: string | null
+          waba_id?: string | null
+        }
+        Update: {
+          access_token?: string
+          app_secret?: string | null
+          created_at?: string
+          display_phone?: string | null
+          last_checked_at?: string | null
+          messaging_limit?: string | null
+          phone_number_id?: string
+          quality_rating?: string | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          verify_token?: string | null
+          waba_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_accounts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
-      [_ in never]: never
+      whatsapp_status: {
+        Row: {
+          display_phone: string | null
+          has_token: boolean | null
+          last_checked_at: string | null
+          messaging_limit: string | null
+          quality_rating: string | null
+          status: string | null
+          tenant_id: string | null
+        }
+        Insert: {
+          display_phone?: string | null
+          has_token?: never
+          last_checked_at?: string | null
+          messaging_limit?: string | null
+          quality_rating?: string | null
+          status?: string | null
+          tenant_id?: string | null
+        }
+        Update: {
+          display_phone?: string | null
+          has_token?: never
+          last_checked_at?: string | null
+          messaging_limit?: string | null
+          quality_rating?: string | null
+          status?: string | null
+          tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_accounts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       book_appointment: {
@@ -1257,6 +1380,73 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      rpc_claim_due_jobs: {
+        Args: { p_limit?: number }
+        Returns: {
+          appointment_id: string | null
+          attempts: number
+          channel: Database["public"]["Enums"]["message_channel"] | null
+          client_id: string
+          cost_cents: number
+          created_at: string
+          dedupe_key: string
+          id: string
+          last_error: string | null
+          provider_message_id: string | null
+          rendered_body: string | null
+          rendered_subject: string | null
+          rule_id: string | null
+          scheduled_for: string
+          sent_at: string | null
+          skip_reason: string | null
+          status: Database["public"]["Enums"]["job_status"]
+          template_id: string | null
+          tenant_id: string
+          updated_at: string
+          was_test: boolean
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "message_jobs"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      rpc_finish_job: {
+        Args: {
+          p_body?: string
+          p_error?: string
+          p_id: string
+          p_ok: boolean
+          p_permanent?: boolean
+          p_provider_id?: string
+          p_subject?: string
+          p_was_test?: boolean
+        }
+        Returns: undefined
+      }
+      rpc_jobs_payload: {
+        Args: { p_ids: string[] }
+        Returns: {
+          access_token: string
+          appointment_at: string
+          channel: Database["public"]["Enums"]["message_channel"]
+          client_email: string
+          client_name: string
+          client_phone: string
+          job_id: string
+          phone_number_id: string
+          provider_language: string
+          provider_name: string
+          service_names: string
+          template_body: string
+          template_subject: string
+          tenant_id: string
+          tenant_name: string
+          tenant_timezone: string
+          test_mode: boolean
+        }[]
       }
       simulate_rule: {
         Args: {
