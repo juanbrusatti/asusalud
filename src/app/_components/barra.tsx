@@ -32,6 +32,7 @@ export function Barra({ tenantName }: { tenantName: string }) {
           <NavLink href="/clientes">Clientes</NavLink>
           <NavLink href="/servicios">Servicios</NavLink>
           <NavLink href="/recordatorios">Avisos</NavLink>
+          <NavLink href="/configuracion">Ajustes</NavLink>
         </nav>
 
         <form action={signOut} className="shrink-0">
