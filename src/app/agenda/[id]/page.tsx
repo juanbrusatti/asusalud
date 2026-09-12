@@ -4,16 +4,18 @@ import { notFound } from "next/navigation";
 import { Barra } from "@/app/_components/barra";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
-import { getCurrentTenant } from "@/lib/auth/tenant";
+import { atLeast, getCurrentTenant } from "@/lib/auth/tenant";
 import {
   STATUS_LABELS,
   getAppointment,
   getStatusHistory,
 } from "@/lib/data/agenda";
+import { getAppointmentCharges, getOpenSession } from "@/lib/data/caja";
 import { formatDuration, formatPrice } from "@/lib/money";
 import { whatsappLink } from "@/lib/phone";
 import { longDateIn, timeIn } from "@/lib/tz";
 import { AccionesEstado } from "../_components/acciones-estado";
+import { Cobro } from "../_components/cobro";
 
 export const metadata: Metadata = { title: "Turno" };
 
@@ -33,6 +35,12 @@ export default async function TurnoPage({
   const history = await getStatusHistory(id);
   const tz = membership.tenant.timezone;
 
+  // Una profesional no ve la plata de la estética: tampoco desde el turno.
+  const puedeCobrar = atLeast(membership.role, "reception");
+  const [cobros, cajaAbierta] = puedeCobrar
+    ? await Promise.all([getAppointmentCharges(id), getOpenSession()])
+    : [null, null];
+
   const cliente = appointment.client;
   const nombre = cliente
     ? [cliente.first_name, cliente.last_name].filter(Boolean).join(" ")
@@ -44,6 +52,20 @@ export default async function TurnoPage({
     month: "2-digit",
     day: "2-digit",
   }).format(new Date(appointment.starts_at));
+
+  // Lo que se va a leer en la caja dentro de un mes. El nombre va adentro
+  // porque la lista de movimientos muestra el concepto y nada más.
+  const nombresServicios = appointment.services
+    .map((s) => s.service?.name)
+    .filter(Boolean) as string[];
+  const conceptoSugerido = [
+    nombresServicios.slice(0, 2).join(", ") +
+      (nombresServicios.length > 2 ? ` +${nombresServicios.length - 2}` : ""),
+    cliente ? nombre : null,
+  ]
+    .filter(Boolean)
+    .join(" · ")
+    .slice(0, 200);
 
   const wa = whatsappLink(cliente?.phone_e164);
   const fechaHora = new Intl.DateTimeFormat("es-AR", {
@@ -147,6 +169,31 @@ export default async function TurnoPage({
             </p>
           </CardBody>
         </Card>
+
+        {cobros && appointment.status !== "cancelled" && (
+          <Cobro
+            appointmentId={id}
+            clientId={cliente?.id ?? null}
+            totalCents={
+              appointment.price_cents === null
+                ? null
+                : Number(appointment.price_cents)
+            }
+            paidCents={cobros.paidCents}
+            conceptoSugerido={conceptoSugerido}
+            cajaAbierta={cajaAbierta !== null}
+            timeZone={tz}
+            movimientos={cobros.movements.map((m) => ({
+              id: m.id,
+              kind: m.kind,
+              method: m.method,
+              amountCents: Number(m.amount_cents),
+              concept: m.concept,
+              createdAt: m.created_at,
+              esAnulacion: m.reverses_id !== null,
+            }))}
+          />
+        )}
 
         {appointment.notes && (
           <Card>

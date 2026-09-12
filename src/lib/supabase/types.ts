@@ -463,6 +463,178 @@ export type Database = {
           },
         ]
       }
+      cash_movements: {
+        Row: {
+          amount_cents: number
+          appointment_id: string | null
+          branch_id: string
+          client_id: string | null
+          concept: string
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: Database["public"]["Enums"]["movement_kind"]
+          method: Database["public"]["Enums"]["payment_method"]
+          reverses_id: string | null
+          session_id: string | null
+          tenant_id: string
+        }
+        Insert: {
+          amount_cents: number
+          appointment_id?: string | null
+          branch_id: string
+          client_id?: string | null
+          concept: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["movement_kind"]
+          method?: Database["public"]["Enums"]["payment_method"]
+          reverses_id?: string | null
+          session_id?: string | null
+          tenant_id: string
+        }
+        Update: {
+          amount_cents?: number
+          appointment_id?: string | null
+          branch_id?: string
+          client_id?: string | null
+          concept?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["movement_kind"]
+          method?: Database["public"]["Enums"]["payment_method"]
+          reverses_id?: string | null
+          session_id?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_movements_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_movements_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_movements_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_movements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_movements_reverses_id_fkey"
+            columns: ["reverses_id"]
+            isOneToOne: false
+            referencedRelation: "cash_movements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_movements_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "cash_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_movements_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cash_sessions: {
+        Row: {
+          branch_id: string
+          closed_at: string | null
+          closed_by: string | null
+          counted_cents: number | null
+          difference_cents: number | null
+          expected_cents: number | null
+          id: string
+          notes: string | null
+          opened_at: string
+          opened_by: string | null
+          opening_cents: number
+          tenant_id: string
+        }
+        Insert: {
+          branch_id: string
+          closed_at?: string | null
+          closed_by?: string | null
+          counted_cents?: number | null
+          difference_cents?: number | null
+          expected_cents?: number | null
+          id?: string
+          notes?: string | null
+          opened_at?: string
+          opened_by?: string | null
+          opening_cents?: number
+          tenant_id: string
+        }
+        Update: {
+          branch_id?: string
+          closed_at?: string | null
+          closed_by?: string | null
+          counted_cents?: number | null
+          difference_cents?: number | null
+          expected_cents?: number | null
+          id?: string
+          notes?: string | null
+          opened_at?: string
+          opened_by?: string | null
+          opening_cents?: number
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_sessions_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_sessions_closed_by_fkey"
+            columns: ["closed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_sessions_opened_by_fkey"
+            columns: ["opened_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_sessions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_notes: {
         Row: {
           author_id: string | null
@@ -1518,6 +1690,10 @@ export type Database = {
       }
     }
     Functions: {
+      appointment_paid_cents: {
+        Args: { p_appointment: string }
+        Returns: number
+      }
       book_appointment: {
         Args: {
           p_client: string
@@ -1546,6 +1722,15 @@ export type Database = {
         Returns: {
           slot: string
         }[]
+      }
+      cash_close_session: {
+        Args: { p_counted_cents: number; p_notes?: string; p_session: string }
+        Returns: Json
+      }
+      cash_open_session: { Args: { p_opening_cents?: number }; Returns: string }
+      cash_reverse_movement: {
+        Args: { p_movement: string; p_reason?: string }
+        Returns: string
       }
       count_phone_duplicates: { Args: { p_client: string }; Returns: number }
       create_tenant: {
@@ -1578,6 +1763,7 @@ export type Database = {
         }
         Returns: string
       }
+      report_period: { Args: { p_from: string; p_to: string }; Returns: Json }
       rpc_claim_due_jobs: {
         Args: { p_limit?: number }
         Returns: {
@@ -1694,6 +1880,10 @@ export type Database = {
           verify_token: string
         }[]
       }
+      session_expected_cents_public: {
+        Args: { p_session: string }
+        Returns: number
+      }
       simulate_rule: {
         Args: {
           p_channel_order: Database["public"]["Enums"]["message_channel"][]
@@ -1735,6 +1925,14 @@ export type Database = {
       membership_status: "active" | "invited" | "suspended"
       message_category: "utility" | "marketing"
       message_channel: "push" | "email" | "whatsapp"
+      movement_kind: "income" | "expense"
+      payment_method:
+        | "cash"
+        | "transfer"
+        | "debit"
+        | "credit"
+        | "mercadopago"
+        | "other"
       price_mode: "fixed" | "on_request"
       reminder_trigger:
         | "before_appointment"
@@ -1889,6 +2087,15 @@ export const Constants = {
       membership_status: ["active", "invited", "suspended"],
       message_category: ["utility", "marketing"],
       message_channel: ["push", "email", "whatsapp"],
+      movement_kind: ["income", "expense"],
+      payment_method: [
+        "cash",
+        "transfer",
+        "debit",
+        "credit",
+        "mercadopago",
+        "other",
+      ],
       price_mode: ["fixed", "on_request"],
       reminder_trigger: [
         "before_appointment",
