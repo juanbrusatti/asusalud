@@ -7,10 +7,12 @@ import { METHOD_LABELS } from "@/lib/caja";
 import {
   getOpenSession,
   getTotals,
+  listLooseMovements,
   listMovements,
   listSessions,
 } from "@/lib/data/caja";
 import { formatPrice } from "@/lib/money";
+import { todayIn, zonedDayRange } from "@/lib/tz";
 import { AbrirCaja } from "./_components/abrir";
 import { CerrarCaja } from "./_components/cerrar";
 import { ListaMovimientos } from "./_components/lista";
@@ -27,6 +29,12 @@ export default async function CajaPage() {
 
   const tz = membership.tenant.timezone;
   const abierta = await getOpenSession();
+
+  // Transferencias y Mercado Pago se pueden registrar con la caja cerrada:
+  // no pasan por el cajón. Se muestran igual para que ningún cobro quede
+  // guardado y en ninguna pantalla.
+  const hoy = zonedDayRange(todayIn(tz), tz);
+  const sueltos = await listLooseMovements(hoy.from, hoy.to);
 
   if (!abierta) {
     const cerradas = await listSessions(10);
@@ -92,6 +100,23 @@ export default async function CajaPage() {
                 )}
               </CardBody>
             </Card>
+          )}
+
+          {sueltos.length > 0 && (
+            <section className="grid gap-3">
+              <h2 className="text-[17px] font-semibold tracking-[-0.02em]">
+                Cobros de hoy fuera de la caja
+              </h2>
+              <p className="-mt-1 max-w-prose text-[13px] leading-snug text-muted">
+                Entraron sin pasar por el cajón, así que no se cuentan en el
+                arqueo. Sí aparecen en los informes del período.
+              </p>
+              <ListaMovimientos
+                movimientos={sueltos}
+                timeZone={tz}
+                puedeAnular={atLeast(membership.role, "reception")}
+              />
+            </section>
           )}
 
           <AbrirCaja />
@@ -221,6 +246,23 @@ export default async function CajaPage() {
             </h2>
             <ListaMovimientos
               movimientos={movimientos}
+              timeZone={tz}
+              puedeAnular={atLeast(membership.role, "reception")}
+            />
+          </section>
+        )}
+
+        {sueltos.length > 0 && (
+          <section className="grid gap-3">
+            <h2 className="text-[17px] font-semibold tracking-[-0.02em]">
+              Cobros de hoy fuera de la caja
+            </h2>
+            <p className="-mt-1 max-w-prose text-[13px] leading-snug text-muted">
+              Entraron sin pasar por el cajón, así que no se cuentan en el
+              arqueo. Sí aparecen en los informes del período.
+            </p>
+            <ListaMovimientos
+              movimientos={sueltos}
               timeZone={tz}
               puedeAnular={atLeast(membership.role, "reception")}
             />

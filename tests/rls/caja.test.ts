@@ -458,3 +458,36 @@ describe("el arqueo queda guardado", () => {
     });
   });
 });
+
+describe("el efectivo vive dentro de una caja", () => {
+  it("no se puede registrar efectivo sin una caja abierta", async () => {
+    await asUser(s.owner, async (c) => {
+      // Sin sesión no hay cajón donde contarlo al cerrar el día: sería plata
+      // guardada y perdida a la vez.
+      const code = await expectRejected(() =>
+        c.query(
+          `insert into public.cash_movements
+             (tenant_id, branch_id, kind, method, amount_cents, concept)
+           values ($1, $2, 'income', 'cash', 350000, 'Masaje')`,
+          [s.tenantA, branchA],
+        ),
+      );
+      expect(code).toBe("23514");
+    });
+  });
+
+  it("una transferencia sí se registra con la caja cerrada", async () => {
+    await asUser(s.owner, async (c) => {
+      // No pasa por el cajón, así que no necesita caja. La pantalla la muestra
+      // aparte para que no quede invisible.
+      const { rows } = await c.query(
+        `insert into public.cash_movements
+           (tenant_id, branch_id, kind, method, amount_cents, concept)
+         values ($1, $2, 'income', 'transfer', 350000, 'Masaje')
+         returning id, session_id`,
+        [s.tenantA, branchA],
+      );
+      expect(rows[0].session_id).toBeNull();
+    });
+  });
+});

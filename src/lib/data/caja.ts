@@ -67,6 +67,32 @@ export async function listMovements(
   return (data ?? []) as unknown as MovementWithDetail[];
 }
 
+/**
+ * Los cobros del día que no cayeron en ninguna caja.
+ *
+ * Pasa cuando se registra una transferencia o un Mercado Pago con la caja
+ * cerrada: no hay cajón donde ponerlos, pero la plata entró igual. Sin esta
+ * lista quedarían guardados y en ninguna pantalla, que es la peor forma de
+ * perder un cobro.
+ */
+export async function listLooseMovements(
+  from: Date,
+  to: Date,
+): Promise<MovementWithDetail[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("cash_movements")
+    .select(
+      "*, client:clients ( id, first_name, last_name ), author:profiles ( full_name )",
+    )
+    .is("session_id", null)
+    .gte("created_at", from.toISOString())
+    .lt("created_at", to.toISOString())
+    .order("created_at", { ascending: false });
+
+  return (data ?? []) as unknown as MovementWithDetail[];
+}
+
 export type SessionTotals = {
   /** Lo que debería haber en el cajón, según los movimientos en efectivo. */
   expectedCents: number;
@@ -116,11 +142,46 @@ export async function getTotals(sessionId: string): Promise<SessionTotals> {
   };
 }
 
-/** Cuánto se cobró de un turno. Sirve para mostrar el saldo al cobrar. */
-export async function getPaidForAppointment(id: string): Promise<number> {
+export type AppointmentCharge = Pick<
+  CashMovement,
+  | "id"
+  | "kind"
+  | "method"
+  | "amount_cents"
+  | "concept"
+  | "created_at"
+  | "reverses_id"
+>;
+
+export type AppointmentCharges = {
+  /** Cobrado menos devuelto. Es el mismo número que `appointment_paid_cents()`. */
+  paidCents: number;
+  movements: AppointmentCharge[];
+};
+
+/**
+ * Lo que se cobró de un turno, con el detalle.
+ *
+ * El total se suma acá en lugar de pedirlo a `appointment_paid_cents()`: los
+ * movimientos hacen falta igual para mostrarlos, y sumar seis filas en memoria
+ * es más barato que un segundo viaje a la base para obtener el mismo número.
+ */
+export async function getAppointmentCharges(
+  appointmentId: string,
+): Promise<AppointmentCharges> {
   const supabase = await createClient();
-  const { data } = await supabase.rpc("appointment_paid_cents", {
-    p_appointment: id,
-  });
-  return Number(data ?? 0);
+  const { data } = await supabase
+    .from("cash_movements")
+    .select("id, kind, method, amount_cents, concept, created_at, reverses_id")
+    .eq("appointment_id", appointmentId)
+    .order("created_at", { ascending: true });
+
+  const movements = (data ?? []) as AppointmentCharge[];
+  const paidCents = movements.reduce(
+    (total, m) =>
+      total + (m.kind === "income" ? 1 : -1) * Number(m.amount_cents),
+    0,
+  );
+
+  return { paidCents, movements };
 }

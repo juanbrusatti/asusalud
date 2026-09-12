@@ -79,8 +79,34 @@ Un cobro por transferencia, débito o Mercado Pago se registra igual pero puede
 no tener caja asociada: queda en la bitácora y en los totales por medio de
 pago, fuera del arqueo.
 
-El efectivo sí exige una caja abierta: si no, no habría dónde contarlo al
-cerrar el día.
+El efectivo sí exige una caja abierta, y eso lo garantiza la base con una
+restricción, no la pantalla: un movimiento en efectivo sin sesión no entraría
+en ningún arqueo y no aparecería en ninguna lista. Sería plata guardada y
+perdida a la vez.
+
+Los cobros sin caja **no quedan escondidos**: la pantalla de caja los muestra
+aparte, bajo "Cobros de hoy fuera de la caja", aclarando que no entran en el
+arqueo pero sí en los informes del período.
+
+## Cobrar desde el turno
+
+La pantalla del turno tiene su propia tarjeta de cobro, y es la vía rápida: el
+importe, el concepto y la clienta ya vienen cargados desde el turno.
+
+- **El saldo se calcula solo**: total del turno menos lo ya cobrado.
+- **El importe es editable**, porque las señas y los pagos en dos veces son lo
+  normal. Al bajarlo, debajo aparece cuánto queda debiendo.
+- **El botón dice cuánto se va a cobrar**, y cambia mientras se escribe.
+- Cuando el saldo llega a cero, la tarjeta pasa a decir **Cobrado** y esconde
+  el formulario detrás de un botón, para que nadie cobre dos veces de apuro.
+- Si el medio es efectivo y no hay caja abierta, el botón queda apagado con el
+  aviso y el enlace para abrirla: el error se evita en vez de explicarse
+  después.
+
+El movimiento que queda es uno normal de caja, con el turno y la clienta
+enlazados. Se corrige como cualquier otro: **anulándolo desde la caja**.
+
+Una profesional no ve esta tarjeta, igual que no ve la caja.
 
 ## Dónde está el código
 
@@ -89,19 +115,20 @@ cerrar el día.
 | Esquema, inmutabilidad y arqueo | `supabase/migrations/20260912210000_caja.sql` |
 | Total esperado accesible desde la app | `supabase/migrations/20260912220000_caja_totales.sql` |
 | El arqueo guardado | `supabase/migrations/20260912230000_caja_arqueo.sql` |
+| El efectivo exige caja abierta | `supabase/migrations/20260912250000_caja_efectivo_con_caja.sql` |
 | Tipos y etiquetas | `src/lib/caja.ts` |
 | Consultas | `src/lib/data/caja.ts` |
 | Abrir, cobrar, anular y cerrar | `src/lib/actions/caja.ts` |
 | Pantallas | `src/app/caja/` |
+| Cobro desde el turno | `src/app/agenda/_components/cobro.tsx` |
 | Pruebas | `tests/rls/caja.test.ts` |
 
 ## Lo que todavía no está
 
-- **Cobrar desde el turno**: hoy el cobro se carga a mano en la caja. Falta el
-  botón en la pantalla del turno, con el precio y el saldo ya cargados. La
-  función `appointment_paid_cents()` ya existe para eso.
-- **Señas online** con Mercado Pago.
-- **Informes**: cuánto entró en el mes, por servicio, por medio de pago.
+- **Señas online** con Mercado Pago: hoy la seña se registra a mano cuando la
+  clienta paga, no se le cobra desde el sistema.
 - **Facturación**: TuTurno emite facturas de AFIP. Es otro trámite y otra
   integración.
 - **Varias sucursales**: la caja asume la principal.
+- **Cerrar el día desde el turno**: si queda saldo en varios turnos, hay que
+  entrar a cada uno. Una lista de "turnos con saldo" ahorraría ese paseo.
