@@ -2,9 +2,12 @@ import Link from "next/link";
 import { Barra } from "@/app/_components/barra";
 import { Button } from "@/components/ui/button";
 import { CrearEstetica } from "@/app/_components/crear-estetica";
+import { Notificaciones } from "@/components/pwa/notificaciones";
 import { RegisterServiceWorker } from "@/components/pwa/register-sw";
 import { Card, CardBody, CardFigure, CardTitle } from "@/components/ui/card";
 import { getCurrentTenant, getCurrentUser } from "@/lib/auth/tenant";
+import { getPublicLink } from "@/lib/data/reserva";
+import { publicEnv } from "@/lib/env";
 
 const ROLES: Record<string, string> = {
   owner: "Dueña",
@@ -15,9 +18,10 @@ const ROLES: Record<string, string> = {
 
 export default async function InicioPage() {
   // El middleware ya garantiza que hay sesión; esto es sólo para el saludo.
-  const [user, membership] = await Promise.all([
+  const [user, membership, link] = await Promise.all([
     getCurrentUser(),
     getCurrentTenant(),
+    getPublicLink(),
   ]);
 
   if (!membership) {
@@ -83,6 +87,46 @@ export default async function InicioPage() {
             <Button asChild className="mt-1">
               <Link href="/agenda">Ver la agenda</Link>
             </Button>
+          </CardBody>
+        </Card>
+
+        {link && (
+          <Card>
+            <CardBody className="grid justify-items-start gap-2">
+              <CardTitle>Tu link de reservas</CardTitle>
+              {link.enabled ? (
+                <>
+                  <p className="max-w-prose text-[14.5px] leading-relaxed text-muted">
+                    Compartilo en tu perfil de Instagram o mandáselo a tus
+                    clientas: pueden sacar turno solas, a cualquier hora, sin
+                    que tengas que contestar nada.
+                  </p>
+                  <a
+                    href={`/r/${link.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="break-all rounded-[14px] bg-surface-2 px-3.5 py-2.5 font-mono text-[13px] text-accent-text hover:underline"
+                  >
+                    {publicEnv.NEXT_PUBLIC_SITE_URL}/r/{link.slug}
+                  </a>
+                </>
+              ) : (
+                <p className="max-w-prose text-[14.5px] leading-relaxed text-muted">
+                  Tu agenda todavía no está abierta al público. Cuando la
+                  actives, tus clientas van a poder sacar turno solas desde este
+                  link.
+                </p>
+              )}
+            </CardBody>
+          </Card>
+        )}
+
+        <Card>
+          <CardBody className="grid gap-3">
+            <CardTitle>Avisos en este dispositivo</CardTitle>
+            <Notificaciones
+              vapidPublicKey={publicEnv.NEXT_PUBLIC_VAPID_PUBLIC_KEY}
+            />
           </CardBody>
         </Card>
 

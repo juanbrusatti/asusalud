@@ -8,7 +8,7 @@
  * Lo único que se cachea son los archivos estáticos de la propia aplicación.
  */
 
-const VERSION = "v1";
+const VERSION = "v2";
 const SHELL = `dlay-shell-${VERSION}`;
 const OFFLINE_URL = "/sin-conexion";
 
@@ -31,6 +31,61 @@ self.addEventListener("activate", (event) => {
         ),
       )
       .then(() => self.clients.claim()),
+  );
+});
+
+/**
+ * Notificaciones push.
+ *
+ * Es el único canal gratis del sistema. El cuerpo viene cifrado del servidor y
+ * el navegador lo entrega ya descifrado.
+ */
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { body: event.data ? event.data.text() : "" };
+  }
+
+  const title = data.title || "Dlay";
+  const options = {
+    body: data.body || "",
+    icon: "/icons/icon-192.png",
+    badge: "/icons/icon-192.png",
+    // Con el mismo tag, un aviso nuevo del mismo turno reemplaza al anterior
+    // en lugar de apilarse.
+    tag: data.tag || undefined,
+    data: { url: data.url || "/" },
+    lang: "es-AR",
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+/**
+ * Al tocarla, se reutiliza la ventana abierta si la hay. Abrir una segunda
+ * pestaña de la misma aplicación es molesto y desorienta.
+ */
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const destino = event.notification.data?.url || "/";
+
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((abiertas) => {
+        for (const cliente of abiertas) {
+          if (cliente.url.includes(destino) && "focus" in cliente) {
+            return cliente.focus();
+          }
+        }
+        const alguna = abiertas[0];
+        if (alguna && "navigate" in alguna) {
+          return alguna.navigate(destino).then((c) => c && c.focus());
+        }
+        return self.clients.openWindow(destino);
+      }),
   );
 });
 

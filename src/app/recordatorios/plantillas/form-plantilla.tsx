@@ -42,6 +42,7 @@ export function FormPlantilla({
   const [state, formAction] = useActionState(action, INITIAL);
   const [channel, setChannel] = useState<Channel>(template?.channel ?? "email");
   const [body, setBody] = useState(template?.body ?? "");
+  const [botones, setBotones] = useState<string[]>(template?.quick_replies ?? []);
 
   const sent = state.values;
 
@@ -101,6 +102,53 @@ export function FormPlantilla({
             </>
           ) : (
             <input type="hidden" name="category" value="utility" />
+          )}
+
+          {channel === "whatsapp" && (
+            <div className="grid gap-2">
+              {botones.map((b) => (
+                <input key={b} type="hidden" name="quickReplies" value={b} />
+              ))}
+              <span className="text-[13.5px] font-medium">Botones</span>
+              <div className="flex flex-wrap gap-1.5">
+                {(
+                  [
+                    ["confirmar", "Confirmar turno"],
+                    ["reprogramar", "Quiero reprogramar"],
+                    ["baja", "No me escriban más"],
+                  ] as const
+                ).map(([valor, etiqueta]) => {
+                  const activo = botones.includes(valor);
+                  return (
+                    <button
+                      key={valor}
+                      type="button"
+                      aria-pressed={activo}
+                      onClick={() =>
+                        setBotones(
+                          activo
+                            ? botones.filter((b) => b !== valor)
+                            : [...botones, valor],
+                        )
+                      }
+                      className={`rounded-pill border-[1.5px] px-3 py-1.5 text-[12.5px] font-medium ${
+                        activo
+                          ? "border-accent bg-accent text-on-accent"
+                          : "border-line bg-surface text-muted hover:text-ink"
+                      }`}
+                    >
+                      {etiqueta}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[12.5px] leading-snug text-muted">
+                Tienen que estar cargados en Meta con el mismo orden. Cuando la
+                clienta toca &ldquo;Confirmar turno&rdquo;, la agenda se
+                actualiza sola: es un mensaje menos que alguien tiene que leer y
+                ejecutar a mano.
+              </p>
+            </div>
           )}
 
           {channel === "email" && (
