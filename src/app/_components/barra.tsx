@@ -30,6 +30,7 @@ export function Barra({ tenantName }: { tenantName: string }) {
           <NavLink href="/">Inicio</NavLink>
           <NavLink href="/agenda">Agenda</NavLink>
           <NavLink href="/clientes">Clientes</NavLink>
+          <NavLink href="/caja">Caja</NavLink>
           <NavLink href="/servicios">Servicios</NavLink>
           <NavLink href="/recordatorios">Avisos</NavLink>
           <NavLink href="/configuracion">Ajustes</NavLink>

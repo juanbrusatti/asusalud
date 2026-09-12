@@ -15,7 +15,7 @@ Cliente piloto: Estética Asusalud (Río Cuarto, Córdoba).
 | 0 | Proyecto, sistema de diseño, PWA, multi-tenant, RLS y pruebas de aislamiento | ✅ |
 | 1 | Servicios, clientes, importador y agenda | ✅ |
 | 2 | Canales, motor de reglas, emisor, webhooks y reserva online | ✅ |
-| 3 | Caja, señas e informes | ⏳ |
+| 3 | Caja ✅ · señas e informes | 🔨 |
 | 4 | Stock, reseñas y campañas | ⏳ |
 | 5 | Planes, landing y alta automática | ⏳ |
 
@@ -90,3 +90,4 @@ estética B. Si devuelve una sola fila, la función no está lista.
 - [Notificaciones push](docs/modulos/push.md)
 - [Reserva online](docs/modulos/reserva-online.md)
 - [Configuración](docs/modulos/configuracion.md)
+- [Caja](docs/modulos/caja.md)
