@@ -28,7 +28,10 @@ export function Barra({ tenantName }: { tenantName: string }) {
           className="ml-auto flex items-center gap-1 overflow-x-auto"
         >
           <NavLink href="/">Inicio</NavLink>
+          <NavLink href="/agenda">Agenda</NavLink>
+          <NavLink href="/clientes">Clientes</NavLink>
           <NavLink href="/servicios">Servicios</NavLink>
+          <NavLink href="/recordatorios">Avisos</NavLink>
         </nav>
 
         <form action={signOut} className="shrink-0">
