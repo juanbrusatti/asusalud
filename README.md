@@ -89,3 +89,4 @@ estética B. Si devuelve una sola fila, la función no está lista.
 - [Webhooks de WhatsApp](docs/modulos/webhooks.md)
 - [Notificaciones push](docs/modulos/push.md)
 - [Reserva online](docs/modulos/reserva-online.md)
+- [Configuración](docs/modulos/configuracion.md)
