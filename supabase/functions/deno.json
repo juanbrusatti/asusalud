@@ -1,0 +1,8 @@
+{
+  "//": "Las Edge Functions corren en Deno, no en Node. Este archivo las mantiene fuera del tooling de Next.js y le da a Deno sus propias reglas.",
+  "imports": {
+    "@supabase/supabase-js": "jsr:@supabase/supabase-js@2"
+  },
+  "lint": { "rules": { "tags": ["recommended"] } },
+  "fmt": { "lineWidth": 80 }
+}

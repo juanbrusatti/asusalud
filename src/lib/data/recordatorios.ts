@@ -119,6 +119,28 @@ export async function getQueueSummary(): Promise<QueueSummary> {
   };
 }
 
+export type WhatsappStatus = {
+  display_phone: string | null;
+  // Las columnas de una vista llegan como anulables aunque la tabla las tenga
+  // obligatorias: Postgres no puede garantizarlo a través de la vista.
+  status: string | null;
+  quality_rating: string | null;
+  messaging_limit: string | null;
+  has_token: boolean | null;
+};
+
+/** Estado de la cuenta de WhatsApp. Nunca incluye credenciales. */
+export async function getWhatsappStatus(): Promise<WhatsappStatus | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("whatsapp_status")
+    .select("display_phone, status, quality_rating, messaging_limit, has_token")
+    .maybeSingle();
+
+  if (error) return null;
+  return data;
+}
+
 export type UpcomingJob = {
   id: string;
   channel: Channel | null;

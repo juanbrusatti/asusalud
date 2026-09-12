@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { PoolClient } from "pg";
-import { asAdmin, asUser, pool } from "./helpers";
+import { asAdmin, asUser, expectRejected, pool } from "./helpers";
 import { setupScenario, teardownScenario, type Scenario } from "./fixtures";
 
 let s: Scenario;
@@ -566,6 +566,169 @@ describe("simulador", () => {
          )`,
       );
       expect(Number(rows[0].total)).toBe(0);
+    });
+  });
+});
+
+describe("cierre de un envío", () => {
+  beforeEach(limpiarTodo);
+
+  /** Crea un envío en la cola listo para que el emisor lo procese. */
+  async function envioTomado(): Promise<string> {
+    return asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `insert into public.message_jobs
+           (tenant_id, client_id, channel, scheduled_for, status, attempts, dedupe_key)
+         values ($1, $2, 'email', now(), 'sending', 1, 'prueba-' || gen_random_uuid())
+         returning id`,
+        [s.tenantA, conAmbos],
+      );
+      return rows[0].id as string;
+    });
+  }
+
+  it("un envío exitoso guarda el texto que realmente salió", async () => {
+    const id = await envioTomado();
+
+    await asAdmin(async (c) => {
+      await c.query(
+        `select app.finish_job($1, true, 'Tu turno', 'Hola Ambos, te esperamos.',
+                               'msg-123', null, false, false)`,
+        [id],
+      );
+
+      const { rows } = await c.query(
+        `select status, rendered_body, provider_message_id, was_test, sent_at
+         from public.message_jobs where id = $1`,
+        [id],
+      );
+
+      // Guardar el texto es lo que permite responder "¿qué decía el mensaje
+      // que le llegó?" seis meses después.
+      expect(rows[0].status).toBe("sent");
+      expect(rows[0].rendered_body).toBe("Hola Ambos, te esperamos.");
+      expect(rows[0].provider_message_id).toBe("msg-123");
+      expect(rows[0].sent_at).not.toBeNull();
+    });
+  });
+
+  it("un error permanente no se reintenta", async () => {
+    const id = await envioTomado();
+
+    await asAdmin(async (c) => {
+      await c.query(
+        `select app.finish_job($1, false, null, null, null,
+                               'La ficha no tiene correo.', false, true)`,
+        [id],
+      );
+
+      const { rows } = await c.query(
+        `select status, last_error from public.message_jobs where id = $1`,
+        [id],
+      );
+      expect(rows[0].status).toBe("failed");
+      expect(rows[0].last_error).toContain("no tiene correo");
+    });
+  });
+
+  it("un error transitorio vuelve a la cola más tarde", async () => {
+    const id = await envioTomado();
+
+    await asAdmin(async (c) => {
+      await c.query(
+        `select app.finish_job($1, false, null, null, null,
+                               'Meta 503', false, false)`,
+        [id],
+      );
+
+      const { rows } = await c.query(
+        `select status, scheduled_for > now() as en_el_futuro
+         from public.message_jobs where id = $1`,
+        [id],
+      );
+      expect(rows[0].status).toBe("pending");
+      expect(rows[0].en_el_futuro).toBe(true);
+    });
+  });
+
+  it("después de tres intentos deja de insistir", async () => {
+    const id = await envioTomado();
+
+    await asAdmin(async (c) => {
+      await c.query(`update public.message_jobs set attempts = 3 where id = $1`, [
+        id,
+      ]);
+      await c.query(
+        `select app.finish_job($1, false, null, null, null, 'Meta 503', false, false)`,
+        [id],
+      );
+
+      const { rows } = await c.query(
+        `select status from public.message_jobs where id = $1`,
+        [id],
+      );
+      // Insistir sobre algo que no se arregla solo degrada la reputación.
+      expect(rows[0].status).toBe("failed");
+    });
+  });
+
+  it("el modo de prueba queda marcado en el envío", async () => {
+    const id = await envioTomado();
+
+    await asAdmin(async (c) => {
+      await c.query(
+        `select app.finish_job($1, true, null, 'Texto', 'prueba', null, true, false)`,
+        [id],
+      );
+
+      const { rows } = await c.query(
+        `select status, was_test from public.message_jobs where id = $1`,
+        [id],
+      );
+      expect(rows[0].status).toBe("sent");
+      // Sin esta marca, un mes en modo de prueba parecería un mes de envíos
+      // reales en los informes.
+      expect(rows[0].was_test).toBe(true);
+    });
+  });
+});
+
+describe("credenciales de WhatsApp", () => {
+  it("nadie que no sea el sistema puede leer el token", async () => {
+    await asAdmin(async (c) => {
+      await c.query(
+        `insert into public.whatsapp_accounts (tenant_id, phone_number_id, access_token)
+         values ($1, '123456', 'token-secretísimo')
+         on conflict (tenant_id) do update set access_token = excluded.access_token`,
+        [s.tenantA],
+      );
+    });
+
+    // Ni siquiera la dueña de la estética: el token no se expone a la interfaz.
+    await asUser(s.owner, async (c) => {
+      const code = await expectRejected(() =>
+        c.query(`select access_token from public.whatsapp_accounts`),
+      );
+      expect(code).toBe("42501");
+    });
+  });
+
+  it("la vista de estado muestra la salud pero nunca el token", async () => {
+    await asUser(s.owner, async (c) => {
+      const { rows } = await c.query(
+        `select * from public.whatsapp_status where tenant_id = $1`,
+        [s.tenantA],
+      );
+      expect(rows).toHaveLength(1);
+      expect(rows[0].has_token).toBe(true);
+      expect(Object.keys(rows[0])).not.toContain("access_token");
+    });
+  });
+
+  it("la estética vecina no ve nada de esta cuenta", async () => {
+    await asUser(s.intruder, async (c) => {
+      const { rows } = await c.query(`select * from public.whatsapp_status`);
+      expect(rows).toHaveLength(0);
     });
   });
 });
