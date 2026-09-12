@@ -2,9 +2,11 @@ import Link from "next/link";
 import { Barra } from "@/app/_components/barra";
 import { Button } from "@/components/ui/button";
 import { CrearEstetica } from "@/app/_components/crear-estetica";
+import { Notificaciones } from "@/components/pwa/notificaciones";
 import { RegisterServiceWorker } from "@/components/pwa/register-sw";
 import { Card, CardBody, CardFigure, CardTitle } from "@/components/ui/card";
 import { getCurrentTenant, getCurrentUser } from "@/lib/auth/tenant";
+import { publicEnv } from "@/lib/env";
 
 const ROLES: Record<string, string> = {
   owner: "Dueña",
@@ -83,6 +85,15 @@ export default async function InicioPage() {
             <Button asChild className="mt-1">
               <Link href="/agenda">Ver la agenda</Link>
             </Button>
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardBody className="grid gap-3">
+            <CardTitle>Avisos en este dispositivo</CardTitle>
+            <Notificaciones
+              vapidPublicKey={publicEnv.NEXT_PUBLIC_VAPID_PUBLIC_KEY}
+            />
           </CardBody>
         </Card>
 

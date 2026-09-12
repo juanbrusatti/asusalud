@@ -1,3 +1,5 @@
+import { createClient } from "jsr:@supabase/supabase-js@2";
+import webpush from "npm:web-push@3.6.7";
 import { render, templateParameters, type RenderContext } from "./render.ts";
 
 export type Job = {
@@ -14,6 +16,7 @@ export type Job = {
   provider_language: string | null;
   quick_replies: string[] | null;
   appointment_id: string | null;
+  client_id: string;
   tenant_name: string;
   tenant_timezone: string;
   appointment_at: string | null;
@@ -36,6 +39,15 @@ export type SendResult = {
    */
   permanent?: boolean;
 };
+
+/** Cliente del sistema, sólo para buscar las suscripciones de una persona. */
+function createSupabaseClient() {
+  return createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    { auth: { persistSession: false } },
+  );
+}
 
 function contextOf(job: Job): RenderContext {
   return {
@@ -90,12 +102,7 @@ export async function send(job: Job): Promise<SendResult> {
     case "whatsapp":
       return await sendWhatsApp(job, ctx, body);
     case "push":
-      return {
-        ok: false,
-        error: "Las notificaciones todavía no están implementadas.",
-        wasTest: false,
-        permanent: true,
-      };
+      return await sendPush(job, subject, body);
   }
 }
 
@@ -103,6 +110,9 @@ export async function send(job: Job): Promise<SendResult> {
 function validate(job: Job): string | null {
   if (job.channel === "email" && !job.client_email) {
     return "La ficha no tiene correo.";
+  }
+  if (job.channel === "push" && !Deno.env.get("VAPID_PRIVATE_KEY")) {
+    return "Faltan configurar las claves de notificaciones en el servidor.";
   }
   if (job.channel === "whatsapp") {
     if (!job.client_phone) return "La ficha no tiene teléfono.";
@@ -276,4 +286,98 @@ async function sendWhatsApp(
     body,
     wasTest: false,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Notificación · Web Push
+// ---------------------------------------------------------------------------
+/**
+ * El canal gratis. Una persona puede tener el sistema instalado en el teléfono
+ * y en la computadora, así que se le manda a todas sus suscripciones y alcanza
+ * con que una llegue.
+ *
+ * Las que el navegador ya no reconoce (410 o 404) se borran: son de alguien
+ * que desinstaló la aplicación o limpió los datos, y guardarlas ensucia las
+ * métricas y hace más lento cada envío.
+ */
+async function sendPush(
+  job: Job,
+  subject: string | undefined,
+  body: string,
+): Promise<SendResult> {
+  const publicKey = Deno.env.get("VAPID_PUBLIC_KEY");
+  const privateKey = Deno.env.get("VAPID_PRIVATE_KEY");
+  const contacto = Deno.env.get("VAPID_SUBJECT") ?? "mailto:hola@dlay.app";
+
+  if (!publicKey || !privateKey) {
+    return {
+      ok: false,
+      error: "Faltan configurar las claves de notificaciones en el servidor.",
+      wasTest: false,
+      permanent: true,
+    };
+  }
+
+  webpush.setVapidDetails(contacto, publicKey, privateKey);
+
+  const supabase = createSupabaseClient();
+  const { data: destinos } = await supabase.rpc("rpc_push_targets", {
+    p_client: job.client_id,
+  });
+
+  if (!destinos || destinos.length === 0) {
+    return {
+      ok: false,
+      error: "Esta persona no tiene la aplicación instalada.",
+      wasTest: false,
+      permanent: true,
+    };
+  }
+
+  const payload = JSON.stringify({
+    title: subject ?? job.tenant_name,
+    body,
+    url: "/",
+    tag: job.appointment_id ?? undefined,
+  });
+
+  let entregadas = 0;
+  let ultimoError = "";
+
+  for (const destino of destinos as Array<{
+    endpoint: string;
+    p256dh: string;
+    auth: string;
+  }>) {
+    try {
+      await webpush.sendNotification(
+        {
+          endpoint: destino.endpoint,
+          keys: { p256dh: destino.p256dh, auth: destino.auth },
+        },
+        payload,
+      );
+      entregadas += 1;
+    } catch (err) {
+      const status = (err as { statusCode?: number }).statusCode;
+      ultimoError = `push ${status ?? "?"}`;
+
+      if (status === 404 || status === 410) {
+        await supabase.rpc("rpc_drop_push_subscription", {
+          p_endpoint: destino.endpoint,
+        });
+      }
+    }
+  }
+
+  return entregadas > 0
+    ? { ok: true, providerId: `push:${entregadas}`, subject, body, wasTest: false }
+    : {
+        ok: false,
+        error: `No se pudo entregar la notificación (${ultimoError}).`,
+        wasTest: false,
+        // Si todas las suscripciones estaban muertas ya se borraron: volver a
+        // intentar no va a encontrar ninguna.
+        permanent: true,
+      };
 }
