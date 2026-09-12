@@ -115,12 +115,18 @@ apagada**: abrirla al público es una decisión, no un estado por defecto.
 | La página | `src/app/r/[slug]/` |
 | Pruebas | `tests/rls/reserva.test.ts` |
 
+## Después de reservar
+
+La pantalla de confirmación entrega el **enlace del turno**: desde ahí la
+clienta lo mueve o lo cancela sola, sin escribirle a nadie. Está documentado en
+[El turno de la clienta](autogestion.md).
+
+Es el momento en que más probabilidades hay de que lo guarde: lo tiene en la
+mano y le acaba de importar.
+
 ## Lo que todavía no está
 
-- **Pantalla de configuración**: horarios y ajustes se cambian por ahora desde
-  la base. Es lo primero que falta para que una estética pueda usarlo sola.
 - **Señas por Mercado Pago**, para bajar el ausentismo. Fase 3.
-- **Cancelar o reprogramar desde el link**, sin escribirle a nadie.
 - **Pedir las notificaciones push** en el paso final, que es el único momento en
   que una clienta tiene motivo para aceptarlas.
 - **Límite por IP**: hoy el freno es por teléfono, que alcanza para el uso real

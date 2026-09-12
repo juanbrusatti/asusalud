@@ -132,6 +132,62 @@ export function FormReservas({
         </CardBody>
       </Card>
 
+      <Card>
+        <CardBody className="grid gap-5">
+          <CardTitle>Que se maneje sola</CardTitle>
+
+          <p className="-mt-2 max-w-prose text-[13.5px] leading-relaxed text-muted">
+            Cada turno tiene su propio enlace, que viaja en los recordatorios.
+            Desde ahí tu clienta puede confirmar, mover el horario o avisar que
+            no viene, sin que vos tengas que contestar ni cancelar a mano.
+          </p>
+
+          <Toggle
+            name="selfManage"
+            label="Dejar que cambien su turno desde el enlace"
+            hint="No depende de tener la agenda abierta al público: son dos cosas distintas. Si lo apagás, el enlace sigue mostrando el turno pero sin botones."
+            defaultChecked={settings.self_manage}
+          />
+
+          <Field
+            label="Hasta cuántas horas antes"
+            name="cancelMinHours"
+            type="number"
+            inputMode="numeric"
+            min={0}
+            max={168}
+            required
+            className="w-32"
+            defaultValue={settings.cancel_min_hours}
+            hint="Pasado ese plazo se le muestra tu teléfono en vez del botón. Cancelar dos horas antes deja un hueco que no se llena."
+          />
+
+          <Field
+            label="Cuántas veces puede mover el mismo turno"
+            name="maxReschedules"
+            type="number"
+            inputMode="numeric"
+            min={0}
+            max={10}
+            required
+            className="w-32"
+            defaultValue={settings.max_reschedules}
+            hint="Sin tope, un mismo turno se pasea por la agenda toda la semana."
+          />
+
+          <Field
+            label="Teléfono de contacto"
+            name="contactPhone"
+            type="tel"
+            inputMode="tel"
+            maxLength={30}
+            defaultValue={settings.contact_phone ?? ""}
+            placeholder="0358 15 412-3456"
+            hint="Adónde escribirte cuando ya es tarde para cambiarlo sola. Sin esto, el corte es una puerta cerrada sin timbre."
+          />
+        </CardBody>
+      </Card>
+
       <Resultado state={state} />
 
       <div className="flex">

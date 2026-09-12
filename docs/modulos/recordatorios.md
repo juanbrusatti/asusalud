@@ -138,8 +138,14 @@ que ya no existe es el peor mensaje posible.
 
 Cada canal necesita el suyo: lo que sirve en un correo no sirve en un WhatsApp.
 El texto admite huecos que se completan al enviar: `{{cliente}}`, `{{fecha}}`,
-`{{hora}}`, `{{servicio}}`, `{{estetica}}`. El editor muestra la vista previa
-con datos de ejemplo.
+`{{hora}}`, `{{servicio}}`, `{{estetica}}` y `{{link}}`. El editor muestra la
+vista previa con datos de ejemplo.
+
+`{{link}}` es el enlace del turno: desde ahí la clienta lo confirma, lo mueve o
+avisa que no viene sin escribirle a nadie. Es el hueco que convierte un
+recordatorio en algo que ahorra trabajo en lugar de generarlo — ver
+[El turno de la clienta](autogestion.md). Un aviso que no cuelga de un turno,
+como un cumpleaños, lo deja vacío en vez de mostrar el hueco.
 
 Los de WhatsApp llevan además el **nombre exacto con el que Meta los aprobó**.
 Sin eso, Meta rechaza el envío, así que la base lo exige.

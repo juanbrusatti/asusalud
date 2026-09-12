@@ -1,9 +1,10 @@
 /**
  * Reemplaza los huecos de una plantilla por los datos reales.
  *
- * Las plantillas admiten {{cliente}}, {{fecha}}, {{hora}}, {{servicio}} y
- * {{estetica}}. Lo que no se conoce se reemplaza por vacío y no por el texto
- * del hueco: a nadie le tiene que llegar un mensaje que diga "{{servicio}}".
+ * Las plantillas admiten {{cliente}}, {{fecha}}, {{hora}}, {{servicio}},
+ * {{estetica}} y {{link}}. Lo que no se conoce se reemplaza por vacío y no por
+ * el texto del hueco: a nadie le tiene que llegar un mensaje que diga
+ * "{{servicio}}".
  */
 
 export type RenderContext = {
@@ -12,6 +13,8 @@ export type RenderContext = {
   tenantTimezone: string;
   appointmentAt: string | null;
   serviceNames: string | null;
+  /** El enlace donde la clienta puede confirmar, mover o cancelar el turno. */
+  manageUrl: string | null;
 };
 
 function formatDate(iso: string, timeZone: string): string {
@@ -43,6 +46,7 @@ export function render(template: string, ctx: RenderContext): string {
       ? formatTime(ctx.appointmentAt, ctx.tenantTimezone)
       : "",
     servicio: ctx.serviceNames ?? "",
+    link: ctx.manageUrl ?? "",
   };
 
   return template
@@ -74,6 +78,7 @@ export function templateParameters(
       ? formatTime(ctx.appointmentAt, ctx.tenantTimezone)
       : "",
     servicio: ctx.serviceNames ?? "",
+    link: ctx.manageUrl ?? "",
   };
 
   const found: string[] = [];
