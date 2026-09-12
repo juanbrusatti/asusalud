@@ -95,6 +95,19 @@ export default async function RecordatoriosPage() {
           </div>
         )}
 
+        {cola.readRate !== null && cola.readRate < 0.5 && (
+          <div className="rounded-card border-[1.5px] border-warn bg-warn-wash px-4 py-3">
+            <p className="text-[11.5px] font-semibold uppercase tracking-wider text-warn">
+              Poca gente los está leyendo
+            </p>
+            <p className="mt-0.5 max-w-prose text-[13.5px] leading-relaxed text-ink">
+              Sólo el {Math.round(cola.readRate * 100)} % de tus WhatsApp se
+              leyeron. Una tasa sana ronda el 65 %. Conviene revisar los textos
+              antes de que Meta empiece a castigar la cuenta.
+            </p>
+          </div>
+        )}
+
         {whatsapp?.has_token && whatsapp.quality_rating === "RED" && (
           <div className="rounded-card border-[1.5px] border-danger bg-danger-wash px-4 py-3">
             <p className="text-[11.5px] font-semibold uppercase tracking-wider text-danger">
@@ -124,6 +137,8 @@ export default async function RecordatoriosPage() {
               <p className="text-[12.5px] text-muted">
                 enviados este mes ·{" "}
                 {settings?.test_mode ? "de prueba" : formatPrice(cola.spentCents)}
+                {cola.readRate !== null &&
+                  ` · ${Math.round(cola.readRate * 100)} % leídos`}
               </p>
             </CardBody>
           </Card>

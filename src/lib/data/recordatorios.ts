@@ -85,6 +85,14 @@ export type QueueSummary = {
   spentCents: number;
   /** Lo que va a costar lo que todavía está en la cola. */
   plannedCents: number;
+  /**
+   * Qué proporción de los WhatsApp enviados se leyó. Null cuando todavía no
+   * hay suficientes como para que el número signifique algo.
+   *
+   * Una tasa sana ronda el 65–80 %. Por debajo conviene reescribir el texto
+   * antes de que Meta castigue la cuenta.
+   */
+  readRate: number | null;
 };
 
 export async function getQueueSummary(): Promise<QueueSummary> {
@@ -96,7 +104,7 @@ export async function getQueueSummary(): Promise<QueueSummary> {
 
   const { data, error } = await supabase
     .from("message_jobs")
-    .select("status, cost_cents, sent_at")
+    .select("status, cost_cents, sent_at, channel, read_at, was_test")
     .gte("scheduled_for", inicioDeMes.toISOString());
 
   if (error) throw error;
@@ -104,6 +112,13 @@ export async function getQueueSummary(): Promise<QueueSummary> {
   const rows = data ?? [];
   const cuenta = (estado: string) =>
     rows.filter((r) => r.status === estado).length;
+
+  // Sólo cuentan los de WhatsApp reales: el correo no informa lectura y los de
+  // prueba nunca salieron.
+  const conLectura = rows.filter(
+    (r) => r.channel === "whatsapp" && r.status === "sent" && !r.was_test,
+  );
+  const leidos = conLectura.filter((r) => r.read_at !== null).length;
 
   return {
     pending: cuenta("pending"),
@@ -116,6 +131,9 @@ export async function getQueueSummary(): Promise<QueueSummary> {
     plannedCents: rows
       .filter((r) => r.status === "pending")
       .reduce((sum, r) => sum + Number(r.cost_cents), 0),
+    // Con menos de diez el porcentaje no dice nada y confunde más de lo que
+    // informa.
+    readRate: conLectura.length >= 10 ? leidos / conLectura.length : null,
   };
 }
 
