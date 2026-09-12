@@ -324,6 +324,56 @@ export type Database = {
           },
         ]
       }
+      booking_settings: {
+        Row: {
+          address_note: string | null
+          created_at: string
+          enabled: boolean
+          max_days_ahead: number
+          max_open_per_client: number
+          min_advance_hours: number
+          show_prices: boolean
+          slot_minutes: number
+          tenant_id: string
+          updated_at: string
+          welcome_text: string | null
+        }
+        Insert: {
+          address_note?: string | null
+          created_at?: string
+          enabled?: boolean
+          max_days_ahead?: number
+          max_open_per_client?: number
+          min_advance_hours?: number
+          show_prices?: boolean
+          slot_minutes?: number
+          tenant_id: string
+          updated_at?: string
+          welcome_text?: string | null
+        }
+        Update: {
+          address_note?: string | null
+          created_at?: string
+          enabled?: boolean
+          max_days_ahead?: number
+          max_open_per_client?: number
+          min_advance_hours?: number
+          show_prices?: boolean
+          slot_minutes?: number
+          tenant_id?: string
+          updated_at?: string
+          welcome_text?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       branches: {
         Row: {
           address: string | null
@@ -361,6 +411,51 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "branches_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_hours: {
+        Row: {
+          branch_id: string
+          closes_at: string
+          created_at: string
+          id: string
+          opens_at: string
+          tenant_id: string
+          weekday: number
+        }
+        Insert: {
+          branch_id: string
+          closes_at: string
+          created_at?: string
+          id?: string
+          opens_at: string
+          tenant_id: string
+          weekday: number
+        }
+        Update: {
+          branch_id?: string
+          closes_at?: string
+          created_at?: string
+          id?: string
+          opens_at?: string
+          tenant_id?: string
+          weekday?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_hours_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_hours_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -1431,6 +1526,26 @@ export type Database = {
           p_starts_at: string
         }
         Returns: string
+      }
+      booking_create: {
+        Args: {
+          p_email?: string
+          p_first_name: string
+          p_last_name: string
+          p_notes?: string
+          p_phone: string
+          p_service_ids: string[]
+          p_slug: string
+          p_starts_at: string
+        }
+        Returns: Json
+      }
+      booking_page: { Args: { p_slug: string }; Returns: Json }
+      booking_slots: {
+        Args: { p_date: string; p_service_ids: string[]; p_slug: string }
+        Returns: {
+          slot: string
+        }[]
       }
       count_phone_duplicates: { Args: { p_client: string }; Returns: number }
       create_tenant: {
