@@ -91,3 +91,4 @@ estética B. Si devuelve una sola fila, la función no está lista.
 - [Reserva online](docs/modulos/reserva-online.md)
 - [Configuración](docs/modulos/configuracion.md)
 - [Caja](docs/modulos/caja.md)
+- [Informes](docs/modulos/informes.md)

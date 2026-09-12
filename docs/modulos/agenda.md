@@ -141,6 +141,14 @@ vacaciones. Se ven en la agenda y los va a respetar la reserva online.
 moverlos, se mueven a mano. Un bloqueo que borra turnos en silencio es peor
 que no tener bloqueos.
 
+## Cobrar desde el turno
+
+La pantalla del turno tiene su tarjeta de cobro: el saldo se calcula solo y el
+importe, el concepto y la clienta vienen cargados. Está documentada en
+[Caja](caja.md#cobrar-desde-el-turno).
+
+Una profesional no la ve, igual que no ve la caja.
+
 ## Dónde está el código
 
 | Qué | Dónde |
@@ -162,4 +170,4 @@ que no tener bloqueos.
 - **Varias profesionales**: el turno ya tiene `staff_id`, pero la interfaz no
   lo usa mientras haya una sola.
 - **Arrastrar para mover un turno**: por ahora se reprograma con fecha y hora.
-- **Señas y cobros**: llegan con la caja, en la fase 3.
+- **Señas online**: cobrar la seña desde el sistema, no sólo registrarla.

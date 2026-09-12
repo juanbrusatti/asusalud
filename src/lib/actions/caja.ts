@@ -20,8 +20,15 @@ function echo(formData: FormData): Record<string, string> {
   return out;
 }
 
+const SIN_CAJA = "Abrí la caja antes de registrar movimientos en efectivo.";
+
 function friendly(error: { code?: string; message?: string }): string {
   if (error.code === "23505") return "Ya hay una caja abierta.";
+  // La base también lo impide, no sólo la comprobación de más arriba: si algún
+  // día se cobra desde otra pantalla, el mensaje sigue siendo el mismo.
+  if (error.message?.includes("cash_movements_cash_needs_session")) {
+    return SIN_CAJA;
+  }
   if (error.code === "42501") {
     return error.message ?? "No tenés permiso para hacer eso.";
   }
@@ -103,10 +110,7 @@ export async function registrarMovimiento(
   // El efectivo necesita una caja abierta: si no, no hay dónde contarlo al
   // cerrar el día. Lo demás se puede registrar igual.
   if (!session && parsed.data.method === "cash") {
-    return {
-      error: "Abrí la caja antes de registrar movimientos en efectivo.",
-      values: echo(formData),
-    };
+    return { error: SIN_CAJA, values: echo(formData) };
   }
 
   const {

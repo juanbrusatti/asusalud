@@ -1763,6 +1763,7 @@ export type Database = {
         }
         Returns: string
       }
+      report_period: { Args: { p_from: string; p_to: string }; Returns: Json }
       rpc_claim_due_jobs: {
         Args: { p_limit?: number }
         Returns: {
