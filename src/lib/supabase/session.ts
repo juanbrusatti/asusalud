@@ -3,7 +3,15 @@ import { NextResponse, type NextRequest } from "next/server";
 import { publicEnv } from "@/lib/env";
 
 /** Rutas que se pueden ver sin sesión. Todo lo demás pide entrar. */
-const PUBLIC_PREFIXES = ["/entrar", "/auth", "/manifest.webmanifest", "/sw.js"];
+const PUBLIC_PREFIXES = [
+  "/entrar",
+  "/auth",
+  "/manifest.webmanifest",
+  "/sw.js",
+  // La reserva online: es la única parte del sistema pensada para gente sin
+  // cuenta. Lo que puede ver lo decide la base, no este guardia.
+  "/r",
+];
 
 function isPublic(pathname: string) {
   return PUBLIC_PREFIXES.some(
