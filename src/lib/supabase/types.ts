@@ -132,6 +132,7 @@ export type Database = {
       appointment_status_history: {
         Row: {
           appointment_id: string
+          by_client: boolean
           changed_by: string | null
           created_at: string
           from_status: Database["public"]["Enums"]["appointment_status"] | null
@@ -142,6 +143,7 @@ export type Database = {
         }
         Insert: {
           appointment_id: string
+          by_client?: boolean
           changed_by?: string | null
           created_at?: string
           from_status?: Database["public"]["Enums"]["appointment_status"] | null
@@ -152,6 +154,7 @@ export type Database = {
         }
         Update: {
           appointment_id?: string
+          by_client?: boolean
           changed_by?: string | null
           created_at?: string
           from_status?: Database["public"]["Enums"]["appointment_status"] | null
@@ -195,8 +198,10 @@ export type Database = {
           created_by: string | null
           ends_at: string
           id: string
+          manage_token: string
           notes: string | null
           price_cents: number
+          rescheduled_count: number
           source: Database["public"]["Enums"]["appointment_source"]
           staff_id: string | null
           starts_at: string
@@ -214,8 +219,10 @@ export type Database = {
           created_by?: string | null
           ends_at: string
           id?: string
+          manage_token?: string
           notes?: string | null
           price_cents?: number
+          rescheduled_count?: number
           source?: Database["public"]["Enums"]["appointment_source"]
           staff_id?: string | null
           starts_at: string
@@ -233,8 +240,10 @@ export type Database = {
           created_by?: string | null
           ends_at?: string
           id?: string
+          manage_token?: string
           notes?: string | null
           price_cents?: number
+          rescheduled_count?: number
           source?: Database["public"]["Enums"]["appointment_source"]
           staff_id?: string | null
           starts_at?: string
@@ -327,11 +336,15 @@ export type Database = {
       booking_settings: {
         Row: {
           address_note: string | null
+          cancel_min_hours: number
+          contact_phone: string | null
           created_at: string
           enabled: boolean
           max_days_ahead: number
           max_open_per_client: number
+          max_reschedules: number
           min_advance_hours: number
+          self_manage: boolean
           show_prices: boolean
           slot_minutes: number
           tenant_id: string
@@ -340,11 +353,15 @@ export type Database = {
         }
         Insert: {
           address_note?: string | null
+          cancel_min_hours?: number
+          contact_phone?: string | null
           created_at?: string
           enabled?: boolean
           max_days_ahead?: number
           max_open_per_client?: number
+          max_reschedules?: number
           min_advance_hours?: number
+          self_manage?: boolean
           show_prices?: boolean
           slot_minutes?: number
           tenant_id: string
@@ -353,11 +370,15 @@ export type Database = {
         }
         Update: {
           address_note?: string | null
+          cancel_min_hours?: number
+          contact_phone?: string | null
           created_at?: string
           enabled?: boolean
           max_days_ahead?: number
           max_open_per_client?: number
+          max_reschedules?: number
           min_advance_hours?: number
+          self_manage?: boolean
           show_prices?: boolean
           slot_minutes?: number
           tenant_id?: string
@@ -1703,6 +1724,11 @@ export type Database = {
         }
         Returns: string
       }
+      booking_cancel: {
+        Args: { p_reason?: string; p_token: string }
+        Returns: Json
+      }
+      booking_confirm: { Args: { p_token: string }; Returns: Json }
       booking_create: {
         Args: {
           p_email?: string
@@ -1716,7 +1742,18 @@ export type Database = {
         }
         Returns: Json
       }
+      booking_manage: { Args: { p_token: string }; Returns: Json }
+      booking_manage_slots: {
+        Args: { p_date: string; p_token: string }
+        Returns: {
+          slot: string
+        }[]
+      }
       booking_page: { Args: { p_slug: string }; Returns: Json }
+      booking_reschedule: {
+        Args: { p_starts_at: string; p_token: string }
+        Returns: Json
+      }
       booking_slots: {
         Args: { p_date: string; p_service_ids: string[]; p_slug: string }
         Returns: {
@@ -1838,6 +1875,7 @@ export type Database = {
           client_name: string
           client_phone: string
           job_id: string
+          manage_url: string
           phone_number_id: string
           provider_language: string
           provider_name: string

@@ -216,14 +216,23 @@ export default async function TurnoPage({
                   className="border-l-[2.5px] border-line pl-3.5 text-[13.5px]"
                 >
                   <p>
-                    {h.from_status
-                      ? `${STATUS_LABELS[h.from_status]} → ${STATUS_LABELS[h.to_status]}`
-                      : `Agendado como ${STATUS_LABELS[h.to_status]}`}
-                    {h.reason && <span className="text-muted"> · {h.reason}</span>}
+                    {/* Reprogramar no cambia el estado: la fila queda con el
+                        mismo de un lado y del otro, y lo que cuenta la
+                        historia es el motivo. */}
+                    {h.from_status === h.to_status
+                      ? h.reason
+                      : h.from_status
+                        ? `${STATUS_LABELS[h.from_status]} → ${STATUS_LABELS[h.to_status]}`
+                        : `Agendado como ${STATUS_LABELS[h.to_status]}`}
+                    {h.reason && h.from_status !== h.to_status && (
+                      <span className="text-muted"> · {h.reason}</span>
+                    )}
                   </p>
                   <p className="text-[12px] text-faint">
-                    {h.author?.full_name ?? "Alguien del equipo"} ·{" "}
-                    {fechaHora.format(new Date(h.created_at))}
+                    {h.by_client
+                      ? "La clienta"
+                      : (h.author?.full_name ?? "Alguien del equipo")}{" "}
+                    · {fechaHora.format(new Date(h.created_at))}
                   </p>
                 </li>
               ))}

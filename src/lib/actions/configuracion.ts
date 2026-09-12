@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getCurrentTenant } from "@/lib/auth/tenant";
+import { normalizePhone } from "@/lib/phone";
 import { createClient } from "@/lib/supabase/server";
 
 export type FormState = { error: string | null; notice?: string | null };
@@ -166,6 +167,10 @@ const reservaSchema = z.object({
   maxOpenPerClient: z.number().int().min(1).max(20),
   welcomeText: z.string().trim().max(400).optional(),
   addressNote: z.string().trim().max(200).optional(),
+  selfManage: z.boolean(),
+  cancelMinHours: z.number().int().min(0).max(168),
+  maxReschedules: z.number().int().min(0).max(10),
+  contactPhone: z.string().trim().max(30).optional(),
 });
 
 export async function saveReservas(
@@ -181,6 +186,10 @@ export async function saveReservas(
     maxOpenPerClient: Number(formData.get("maxOpenPerClient") ?? 3),
     welcomeText: String(formData.get("welcomeText") ?? "").trim() || undefined,
     addressNote: String(formData.get("addressNote") ?? "").trim() || undefined,
+    selfManage: formData.get("selfManage") === "on",
+    cancelMinHours: Number(formData.get("cancelMinHours") ?? 24),
+    maxReschedules: Number(formData.get("maxReschedules") ?? 2),
+    contactPhone: String(formData.get("contactPhone") ?? "").trim() || undefined,
   });
 
   if (!parsed.success) {
@@ -202,6 +211,13 @@ export async function saveReservas(
       max_open_per_client: parsed.data.maxOpenPerClient,
       welcome_text: parsed.data.welcomeText ?? null,
       address_note: parsed.data.addressNote ?? null,
+      self_manage: parsed.data.selfManage,
+      cancel_min_hours: parsed.data.cancelMinHours,
+      max_reschedules: parsed.data.maxReschedules,
+      contact_phone: parsed.data.contactPhone
+        ? (normalizePhone(parsed.data.contactPhone).e164 ??
+          parsed.data.contactPhone)
+        : null,
     })
     .eq("tenant_id", membership.tenantId);
 

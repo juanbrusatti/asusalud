@@ -93,6 +93,13 @@ el sistema. La pantalla lo dice y no pretende resolverlo con un campo de texto.
 > formularios son componentes de cliente: si importaran las listas de ahí,
 > arrastrarían `next/headers` al navegador y el build falla.
 
+## Que se maneje sola
+
+Dentro de **Reserva online** hay un bloque aparte para el enlace del turno: si
+la clienta puede cambiarlo, hasta cuántas horas antes, cuántas veces y a qué
+teléfono escribir cuando ya es tarde. Los detalles están en
+[El turno de la clienta](autogestion.md).
+
 ## Lo que todavía no está
 
 - **Más de una sucursal**: las pantallas asumen la principal.

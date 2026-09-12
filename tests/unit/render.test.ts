@@ -11,6 +11,7 @@ const CTX = {
   // Lunes 14 de septiembre a las 09:00 de Córdoba.
   appointmentAt: "2026-09-14T12:00:00.000Z",
   serviceNames: "Depilación Definitiva",
+  manageUrl: "https://dlay.app/t/abc123",
 };
 
 describe("armado del mensaje", () => {
@@ -79,5 +80,26 @@ describe("parámetros para WhatsApp", () => {
 
   it("devuelve vacío cuando la plantilla no tiene huecos", () => {
     expect(templateParameters("Te esperamos mañana.", CTX)).toEqual([]);
+  });
+});
+
+describe("el enlace del turno", () => {
+  it("reemplaza {{link}} por la dirección del turno", () => {
+    expect(render("Cambialo acá: {{link}}", CTX)).toBe(
+      "Cambialo acá: https://dlay.app/t/abc123",
+    );
+  });
+
+  it("un turno sin enlace no deja el hueco a la vista", () => {
+    // Pasa con los avisos que no cuelgan de un turno, como un cumpleaños.
+    const sinTurno = { ...CTX, manageUrl: null };
+    expect(render("Escribinos. {{link}}", sinTurno)).toBe("Escribinos.");
+  });
+
+  it("el enlace viaja como parámetro en las plantillas de WhatsApp", () => {
+    expect(templateParameters("Hola {{cliente}}: {{link}}", CTX)).toEqual([
+      "Mirián",
+      "https://dlay.app/t/abc123",
+    ]);
   });
 });

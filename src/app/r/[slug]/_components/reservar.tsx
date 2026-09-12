@@ -36,6 +36,7 @@ export function Reservar({ page }: { page: BookingPage }) {
   const [nota, setNota] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
+  const [enlace, setEnlace] = useState<string | null>(null);
 
   const servicios = elegidos
     .map((id) => page.services.find((s) => s.id === id))
@@ -81,8 +82,10 @@ export function Reservar({ page }: { page: BookingPage }) {
     });
 
     setGuardando(false);
-    if (r.ok) setPaso("listo");
-    else setError(r.error);
+    if (r.ok) {
+      setEnlace(`/t/${r.manageToken}`);
+      setPaso("listo");
+    } else setError(r.error);
   }
 
   // -------------------------------------------------------------------------
@@ -113,9 +116,23 @@ export function Reservar({ page }: { page: BookingPage }) {
             )}
           </p>
           <p className="text-[13.5px] leading-relaxed opacity-80">
-            Te vamos a mandar un recordatorio antes. Si no podés venir,
-            avisanos así le damos el lugar a otra persona.
+            Te vamos a mandar un recordatorio antes.
           </p>
+
+          {enlace && (
+            <div className="mt-1 grid justify-items-start gap-2 rounded-[16px] bg-white/15 px-4 py-3.5">
+              <p className="text-[13.5px] leading-relaxed">
+                Si después no podés venir o querés otro horario, cambialo vos
+                misma desde acá. Guardá el enlace.
+              </p>
+              <a
+                href={enlace}
+                className="rounded-pill bg-surface px-4 py-2 text-[13.5px] font-medium text-ink"
+              >
+                Ver mi turno
+              </a>
+            </div>
+          )}
         </CardBody>
       </Card>
     );
