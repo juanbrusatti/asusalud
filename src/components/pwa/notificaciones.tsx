@@ -52,6 +52,7 @@ export function Notificaciones({
 }) {
   const [estado, setEstado] = useState<Estado>("cargando");
   const [trabajando, setTrabajando] = useState(false);
+  const [falla, setFalla] = useState<string | null>(null);
 
   useEffect(() => {
     let vivo = true;
@@ -75,7 +76,25 @@ export function Notificaciones({
 
       const registro = await navigator.serviceWorker.ready;
       const suscripcion = await registro.pushManager.getSubscription();
-      return suscripcion ? "activo" : "inactivo";
+      if (!suscripcion) return "inactivo";
+
+      /**
+       * Que el navegador tenga una suscripción no significa que el servidor la
+       * conozca: si el guardado falló alguna vez, el navegador se la queda para
+       * siempre y esta pantalla diría «activadas» mientras no llega ni un
+       * aviso. Pasó de verdad.
+       *
+       * Así que se vuelve a mandar en cada carga. Es idempotente —la base hace
+       * un upsert por `endpoint`— y de paso repara sola a quien quedó a medias.
+       */
+      const { error } = await savePushSubscription({
+        endpoint: suscripcion.endpoint,
+        p256dh: encode(suscripcion.getKey("p256dh")),
+        auth: encode(suscripcion.getKey("auth")),
+        userAgent: navigator.userAgent.slice(0, 200),
+      });
+
+      return error ? "inactivo" : "activo";
     }
 
     revisar()
@@ -117,8 +136,10 @@ export function Notificaciones({
         userAgent: navigator.userAgent.slice(0, 200),
       });
 
+      setFalla(error);
       setEstado(error ? "inactivo" : "activo");
-    } catch {
+    } catch (err) {
+      setFalla(err instanceof Error ? err.message : "No se pudo activar.");
       setEstado("inactivo");
     } finally {
       setTrabajando(false);
@@ -178,6 +199,15 @@ export function Notificaciones({
       <Button size="sm" disabled={trabajando} onClick={() => void activar()}>
         {trabajando ? "Activando…" : "Activar notificaciones"}
       </Button>
+
+      {falla && (
+        <p
+          role="alert"
+          className="rounded-[14px] bg-danger-wash px-3.5 py-2.5 text-[13px] leading-snug text-danger"
+        >
+          {falla}
+        </p>
+      )}
     </div>
   );
 }
