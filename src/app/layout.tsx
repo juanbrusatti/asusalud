@@ -53,6 +53,25 @@ export default function RootLayout({
   return (
     <html lang="es-AR" suppressHydrationWarning>
       <body className={`${inter.variable} ${caveat.variable} antialiased`}>
+        {/*
+          El navegador avisa una sola vez que la aplicación se puede instalar, y
+          lo hace apenas termina de cargar la página: muchas veces antes de que
+          React monte nada. Si no hay nadie escuchando en ese momento, el aviso
+          se pierde y el botón de instalar no aparece nunca.
+
+          Por eso se guarda acá, en un script que corre antes que todo lo demás.
+          El botón lo busca cuando monta.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "window.addEventListener('beforeinstallprompt',function(e){" +
+              "e.preventDefault();window.__dlayInstall=e;" +
+              "window.dispatchEvent(new Event('dlay:instalable'))});" +
+              "window.addEventListener('appinstalled',function(){" +
+              "window.__dlayInstall=null})",
+          }}
+        />
         {children}
       </body>
     </html>

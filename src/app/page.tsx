@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Barra } from "@/app/_components/barra";
 import { Button } from "@/components/ui/button";
 import { CrearEstetica } from "@/app/_components/crear-estetica";
-import { Notificaciones } from "@/components/pwa/notificaciones";
+import { TenelaAMano } from "@/components/pwa/tenela-a-mano";
 import { RegisterServiceWorker } from "@/components/pwa/register-sw";
 import { Card, CardBody, CardFigure, CardTitle } from "@/components/ui/card";
 import { getCurrentTenant, getCurrentUser } from "@/lib/auth/tenant";
@@ -48,9 +48,19 @@ export default async function InicioPage() {
             Hola {nombre}
           </p>
           <p className="mt-1.5 text-[15px] text-muted">
-            Tu estética ya está creada. Los módulos llegan en la próxima etapa.
+            Acá tenés lo de hoy y los accesos rápidos a todo lo demás.
           </p>
         </div>
+
+        {/*
+          Va arriba a propósito: instalar la aplicación y prender los avisos son
+          las dos cosas que se hacen una vez, al principio, y que si no están a
+          la vista no las hace nadie. Cuando ya están resueltas, las dos se
+          reducen a una línea.
+        */}
+        <TenelaAMano
+          vapidPublicKey={publicEnv.NEXT_PUBLIC_VAPID_PUBLIC_KEY}
+        />
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Card accent>
@@ -121,25 +131,6 @@ export default async function InicioPage() {
           </Card>
         )}
 
-        <Card>
-          <CardBody className="grid gap-3">
-            <CardTitle>Avisos en este dispositivo</CardTitle>
-            <Notificaciones
-              vapidPublicKey={publicEnv.NEXT_PUBLIC_VAPID_PUBLIC_KEY}
-            />
-          </CardBody>
-        </Card>
-
-        <Card>
-          <CardBody className="grid gap-2">
-            <CardTitle>Lo que viene</CardTitle>
-            <ul className="grid gap-1.5 text-[14.5px] text-muted">
-              <li>· Recordatorios automáticos por correo y WhatsApp.</li>
-              <li>· Reserva online para tus clientas.</li>
-              <li>· Caja, señas e informes.</li>
-            </ul>
-          </CardBody>
-        </Card>
       </main>
     </>
   );

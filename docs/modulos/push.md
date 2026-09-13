@@ -150,6 +150,33 @@ node scripts/vapid.mjs
 > Si se cambian, **todas las suscripciones existentes dejan de funcionar** y
 > cada persona tiene que volver a activarlas. No se rotan sin motivo.
 
+## Cómo se activan
+
+Instalar la aplicación y prender los avisos son las dos cosas que se hacen una
+sola vez, al principio. Si no están a la vista no las hace nadie: quedan
+escondidas en un menú del navegador que la mayoría nunca abre.
+
+Por eso hay una tarjeta arriba de todo en el inicio, **antes** que cualquier
+otra cosa. Cuando las dos están resueltas se reduce a dos líneas; si en ese
+navegador no se puede hacer ninguna, no aparece.
+
+### El aviso de instalación se pierde si nadie lo escucha
+
+El navegador avisa **una sola vez** que la aplicación se puede instalar, y lo
+hace apenas termina de cargar la página: muchas veces antes de que React monte
+nada. Sin nadie escuchando en ese momento el aviso se pierde y el botón no
+aparece nunca.
+
+Por eso se guarda en un script del `layout` que corre antes que todo lo demás,
+y el botón lo busca cuando monta.
+
+### En iPhone no hay botón
+
+Apple no expone ninguna forma de instalar por código. Lo único posible es
+explicar el camino —Compartir → Agregar a inicio—, y ahí importa decirlo:
+**en iPhone la aplicación agregada es la condición para recibir
+notificaciones**, así que quien se saltea ese paso no recibe ninguna.
+
 ## Compatibilidad
 
 | Plataforma | Funciona |
@@ -172,7 +199,9 @@ y hay que contarla al pedir el permiso, no después.
 | Ofrecerlas a la clienta | `src/components/pwa/avisos-clienta.tsx` |
 | Adaptador del emisor | `supabase/functions/_shared/channels.ts` |
 | Recibir y abrir | `public/sw.js` |
-| Pedir el permiso | `src/components/pwa/notificaciones.tsx` |
+| Pedir el permiso al equipo | `src/components/pwa/notificaciones.tsx` |
+| Instalar la aplicación | `src/components/pwa/instalar.tsx` |
+| La tarjeta del inicio | `src/components/pwa/tenela-a-mano.tsx` |
 | Guardar la suscripción | `src/lib/actions/push.ts` |
 | Generar las claves | `scripts/vapid.mjs` |
 
