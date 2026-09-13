@@ -31,12 +31,66 @@ Lo mismo para el otro proyecto:
 scripts/deploy-db.sh preview
 ```
 
+> **El enlace es global.** `supabase link` deja apuntado un solo proyecto a la
+> vez, y todos los `npx supabase …` que vengan después van ahí. El script
+> enlaza el que corresponde antes de empujar, pero para cualquier otro comando
+> —`functions deploy`, `secrets set`— hay que asegurarse de estar enlazado al
+> proyecto correcto. `cat supabase/.temp/project-ref` lo dice.
+
 > Conviene hacer primero el de desarrollo. Si algo falla, falla donde no
 > importa.
 
 Después de aplicarlas, verificá en el panel de Supabase que estén las
 extensiones `pg_cron` y `pg_net` (*Database → Extensions*). El planificador de
 recordatorios y el emisor no funcionan sin ellas.
+
+Si `db push` se corta en algún archivo, el mensaje dice **cuál** y con qué
+error. Ese es el dato que hace falta: el resto de las migraciones no se
+aplicaron, así que no hay nada que deshacer.
+
+### No las apliques a mano
+
+Es tentador pegar cada archivo en el SQL editor, y sale mal por tres motivos:
+
+1. **El editor corre cada archivo como una sola transacción.** Si algo falla en
+   la mitad, no queda *nada* de ese archivo: ni las tablas que sí se habían
+   creado antes del error. El archivo siguiente entonces no encuentra las
+   tablas del anterior y el error que se ve —«relation "public.tenants" does
+   not exist»— apunta al archivo equivocado. El que falló es el de antes.
+2. **No queda registro de lo aplicado.** `db push` anota cada migración en
+   `supabase_migrations.schema_migrations`. Aplicándolas a mano esa tabla queda
+   vacía, así que el primer `db push` que se corra después va a intentar
+   aplicar las treinta de nuevo y va a fallar con «already exists».
+3. **Son treinta archivos.** Uno salteado sin querer y el problema aparece
+   semanas después.
+
+### Si quedó a medias
+
+Un proyecto recién creado no tiene nada que perder, así que lo más rápido es
+empezar de cero. En el SQL editor:
+
+```sql
+-- Borra TODO lo de la aplicación. En un proyecto nuevo no hay nada más.
+drop trigger if exists on_auth_user_created on auth.users;
+drop schema if exists app cascade;
+drop schema public cascade;
+
+create schema public;
+grant usage  on schema public to postgres, anon, authenticated, service_role;
+grant all    on schema public to postgres, service_role;
+
+-- Por si alguna migración llegó a anotarse.
+delete from supabase_migrations.schema_migrations;
+```
+
+Y después, el `scripts/deploy-db.sh` de arriba.
+
+Para ver en qué estado quedó antes de decidir:
+
+```sql
+select table_name from information_schema.tables
+where table_schema = 'public' order by 1;
+```
 
 ## 2. Las variables, en Vercel
 
@@ -58,9 +112,15 @@ ignora**. El script no los imprime.
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | la misma en los dos | ídem |
 | `SUPABASE_SERVICE_ROLE_KEY` | **nunca con `NEXT_PUBLIC_`** | ídem |
 
-`NEXT_PUBLIC_SITE_URL` importa más de lo que parece: de ahí sale el enlace del
-turno que viaja en los recordatorios. Si queda con el dominio provisorio, los
-enlaces que ya se enviaron siguen apuntando ahí.
+**La dirección del sitio vive en dos lugares y hacen cosas distintas**, así que
+conviene no confundirlas:
+
+| Dónde | Para qué | Si está mal |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SITE_URL` en Vercel | Mostrar el enlace de la reserva pública en pantalla | La estética copia un enlace que no anda |
+| `platform_settings.site_url` en la base | Armar el enlace del turno que viaja en los recordatorios | Los mensajes salen con un enlace muerto, y los que ya salieron no se arreglan |
+
+La segunda es la que duele. Está en el paso 3.
 
 > Las variables se aplican al **próximo** deploy. El que ya falló no se rehace
 > solo: hay que volver a desplegar.
@@ -99,6 +159,26 @@ npx supabase functions deploy whatsapp-webhook
 `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` las inyecta Supabase sola.
 
 ## 5. Después del primer deploy
+
+### Primero: la confirmación por correo
+
+En Supabase hosted, **«Confirm email» viene encendido**; en el entorno local
+está apagado (`enable_confirmations = false` en `config.toml`). La diferencia
+importa más de lo que parece: con la confirmación encendida, `signUp` crea el
+usuario pero **no abre sesión**, así que el alta redirige al inicio, el guardia
+no encuentra sesión y devuelve a la pantalla de ingreso. Se ve exactamente como
+si el registro estuviera roto.
+
+Dos salidas, en *Authentication → Sign In / Providers → Email*:
+
+- **Apagar la confirmación** para dar de alta a la dueña, y volver a
+  encenderla después. Es lo más rápido.
+- **Dejarla encendida** y confirmar desde el correo. Tener en cuenta que el
+  SMTP que Supabase presta tiene un límite de unos pocos envíos por hora y no
+  sirve para producción: con confirmación encendida hay que configurar un SMTP
+  propio (Brevo, el mismo de los recordatorios).
+
+### Después
 
 - Entrar y **crear la estética**. El alta de cuenta crea la primera dueña.
 - Cargar **horarios de atención** en Ajustes: sin ellos la reserva online no
