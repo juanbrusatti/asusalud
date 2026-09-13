@@ -85,6 +85,13 @@ delete from supabase_migrations.schema_migrations;
 
 Y después, el `scripts/deploy-db.sh` de arriba.
 
+> **Las cuentas no se borran con eso.** Viven en el esquema `auth`, que queda
+> intacto. Si ya te habías registrado antes del reinicio, tu cuenta sobrevive
+> pero su fila en `profiles` no, y después falla todo lo que guarda quién hizo
+> algo: activar notificaciones, abrir la caja, cargar un turno desde la agenda.
+> La migración `20260913120000_perfiles_huerfanos.sql` repone esas filas, así
+> que alcanza con volver a correr `scripts/deploy-db.sh`.
+
 Para ver en qué estado quedó antes de decidir:
 
 ```sql
