@@ -42,7 +42,14 @@ function encode(buffer: ArrayBuffer | null): string {
  * bien y explicar para qué sirve, en vez de disparar el permiso del navegador
  * apenas alguien entra.
  */
-export function Notificaciones({ vapidPublicKey }: { vapidPublicKey: string }) {
+export function Notificaciones({
+  vapidPublicKey,
+  onVisible,
+}: {
+  vapidPublicKey: string;
+  /** Avisa si hay algo que mostrar, para que nadie dibuje una tarjeta vacía. */
+  onVisible?: (visible: boolean) => void;
+}) {
   const [estado, setEstado] = useState<Estado>("cargando");
   const [trabajando, setTrabajando] = useState(false);
 
@@ -73,16 +80,20 @@ export function Notificaciones({ vapidPublicKey }: { vapidPublicKey: string }) {
 
     revisar()
       .then((e) => {
-        if (vivo) setEstado(e);
+        if (!vivo) return;
+        setEstado(e);
+        onVisible?.(e !== "no-soportado");
       })
       .catch(() => {
-        if (vivo) setEstado("no-soportado");
+        if (!vivo) return;
+        setEstado("no-soportado");
+        onVisible?.(false);
       });
 
     return () => {
       vivo = false;
     };
-  }, [vapidPublicKey]);
+  }, [vapidPublicKey, onVisible]);
 
   async function activar() {
     setTrabajando(true);
