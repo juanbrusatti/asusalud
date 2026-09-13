@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Logo } from "@/components/brand/logo";
+import { RegisterServiceWorker } from "@/components/pwa/register-sw";
 import { getBookingPage } from "@/lib/data/reserva";
+import { publicEnv } from "@/lib/env";
 import { Reservar } from "./_components/reservar";
 
 export async function generateMetadata({
@@ -41,6 +43,8 @@ export default async function ReservarPage({
 
   return (
     <main className="mx-auto grid max-w-xl gap-5 px-4 py-10">
+      <RegisterServiceWorker />
+
       <header className="grid gap-3">
         <h1 className="text-[30px] font-bold leading-tight tracking-[-0.035em]">
           Reservá tu turno en{" "}
@@ -64,7 +68,10 @@ export default async function ReservarPage({
           Todavía no hay servicios disponibles para reservar online.
         </p>
       ) : (
-        <Reservar page={page} />
+        <Reservar
+          page={page}
+          vapidPublicKey={publicEnv.NEXT_PUBLIC_VAPID_PUBLIC_KEY}
+        />
       )}
 
       <footer className="flex items-center justify-center gap-2 pt-4 text-[12.5px] text-faint">

@@ -84,3 +84,32 @@ export async function rescheduleAppointment(
   revalidatePath("/agenda");
   return leer(data);
 }
+
+/**
+ * La clienta acepta las notificaciones de sus turnos.
+ *
+ * La llave es el token del turno, no un identificador de clienta: si un
+ * visitante pudiera pasar el id que quisiera, cualquiera podría suscribir su
+ * navegador a los recordatorios de otra persona.
+ */
+export async function subscribeClientPush(
+  token: string,
+  subscription: {
+    endpoint: string;
+    p256dh: string;
+    auth: string;
+    userAgent?: string;
+  },
+): Promise<ManageResult> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("booking_subscribe_push", {
+    p_token: token,
+    p_endpoint: subscription.endpoint,
+    p_p256dh: subscription.p256dh,
+    p_auth: subscription.auth,
+    p_user_agent: subscription.userAgent,
+  });
+
+  if (error) return { ok: false, error: "No pudimos activar los avisos." };
+  return leer(data);
+}

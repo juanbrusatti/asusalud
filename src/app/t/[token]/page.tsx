@@ -1,8 +1,11 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Logo } from "@/components/brand/logo";
+import { AvisosClienta } from "@/components/pwa/avisos-clienta";
+import { RegisterServiceWorker } from "@/components/pwa/register-sw";
 import { Card, CardBody } from "@/components/ui/card";
 import { getManageView } from "@/lib/data/autogestion";
+import { publicEnv } from "@/lib/env";
 import { formatDuration, formatPrice } from "@/lib/money";
 import { longDateIn, timeIn } from "@/lib/tz";
 import { Acciones } from "./_components/acciones";
@@ -69,6 +72,8 @@ export default async function TurnoPublicoPage({
 
   return (
     <main className="mx-auto grid max-w-md gap-5 px-4 py-10">
+      <RegisterServiceWorker />
+
       <header className="grid gap-3">
         <Logo className="h-10 w-10" />
         <p className="text-[14.5px] text-muted">
@@ -120,6 +125,13 @@ export default async function TurnoPublicoPage({
       </Card>
 
       <Acciones token={token} vista={vista} />
+
+      {activo && (
+        <AvisosClienta
+          token={token}
+          vapidPublicKey={publicEnv.NEXT_PUBLIC_VAPID_PUBLIC_KEY}
+        />
+      )}
 
       {vista.bookingOpen && !activo && (
         <Card>

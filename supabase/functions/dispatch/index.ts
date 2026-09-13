@@ -1,5 +1,6 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { send, type Job } from "../_shared/channels.ts";
+import { drainTeamAlerts } from "../_shared/alerts.ts";
 
 /**
  * El emisor.
@@ -36,6 +37,11 @@ Deno.serve(async (req) => {
     { auth: { persistSession: false } },
   );
 
+  // Primero los avisos al equipo: son los que pierden valor con el tiempo. Un
+  // recordatorio que sale un minuto más tarde da igual; "acaba de entrar una
+  // reserva" enterado media hora después ya no es un aviso, es una noticia.
+  const avisos = await drainTeamAlerts(supabase, LOTE);
+
   // Los envoltorios rpc_* viven en `public` porque la API no expone el esquema
   // `app`, y sólo `service_role` los puede ejecutar.
   const { data: claimed, error: claimError } = await supabase.rpc(
@@ -44,12 +50,12 @@ Deno.serve(async (req) => {
   );
 
   if (claimError) {
-    return Response.json({ error: claimError.message }, { status: 500 });
+    return Response.json({ avisos, error: claimError.message }, { status: 500 });
   }
 
   const ids = (claimed ?? []).map((j: { id: string }) => j.id);
   if (ids.length === 0) {
-    return Response.json({ tomados: 0, enviados: 0, fallados: 0 });
+    return Response.json({ avisos, tomados: 0, enviados: 0, fallados: 0 });
   }
 
   const { data: payloads, error: payloadError } = await supabase.rpc(
@@ -58,7 +64,7 @@ Deno.serve(async (req) => {
   );
 
   if (payloadError) {
-    return Response.json({ error: payloadError.message }, { status: 500 });
+    return Response.json({ avisos, error: payloadError.message }, { status: 500 });
   }
 
   let enviados = 0;
@@ -96,5 +102,5 @@ Deno.serve(async (req) => {
     if (!job.test_mode) await pausa();
   }
 
-  return Response.json({ tomados: ids.length, enviados, fallados });
+  return Response.json({ avisos, tomados: ids.length, enviados, fallados });
 });

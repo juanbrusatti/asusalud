@@ -360,3 +360,45 @@ describe("salvaguardas", () => {
     });
   });
 });
+
+/**
+ * La superficie que queda expuesta a quien no tiene sesión.
+ *
+ * Supabase concede EXECUTE a `anon` sobre **cada función nueva** del esquema
+ * `public` por privilegios por defecto. Un `revoke ... from public` no lo
+ * quita, porque `public` es el pseudo-rol y el de `anon` es un permiso
+ * explícito aparte. Así quedó abierta `register_push_subscription`, que acepta
+ * el id de clienta que se le pase: un visitante podía suscribir su navegador a
+ * los recordatorios de otra persona.
+ *
+ * Esta prueba es el guardia: si alguien agrega una función y se olvida de
+ * cerrarla, acá se ve.
+ */
+describe("qué puede ejecutar un visitante sin sesión", () => {
+  const PERMITIDAS = [
+    "booking_cancel",
+    "booking_confirm",
+    "booking_create",
+    "booking_manage",
+    "booking_manage_slots",
+    "booking_page",
+    "booking_reschedule",
+    "booking_slots",
+    "booking_subscribe_push",
+  ];
+
+  it("sólo las nueve funciones de la reserva pública", async () => {
+    await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `select p.proname
+         from pg_proc p
+         join pg_namespace n on n.oid = p.pronamespace
+         where n.nspname = 'public'
+           and has_function_privilege('anon', p.oid, 'execute')
+         group by p.proname
+         order by p.proname`,
+      );
+      expect(rows.map((r) => r.proname)).toEqual(PERMITIDAS);
+    });
+  });
+});

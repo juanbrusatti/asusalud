@@ -68,6 +68,72 @@ apague las notificaciones para siempre.
 Si la aplicación ya está abierta, se enfoca esa. Abrir una segunda pestaña de
 lo mismo es molesto y desorienta.
 
+## Avisos al equipo
+
+Una reserva que entra a las once de la noche y una cancelación de la clienta
+son las dos cosas que se descubrían al día siguiente, mirando la agenda.
+Avisar en el momento es lo que convierte una cancelación en un horario que
+todavía se puede volver a vender.
+
+| Qué pasó | Qué llega |
+| --- | --- |
+| Reserva online nueva | `Reserva nueva` · nombre, día, hora y servicio |
+| La clienta cancela desde su enlace | `Cancelaron un turno` · y que el horario quedó libre |
+| La clienta mueve su turno | `Movieron un turno` · de qué horario a qué horario |
+
+### Sólo avisa lo que no hizo el equipo
+
+Si la recepcionista carga un turno o cancela uno, **no llega nada**: ya lo
+sabe, lo acaba de hacer. Avisarle a alguien de sus propios actos es la forma
+más rápida de que apague las notificaciones para siempre.
+
+Por eso el alta sólo avisa cuando `source = 'online'`, y la cancelación y la
+reprogramación sólo cuando las hizo la clienta desde el enlace de su turno.
+
+### El aviso espera a que el turno esté completo
+
+El trigger del alta es **diferido**: corre al cerrar la transacción. Un trigger
+normal corre antes de que existan los servicios del turno —se insertan después,
+en la misma transacción— y el aviso salía sin decir qué se reservó, que es
+justo el dato que hace falta para decidir sin abrir la aplicación.
+
+### La cola es también una bitácora
+
+`team_alerts` guarda qué se avisó, cuándo y si se pudo entregar. No se edita ni
+se borra: si se pudiera, dejaría de servir para discutir si el aviso llegó.
+
+- Si **nadie del equipo** tiene las notificaciones activadas, no se encola nada.
+  Una cola de avisos que nunca van a poder entregarse es basura que hay que
+  limpiar después.
+- A los **tres intentos** se deja de probar: un aviso que llegara entonces ya no
+  serviría.
+- Alcanza con que llegue a **un dispositivo**. El equipo comparte la
+  información; no hace falta que suene en todos.
+
+### Salen en el momento, no en la próxima vuelta del reloj
+
+Encolar un aviso despierta al emisor por `pg_net`. El reloj de cada minuto
+queda como red de seguridad. Un recordatorio que sale un minuto más tarde da
+igual; "acaba de entrar una reserva" enterado media hora después ya no es un
+aviso, es una noticia.
+
+## Las clientas, desde su turno
+
+El ofrecimiento aparece en dos lugares: al terminar de reservar online —el
+único momento en que una clienta tiene un motivo real para aceptar— y en la
+pantalla de su turno.
+
+La llave es el **token del turno**, no un identificador de clienta.
+`register_push_subscription` acepta el `client_id` que se le pase, y por eso
+sigue estando prohibida para quien no tiene sesión: si `anon` pudiera llamarla,
+cualquiera podría suscribir su navegador a los recordatorios de otra persona.
+Eso estuvo abierto y se cerró; está contado en
+[Seguridad](../seguridad.md).
+
+Donde no puede funcionar —un iPhone sin la aplicación en la pantalla de inicio,
+un navegador sin soporte, un permiso ya denegado— **no se muestra nada**.
+Ofrecer algo que no va a andar es peor que no ofrecerlo.
+
 ## Las claves VAPID
 
 Se generan una sola vez por proyecto:
@@ -101,6 +167,9 @@ y hay que contarla al pedir el permiso, no después.
 | Qué | Dónde |
 | --- | --- |
 | Tabla y registro | `supabase/migrations/20260912170000_push.sql` |
+| Avisos al equipo y suscripción de la clienta | `supabase/migrations/20260913100000_avisos.sql` |
+| Envío de los avisos | `supabase/functions/_shared/alerts.ts` |
+| Ofrecerlas a la clienta | `src/components/pwa/avisos-clienta.tsx` |
 | Adaptador del emisor | `supabase/functions/_shared/channels.ts` |
 | Recibir y abrir | `public/sw.js` |
 | Pedir el permiso | `src/components/pwa/notificaciones.tsx` |
@@ -109,8 +178,13 @@ y hay que contarla al pedir el permiso, no después.
 
 ## Lo que todavía no está
 
-- **Avisos al equipo cuando pasa algo**: la infraestructura está, falta
-  dispararlos ante una reserva nueva o una cancelación.
-- **Pedirlas en la reserva online**, que es el único momento en que una clienta
-  tiene motivo para aceptarlas.
-- **Preferencias por tipo de aviso**: hoy es todo o nada.
+- **Preferencias por tipo de aviso**: hoy es todo o nada. Quien quiere
+  enterarse de las cancelaciones pero no de cada reserva no tiene cómo.
+- **Probado de punta a punta**: el runtime de Edge Functions no levanta en el
+  entorno local de este proyecto, así que el envío real —el paso que va de la
+  cola al teléfono— todavía no se ejecutó nunca. Lo que sí está probado es todo
+  lo que pasa en la base.
+- **Un resumen en pantalla** de los avisos, para quien no los tenía activados
+  cuando pasaron.
+- **Ofrecerle el horario liberado** a otra clienta cuando entra una
+  cancelación.

@@ -36,6 +36,20 @@ function proximoLunes(): string {
 
 const LUNES = proximoLunes();
 
+/**
+ * El lunes de la semana siguiente.
+ *
+ * La prueba del horizonte necesita una fecha que esté **claramente** más allá
+ * del tope, y `LUNES` no sirve: cuando la suite corre un domingo, el próximo
+ * lunes es mañana y cae dentro de un horizonte de un día. La prueba pasaba
+ * seis de cada siete días.
+ */
+const LUNES_SIGUIENTE = (() => {
+  const d = new Date(`${LUNES}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + 7);
+  return d.toISOString().slice(0, 10);
+})();
+
 beforeAll(async () => {
   s = await setupScenario("res");
   slug = s.slugs[0];
@@ -321,7 +335,7 @@ describe("horarios disponibles", () => {
     await comoVisitante(async (c) => {
       const { rows } = await c.query(
         `select count(*)::int as n from public.booking_slots($1, $2::uuid[], $3::date)`,
-        [slug, [masaje], LUNES],
+        [slug, [masaje], LUNES_SIGUIENTE],
       );
       expect(rows[0].n).toBe(0);
     });
