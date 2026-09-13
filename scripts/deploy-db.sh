@@ -42,7 +42,17 @@ fi
 echo "Proyecto: $ref"
 echo
 
-npx supabase link --project-ref "$ref"
+# Volver a enlazar cuando ya está enlazado al mismo proyecto sólo sirve para
+# que vuelva a pedir la contraseña. Reintentar un push tiene que ser barato.
+actual=""
+[ -f supabase/.temp/project-ref ] && actual=$(cat supabase/.temp/project-ref)
+
+if [ "$actual" = "$ref" ]; then
+  echo "Ya enlazado a $ref."
+else
+  npx supabase link --project-ref "$ref"
+fi
+
 npx supabase db push
 
 echo
