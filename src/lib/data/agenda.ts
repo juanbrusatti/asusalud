@@ -134,6 +134,8 @@ export type StatusChange = {
   to_status: AppointmentStatus;
   reason: string | null;
   created_at: string;
+  /** Lo hizo la clienta desde el enlace de su turno, no el equipo. */
+  by_client: boolean;
   author: { full_name: string | null } | null;
 };
 
@@ -143,7 +145,9 @@ export async function getStatusHistory(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("appointment_status_history")
-    .select("id, from_status, to_status, reason, created_at, author:profiles ( full_name )")
+    .select(
+      "id, from_status, to_status, reason, created_at, by_client, author:profiles ( full_name )",
+    )
     .eq("appointment_id", appointmentId)
     .order("created_at", { ascending: false });
 

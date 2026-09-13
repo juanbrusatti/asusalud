@@ -11,6 +11,10 @@ const PUBLIC_PREFIXES = [
   // La reserva online: es la única parte del sistema pensada para gente sin
   // cuenta. Lo que puede ver lo decide la base, no este guardia.
   "/r",
+  // El enlace del turno. La llave es el token de la dirección: mandar a
+  // iniciar sesión a quien sólo quiere avisar que no puede venir es
+  // garantizar que no avise.
+  "/t",
 ];
 
 function isPublic(pathname: string) {

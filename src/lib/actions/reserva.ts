@@ -32,7 +32,7 @@ const schema = z.object({
 });
 
 export type BookingResult =
-  | { ok: true; appointmentId: string }
+  | { ok: true; appointmentId: string; manageToken: string }
   | { ok: false; error: string };
 
 export async function createBooking(input: {
@@ -89,7 +89,7 @@ export async function createBooking(input: {
   }
 
   const result = data as unknown as
-    | { ok: true; appointmentId: string }
+    | { ok: true; appointmentId: string; manageToken: string }
     | { ok: false; error: string };
 
   return result;

@@ -20,6 +20,7 @@ const VARIABLES = [
   ["{{hora}}", "la hora del turno"],
   ["{{servicio}}", "qué se le hace"],
   ["{{estetica}}", "el nombre de tu estética"],
+  ["{{link}}", "el enlace donde puede mover o cancelar el turno"],
 ] as const;
 
 function Submit({ label }: { label: string }) {
@@ -51,7 +52,8 @@ export function FormPlantilla({
     .replaceAll("{{fecha}}", "lunes 14 de septiembre")
     .replaceAll("{{hora}}", "09:00")
     .replaceAll("{{servicio}}", "depilación definitiva")
-    .replaceAll("{{estetica}}", "Estética Asusalud");
+    .replaceAll("{{estetica}}", "Estética Asusalud")
+    .replaceAll("{{link}}", "dlay.app/t/a1b2c3…");
 
   return (
     <form action={formAction} className="grid gap-4">

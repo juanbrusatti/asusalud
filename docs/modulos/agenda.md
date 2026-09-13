@@ -149,6 +149,13 @@ importe, el concepto y la clienta vienen cargados. Está documentada en
 
 Una profesional no la ve, igual que no ve la caja.
 
+## Cuando el cambio lo hace la clienta
+
+Cada turno tiene un enlace propio desde el que la clienta puede confirmarlo,
+moverlo o cancelarlo. El cambio aparece en la agenda en el momento, y el
+historial lo atribuye a **la clienta**, no al equipo. Está documentado en
+[El turno de la clienta](autogestion.md).
+
 ## Dónde está el código
 
 | Qué | Dónde |
