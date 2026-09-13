@@ -31,6 +31,12 @@ Lo mismo para el otro proyecto:
 scripts/deploy-db.sh preview
 ```
 
+> **El enlace es global.** `supabase link` deja apuntado un solo proyecto a la
+> vez, y todos los `npx supabase …` que vengan después van ahí. El script
+> enlaza el que corresponde antes de empujar, pero para cualquier otro comando
+> —`functions deploy`, `secrets set`— hay que asegurarse de estar enlazado al
+> proyecto correcto. `cat supabase/.temp/project-ref` lo dice.
+
 > Conviene hacer primero el de desarrollo. Si algo falla, falla donde no
 > importa.
 
@@ -106,9 +112,15 @@ ignora**. El script no los imprime.
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | la misma en los dos | ídem |
 | `SUPABASE_SERVICE_ROLE_KEY` | **nunca con `NEXT_PUBLIC_`** | ídem |
 
-`NEXT_PUBLIC_SITE_URL` importa más de lo que parece: de ahí sale el enlace del
-turno que viaja en los recordatorios. Si queda con el dominio provisorio, los
-enlaces que ya se enviaron siguen apuntando ahí.
+**La dirección del sitio vive en dos lugares y hacen cosas distintas**, así que
+conviene no confundirlas:
+
+| Dónde | Para qué | Si está mal |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SITE_URL` en Vercel | Mostrar el enlace de la reserva pública en pantalla | La estética copia un enlace que no anda |
+| `platform_settings.site_url` en la base | Armar el enlace del turno que viaja en los recordatorios | Los mensajes salen con un enlace muerto, y los que ya salieron no se arreglan |
+
+La segunda es la que duele. Está en el paso 3.
 
 > Las variables se aplican al **próximo** deploy. El que ya falló no se rehace
 > solo: hay que volver a desplegar.
@@ -147,6 +159,26 @@ npx supabase functions deploy whatsapp-webhook
 `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` las inyecta Supabase sola.
 
 ## 5. Después del primer deploy
+
+### Primero: la confirmación por correo
+
+En Supabase hosted, **«Confirm email» viene encendido**; en el entorno local
+está apagado (`enable_confirmations = false` en `config.toml`). La diferencia
+importa más de lo que parece: con la confirmación encendida, `signUp` crea el
+usuario pero **no abre sesión**, así que el alta redirige al inicio, el guardia
+no encuentra sesión y devuelve a la pantalla de ingreso. Se ve exactamente como
+si el registro estuviera roto.
+
+Dos salidas, en *Authentication → Sign In / Providers → Email*:
+
+- **Apagar la confirmación** para dar de alta a la dueña, y volver a
+  encenderla después. Es lo más rápido.
+- **Dejarla encendida** y confirmar desde el correo. Tener en cuenta que el
+  SMTP que Supabase presta tiene un límite de unos pocos envíos por hora y no
+  sirve para producción: con confirmación encendida hay que configurar un SMTP
+  propio (Brevo, el mismo de los recordatorios).
+
+### Después
 
 - Entrar y **crear la estética**. El alta de cuenta crea la primera dueña.
 - Cargar **horarios de atención** en Ajustes: sin ellos la reserva online no
