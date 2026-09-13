@@ -11,7 +11,10 @@ const publicSchema = z.object({
     message: "NEXT_PUBLIC_SUPABASE_URL tiene que ser la URL del proyecto Supabase.",
   }),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(20, {
-    message: "Falta NEXT_PUBLIC_SUPABASE_ANON_KEY (clave pública del proyecto).",
+    message:
+      "Falta la clave pública del proyecto: NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY " +
+      "(la que el panel de Supabase muestra como «publishable») o, en su " +
+      "defecto, NEXT_PUBLIC_SUPABASE_ANON_KEY.",
   }),
   NEXT_PUBLIC_SITE_URL: z.string().url().default("http://localhost:3000"),
   // Clave pública de las notificaciones. Es pública por diseño: el navegador
@@ -29,7 +32,17 @@ const serverSchema = publicSchema.extend({
  */
 const rawPublic = {
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  /**
+   * Supabase renombró la clave pública: los proyectos nuevos muestran
+   * `sb_publishable_…` y ya no un JWT llamado «anon». Las dos funcionan y la
+   * biblioteca las trata igual, así que se aceptan los dos nombres y gana el
+   * nuevo. Sin esto, quien copia lo que ve en el panel de un proyecto nuevo
+   * pega la clave correcta con el nombre que el código no busca, y el build
+   * falla diciendo que falta.
+   */
+  NEXT_PUBLIC_SUPABASE_ANON_KEY:
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
   NEXT_PUBLIC_VAPID_PUBLIC_KEY: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
 };

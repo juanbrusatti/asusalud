@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# La plantilla sí va al repositorio: el README y el mensaje de error del
+# arranque mandan a copiarla, y hasta ahora quien clonaba no la encontraba.
+!.env.example
 
 # vercel
 .vercel
