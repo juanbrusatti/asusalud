@@ -5,6 +5,7 @@ import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
+import { AvisosClienta } from "@/components/pwa/avisos-clienta";
 import { createBooking, getSlots } from "@/lib/actions/reserva";
 import { formatDuration, formatPrice } from "@/lib/money";
 import { longDateIn, nextDay, timeIn, todayIn } from "@/lib/tz";
@@ -19,7 +20,13 @@ type Paso = "servicios" | "cuando" | "datos" | "listo";
  * reserva quiere saber cuánto sale y cuánto le va a llevar antes de
  * comprometer una hora de su día.
  */
-export function Reservar({ page }: { page: BookingPage }) {
+export function Reservar({
+  page,
+  vapidPublicKey,
+}: {
+  page: BookingPage;
+  vapidPublicKey: string;
+}) {
   const tz = page.tenant.timezone;
 
   const [paso, setPaso] = useState<Paso>("servicios");
@@ -36,7 +43,7 @@ export function Reservar({ page }: { page: BookingPage }) {
   const [nota, setNota] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
-  const [enlace, setEnlace] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
   const servicios = elegidos
     .map((id) => page.services.find((s) => s.id === id))
@@ -83,7 +90,7 @@ export function Reservar({ page }: { page: BookingPage }) {
 
     setGuardando(false);
     if (r.ok) {
-      setEnlace(`/t/${r.manageToken}`);
+      setToken(r.manageToken);
       setPaso("listo");
     } else setError(r.error);
   }
@@ -119,19 +126,30 @@ export function Reservar({ page }: { page: BookingPage }) {
             Te vamos a mandar un recordatorio antes.
           </p>
 
-          {enlace && (
-            <div className="mt-1 grid justify-items-start gap-2 rounded-[16px] bg-white/15 px-4 py-3.5">
-              <p className="text-[13.5px] leading-relaxed">
-                Si después no podés venir o querés otro horario, cambialo vos
-                misma desde acá. Guardá el enlace.
-              </p>
-              <a
-                href={enlace}
-                className="rounded-pill bg-surface px-4 py-2 text-[13.5px] font-medium text-ink"
-              >
-                Ver mi turno
-              </a>
-            </div>
+          {token && (
+            <>
+              <div className="mt-1 grid justify-items-start gap-2 rounded-[16px] bg-white/15 px-4 py-3.5">
+                <p className="text-[13.5px] leading-relaxed">
+                  Si después no podés venir o querés otro horario, cambialo vos
+                  misma desde acá. Guardá el enlace.
+                </p>
+                <a
+                  href={`/t/${token}`}
+                  className="rounded-pill bg-surface px-4 py-2 text-[13.5px] font-medium text-ink"
+                >
+                  Ver mi turno
+                </a>
+              </div>
+
+              {/* El único canal gratis del sistema, y este es el único momento
+                  en que la clienta tiene un motivo real para aceptarlo: acaba
+                  de reservar y le importa que le avisen. */}
+              <AvisosClienta
+                token={token}
+                vapidPublicKey={vapidPublicKey}
+                tono="acento"
+              />
+            </>
           )}
         </CardBody>
       </Card>

@@ -50,6 +50,33 @@ sin `GRANT` da error de permisos; una con `GRANT` y sin política, no devuelve
 nada. Cada migración hace las dos cosas de forma explícita, incluido el
 `revoke all ... from anon`.
 
+## `revoke ... from public` no alcanza para cerrarle la puerta a `anon`
+
+Encontrado el 13/09/2026 probando las notificaciones, y vale para todo el
+proyecto.
+
+Supabase tiene configurado
+`alter default privileges in schema public grant all on functions to anon`, así
+que **cada función nueva nace con un permiso explícito para `anon`**. El
+`revoke all on function ... from public` que hacen las migraciones quita el
+permiso implícito del pseudo-rol `public`, pero no toca ese otro. La función
+queda abierta a quien no tiene sesión, aunque el `grant` diga `authenticated`.
+
+La mayoría no era explotable —las funciones `security invoker` chocan igual
+contra la RLS— pero una sí: `register_push_subscription` es `security definer`
+y acepta el id de clienta que se le pase. Un visitante podía suscribir su
+navegador a los recordatorios de otra persona.
+
+Desde `20260913110000_permisos-anon.sql`:
+
+- Se revocó `execute` a `anon` en todo `public` salvo las nueve funciones de la
+  reserva pública.
+- Se cambiaron los privilegios por defecto para que la próxima función no nazca
+  abierta.
+- Hay una prueba en la suite de aislamiento que **enumera** lo que `anon` puede
+  ejecutar y falla si aparece algo nuevo. Es el guardia: la lista tiene que
+  cambiar a propósito, no por olvido.
+
 ## `force row level security`
 
 Todas las tablas la tienen. Sin eso, cualquier conexión que corra como dueño de

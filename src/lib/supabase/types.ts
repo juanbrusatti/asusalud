@@ -1523,6 +1523,69 @@ export type Database = {
           },
         ]
       }
+      team_alerts: {
+        Row: {
+          appointment_id: string | null
+          attempts: number
+          body: string
+          created_at: string
+          failed_at: string | null
+          id: string
+          kind: string
+          last_error: string | null
+          sent_at: string | null
+          tag: string | null
+          tenant_id: string
+          title: string
+          url: string | null
+        }
+        Insert: {
+          appointment_id?: string | null
+          attempts?: number
+          body: string
+          created_at?: string
+          failed_at?: string | null
+          id?: string
+          kind: string
+          last_error?: string | null
+          sent_at?: string | null
+          tag?: string | null
+          tenant_id: string
+          title: string
+          url?: string | null
+        }
+        Update: {
+          appointment_id?: string | null
+          attempts?: number
+          body?: string
+          created_at?: string
+          failed_at?: string | null
+          id?: string
+          kind?: string
+          last_error?: string | null
+          sent_at?: string | null
+          tag?: string | null
+          tenant_id?: string
+          title?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_alerts_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_alerts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
           created_at: string
@@ -1760,6 +1823,16 @@ export type Database = {
           slot: string
         }[]
       }
+      booking_subscribe_push: {
+        Args: {
+          p_auth: string
+          p_endpoint: string
+          p_p256dh: string
+          p_token: string
+          p_user_agent?: string
+        }
+        Returns: Json
+      }
       cash_close_session: {
         Args: { p_counted_cents: number; p_notes?: string; p_session: string }
         Returns: Json
@@ -1835,6 +1908,30 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      rpc_claim_team_alerts: {
+        Args: { p_limit?: number }
+        Returns: {
+          appointment_id: string | null
+          attempts: number
+          body: string
+          created_at: string
+          failed_at: string | null
+          id: string
+          kind: string
+          last_error: string | null
+          sent_at: string | null
+          tag: string | null
+          tenant_id: string
+          title: string
+          url: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "team_alerts"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       rpc_drop_push_subscription: {
         Args: { p_endpoint: string }
         Returns: undefined
@@ -1850,6 +1947,10 @@ export type Database = {
           p_subject?: string
           p_was_test?: boolean
         }
+        Returns: undefined
+      }
+      rpc_finish_team_alert: {
+        Args: { p_error?: string; p_id: string; p_ok: boolean }
         Returns: undefined
       }
       rpc_handle_inbound: {
@@ -1909,6 +2010,14 @@ export type Database = {
       rpc_record_delivery: {
         Args: { p_error?: string; p_provider_id: string; p_status: string }
         Returns: undefined
+      }
+      rpc_team_push_targets: {
+        Args: { p_tenant: string }
+        Returns: {
+          auth: string
+          endpoint: string
+          p256dh: string
+        }[]
       }
       rpc_webhook_secrets: {
         Args: { p_phone_number_id: string }

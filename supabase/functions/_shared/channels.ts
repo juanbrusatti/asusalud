@@ -302,16 +302,71 @@ async function sendWhatsApp(
  * que desinstaló la aplicación o limpió los datos, y guardarlas ensucia las
  * métricas y hace más lento cada envío.
  */
+export type PushTarget = { endpoint: string; p256dh: string; auth: string };
+
+/** Si el servidor tiene con qué firmar los envíos. */
+export function vapidReady(): boolean {
+  return Boolean(
+    Deno.env.get("VAPID_PUBLIC_KEY") && Deno.env.get("VAPID_PRIVATE_KEY"),
+  );
+}
+
+/**
+ * Manda una notificación a varias suscripciones y limpia las muertas.
+ *
+ * Lo usan los dos tipos de aviso —el recordatorio a la clienta y el aviso al
+ * equipo— porque el mecanismo es idéntico: cifrar con las claves de cada
+ * suscripción, mandar, y borrar la que el navegador ya no reconoce.
+ */
+export async function pushToTargets(
+  // deno-lint-ignore no-explicit-any
+  supabase: any,
+  targets: PushTarget[],
+  payload: string,
+): Promise<{ delivered: number; lastError: string }> {
+  webpush.setVapidDetails(
+    Deno.env.get("VAPID_SUBJECT") ?? "mailto:hola@dlay.app",
+    Deno.env.get("VAPID_PUBLIC_KEY")!,
+    Deno.env.get("VAPID_PRIVATE_KEY")!,
+  );
+
+  let delivered = 0;
+  let lastError = "";
+
+  for (const destino of targets) {
+    try {
+      await webpush.sendNotification(
+        {
+          endpoint: destino.endpoint,
+          keys: { p256dh: destino.p256dh, auth: destino.auth },
+        },
+        payload,
+      );
+      delivered += 1;
+    } catch (err) {
+      const status = (err as { statusCode?: number }).statusCode;
+      lastError = `push ${status ?? "?"}`;
+
+      // 410 o 404: alguien desinstaló la aplicación o limpió sus datos.
+      // Guardar suscripciones muertas ensucia las métricas y hace más lento
+      // cada envío.
+      if (status === 404 || status === 410) {
+        await supabase.rpc("rpc_drop_push_subscription", {
+          p_endpoint: destino.endpoint,
+        });
+      }
+    }
+  }
+
+  return { delivered, lastError };
+}
+
 async function sendPush(
   job: Job,
   subject: string | undefined,
   body: string,
 ): Promise<SendResult> {
-  const publicKey = Deno.env.get("VAPID_PUBLIC_KEY");
-  const privateKey = Deno.env.get("VAPID_PRIVATE_KEY");
-  const contacto = Deno.env.get("VAPID_SUBJECT") ?? "mailto:hola@dlay.app";
-
-  if (!publicKey || !privateKey) {
+  if (!vapidReady()) {
     return {
       ok: false,
       error: "Faltan configurar las claves de notificaciones en el servidor.",
@@ -319,8 +374,6 @@ async function sendPush(
       permanent: true,
     };
   }
-
-  webpush.setVapidDetails(contacto, publicKey, privateKey);
 
   const supabase = createSupabaseClient();
   const { data: destinos } = await supabase.rpc("rpc_push_targets", {
@@ -336,47 +389,22 @@ async function sendPush(
     };
   }
 
-  const payload = JSON.stringify({
-    title: subject ?? job.tenant_name,
-    body,
-    url: "/",
-    tag: job.appointment_id ?? undefined,
-  });
+  const { delivered, lastError } = await pushToTargets(
+    supabase,
+    destinos as PushTarget[],
+    JSON.stringify({
+      title: subject ?? job.tenant_name,
+      body,
+      url: job.manage_url ?? "/",
+      tag: job.appointment_id ?? undefined,
+    }),
+  );
 
-  let entregadas = 0;
-  let ultimoError = "";
-
-  for (const destino of destinos as Array<{
-    endpoint: string;
-    p256dh: string;
-    auth: string;
-  }>) {
-    try {
-      await webpush.sendNotification(
-        {
-          endpoint: destino.endpoint,
-          keys: { p256dh: destino.p256dh, auth: destino.auth },
-        },
-        payload,
-      );
-      entregadas += 1;
-    } catch (err) {
-      const status = (err as { statusCode?: number }).statusCode;
-      ultimoError = `push ${status ?? "?"}`;
-
-      if (status === 404 || status === 410) {
-        await supabase.rpc("rpc_drop_push_subscription", {
-          p_endpoint: destino.endpoint,
-        });
-      }
-    }
-  }
-
-  return entregadas > 0
-    ? { ok: true, providerId: `push:${entregadas}`, subject, body, wasTest: false }
+  return delivered > 0
+    ? { ok: true, providerId: `push:${delivered}`, subject, body, wasTest: false }
     : {
         ok: false,
-        error: `No se pudo entregar la notificación (${ultimoError}).`,
+        error: `No se pudo entregar la notificación (${lastError}).`,
         wasTest: false,
         // Si todas las suscripciones estaban muertas ya se borraron: volver a
         // intentar no va a encontrar ninguna.
