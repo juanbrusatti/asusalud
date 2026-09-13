@@ -7,10 +7,21 @@ romperse semanas después en medio de un envío.
 | Variable | Dónde se usa | Obligatoria | Qué es |
 | --- | --- | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | navegador y servidor | sí | URL del proyecto Supabase |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | navegador y servidor | sí | Clave pública. Todo lo que hace pasa por RLS |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | navegador y servidor | sí | Clave pública. Todo lo que hace pasa por RLS |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | navegador y servidor | — | El nombre viejo de la misma clave. Se usa si no está la de arriba |
 | `NEXT_PUBLIC_SITE_URL` | servidor | no | URL pública del sitio. Por defecto `http://localhost:3000` |
 | `SUPABASE_SERVICE_ROLE_KEY` | **sólo servidor** | no | Clave con permisos totales |
 | `SUPABASE_DB_URL` | pruebas | no | Conexión directa a Postgres para la suite de aislamiento |
+
+## Dos nombres para la clave pública
+
+Supabase la renombró: los proyectos nuevos muestran `sb_publishable_…` y ya no
+un JWT llamado «anon». Las dos funcionan y la biblioteca las trata igual, así
+que el código acepta los dos nombres y prefiere el nuevo.
+
+Sin eso, quien copia lo que ve en el panel de un proyecto nuevo pega la clave
+correcta con el nombre que el código no busca, y el build falla diciendo que
+falta.
 
 ## Sobre la clave de servicio
 
@@ -47,6 +58,11 @@ Se cargan con `supabase secrets set`.
 
 Además, en la tabla `platform_settings` de la base van `dispatch_url` y
 `dispatch_secret`, que es lo que usa el reloj para llamar al emisor.
+
+## Desplegar
+
+El paso a paso completo —migraciones, variables, ajustes de la base y Edge
+Functions— está en [Despliegue](despliegue.md).
 
 ## En Vercel
 

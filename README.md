@@ -77,6 +77,7 @@ estética B. Si devuelve una sola fila, la función no está lista.
 - [Base de datos](docs/base-de-datos.md)
 - [Seguridad](docs/seguridad.md)
 - [Variables de entorno](docs/variables-de-entorno.md)
+- [Despliegue](docs/despliegue.md)
 - [Sistema de diseño](docs/diseno.md)
 
 ### Módulos
