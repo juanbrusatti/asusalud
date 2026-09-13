@@ -118,10 +118,20 @@ y querer igual que su clienta pueda avisar sola que no viene.
 
 Apagarlo no invalida los enlaces: siguen mostrando el turno, sin botones.
 
+## Los avisos gratis
+
+En la pantalla del turno —y al terminar de reservar— se le ofrece a la clienta
+recibir los avisos por notificación en lugar de por mensaje. El token del turno
+es lo que la identifica, así que no hace falta ni cuenta ni otro secreto. Está
+contado en [Notificaciones push](push.md).
+
+Es el único canal gratis del sistema: cada clienta que acepta deja de costar
+$37,68 por recordatorio.
+
 ## Seguridad
 
 Se mantiene la regla más estricta del proyecto: **`anon` no tiene acceso a
-ninguna tabla**. Cinco funciones más, y nada más que eso.
+ninguna tabla**. Seis funciones más, y nada más que eso.
 
 - `booking_manage` devuelve **el nombre de pila y nada más** de la ficha. Es
   para que quien abre el enlace reconozca que el turno es suyo; el apellido, el
@@ -139,6 +149,7 @@ ninguna tabla**. Cinco funciones más, y nada más que eso.
 | Qué | Dónde |
 | --- | --- |
 | Token, ajustes y las cinco funciones | `supabase/migrations/20260912260000_autogestion.sql` |
+| Suscripción de la clienta a los avisos | `supabase/migrations/20260913100000_avisos.sql` |
 | Tipos y textos | `src/lib/autogestion.ts` |
 | Lectura | `src/lib/data/autogestion.ts` |
 | Confirmar, cancelar y mover | `src/lib/actions/autogestion.ts` |
@@ -148,9 +159,6 @@ ninguna tabla**. Cinco funciones más, y nada más que eso.
 
 ## Lo que todavía no está
 
-- **Avisarle al equipo** cuando alguien cancela o mueve: la infraestructura de
-  notificaciones push está, falta dispararlas. Hoy el cambio se ve entrando a
-  la agenda.
 - **Ofrecerle el horario liberado a otra persona**, que es el paso que
   convierte una cancelación en una recuperación.
 - **Agregar o sacar un servicio** del turno: hoy sólo se mueve el horario.

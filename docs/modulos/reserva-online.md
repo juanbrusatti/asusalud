@@ -124,10 +124,13 @@ clienta lo mueve o lo cancela sola, sin escribirle a nadie. Está documentado en
 Es el momento en que más probabilidades hay de que lo guarde: lo tiene en la
 mano y le acaba de importar.
 
+Ahí mismo se le ofrece recibir los avisos por notificación en vez de por
+mensaje —ver [Notificaciones push](push.md)—, que es el único canal que no
+cuesta nada. Y la estética se entera de la reserva en el momento, sin mirar la
+agenda.
+
 ## Lo que todavía no está
 
 - **Señas por Mercado Pago**, para bajar el ausentismo. Fase 3.
-- **Pedir las notificaciones push** en el paso final, que es el único momento en
-  que una clienta tiene motivo para aceptarlas.
 - **Límite por IP**: hoy el freno es por teléfono, que alcanza para el uso real
   pero no para alguien decidido a molestar.

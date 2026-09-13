@@ -484,6 +484,12 @@ describe("el enlace viaja en los mensajes", () => {
     const t = await crearTurno(48);
 
     await asAdmin(async (c) => {
+      // Se guarda lo que había: esta tabla es de la instalación entera, no del
+      // escenario de prueba, y dejarla pisada rompe los enlaces del entorno de
+      // desarrollo hasta que alguien se da cuenta.
+      const { rows: antes } = await c.query(
+        `select value from public.platform_settings where key = 'site_url'`,
+      );
       await c.query(
         `insert into public.platform_settings (key, value)
          values ('site_url', 'https://dlay.app/')
@@ -510,6 +516,10 @@ describe("el enlace viaja en los mensajes", () => {
       expect(rows[0].appointment_id).toBe(t.id);
 
       await c.query(`delete from public.message_jobs where id = $1`, [j[0].id]);
+      await c.query(
+        `update public.platform_settings set value = $1 where key = 'site_url'`,
+        [antes[0]?.value ?? "http://localhost:3000"],
+      );
     });
   });
 
