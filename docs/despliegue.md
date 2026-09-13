@@ -38,6 +38,54 @@ Después de aplicarlas, verificá en el panel de Supabase que estén las
 extensiones `pg_cron` y `pg_net` (*Database → Extensions*). El planificador de
 recordatorios y el emisor no funcionan sin ellas.
 
+Si `db push` se corta en algún archivo, el mensaje dice **cuál** y con qué
+error. Ese es el dato que hace falta: el resto de las migraciones no se
+aplicaron, así que no hay nada que deshacer.
+
+### No las apliques a mano
+
+Es tentador pegar cada archivo en el SQL editor, y sale mal por tres motivos:
+
+1. **El editor corre cada archivo como una sola transacción.** Si algo falla en
+   la mitad, no queda *nada* de ese archivo: ni las tablas que sí se habían
+   creado antes del error. El archivo siguiente entonces no encuentra las
+   tablas del anterior y el error que se ve —«relation "public.tenants" does
+   not exist»— apunta al archivo equivocado. El que falló es el de antes.
+2. **No queda registro de lo aplicado.** `db push` anota cada migración en
+   `supabase_migrations.schema_migrations`. Aplicándolas a mano esa tabla queda
+   vacía, así que el primer `db push` que se corra después va a intentar
+   aplicar las treinta de nuevo y va a fallar con «already exists».
+3. **Son treinta archivos.** Uno salteado sin querer y el problema aparece
+   semanas después.
+
+### Si quedó a medias
+
+Un proyecto recién creado no tiene nada que perder, así que lo más rápido es
+empezar de cero. En el SQL editor:
+
+```sql
+-- Borra TODO lo de la aplicación. En un proyecto nuevo no hay nada más.
+drop trigger if exists on_auth_user_created on auth.users;
+drop schema if exists app cascade;
+drop schema public cascade;
+
+create schema public;
+grant usage  on schema public to postgres, anon, authenticated, service_role;
+grant all    on schema public to postgres, service_role;
+
+-- Por si alguna migración llegó a anotarse.
+delete from supabase_migrations.schema_migrations;
+```
+
+Y después, el `scripts/deploy-db.sh` de arriba.
+
+Para ver en qué estado quedó antes de decidir:
+
+```sql
+select table_name from information_schema.tables
+where table_schema = 'public' order by 1;
+```
+
 ## 2. Las variables, en Vercel
 
 ```bash
