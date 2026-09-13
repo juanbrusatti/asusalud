@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -27,15 +26,24 @@ export async function savePushSubscription(subscription: {
     p_client_id: subscription.clientId,
   });
 
-  if (error) return { error: "No pudimos activar las notificaciones." };
+  // El motivo real, no un mensaje genérico: cuando esto falla en un teléfono
+  // ajeno no hay forma de mirar ningún registro, y lo único que queda es lo
+  // que diga la pantalla.
+  if (error) {
+    return {
+      error: `No pudimos activar las notificaciones (${error.message}).`,
+    };
+  }
 
-  revalidatePath("/");
+  // A propósito no se revalida nada: en esta pantalla el estado de las
+  // notificaciones es del navegador, no del servidor, y revalidar desde una
+  // acción que se llama al cargar la página la haría volver a renderizar, que
+  // volvería a llamar a la acción.
   return { error: null };
 }
 
 export async function removePushSubscription(endpoint: string) {
   const supabase = await createClient();
   await supabase.rpc("unregister_push_subscription", { p_endpoint: endpoint });
-  revalidatePath("/");
   return { error: null };
 }
