@@ -13,6 +13,11 @@
 
 set -euo pipefail
 
+# Ojo con escribir `$variable` pegada a un carácter no ASCII —una tilde, un «»,
+# unos puntos suspensivos—: el bash 3.2 que trae macOS se come esos bytes como
+# parte del nombre de la variable y el script muere con «unbound variable».
+# Siempre `${variable}`.
+
 destino="${1:-}"
 
 case "$destino" in
@@ -37,7 +42,7 @@ actual=""
 [ -f supabase/.temp/project-ref ] && actual=$(cat supabase/.temp/project-ref)
 
 if [ "$actual" != "$ref" ]; then
-  echo "Enlazando con $ref…"
+  echo "Enlazando con ${ref}…"
   npx supabase link --project-ref "$ref"
 fi
 
@@ -66,13 +71,18 @@ npx supabase functions deploy whatsapp-webhook
 # ---------------------------------------------------------------------------
 # Estas tres filas viven en la base porque el reloj de Postgres las lee desde
 # adentro, y no hay forma de escribirlas sin la contraseña de la base.
+# La dirección del sitio es la de la aplicación en Vercel, no la de Supabase:
+# es la que termina dentro del enlace que recibe la clienta. Si no está, se
+# deja una marca que no se puede pegar por accidente.
 sitio=$(grep -E '^NEXT_PUBLIC_SITE_URL=' "$archivo" | cut -d= -f2- || true)
-[ -z "$sitio" ] && sitio="https://$ref.supabase.co"
+[ -z "$sitio" ] && sitio="https://CAMBIAR-POR-EL-DOMINIO-REAL"
 dispatch_secret=$(grep -E '^DISPATCH_SECRET=' "$secretos" | cut -d= -f2-)
 
 pendiente="platform-settings.$destino.sql"
 cat > "$pendiente" <<EOF
--- Pegá esto en el SQL editor de $ref y ejecutalo una vez.
+-- Pegá esto en el SQL editor de ${ref} y ejecutalo una vez.
+-- Si abajo dice CAMBIAR-POR-EL-DOMINIO-REAL, poné el dominio de la aplicación
+-- antes de ejecutarlo: de ahí sale el enlace que reciben las clientas.
 insert into public.platform_settings (key, value) values
   ('site_url',        '$sitio'),
   ('dispatch_url',    'https://$ref.supabase.co/functions/v1/dispatch'),
