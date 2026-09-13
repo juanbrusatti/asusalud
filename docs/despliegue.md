@@ -146,17 +146,19 @@ llena y no la vacía nadie.
 Corren en Supabase, no en Vercel, así que tienen sus propios secretos.
 
 ```bash
-npx supabase secrets set \
-  DISPATCH_SECRET='<el mismo de arriba>' \
-  VAPID_PUBLIC_KEY='<la pública>' \
-  VAPID_PRIVATE_KEY='<la privada>' \
-  BREVO_API_KEY='<la de Brevo>'
-
-npx supabase functions deploy dispatch
-npx supabase functions deploy whatsapp-webhook
+scripts/deploy-funciones.sh prod
 ```
 
-`SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` las inyecta Supabase sola.
+Genera el secreto compartido entre la base y el emisor, carga los secretos,
+despliega las dos funciones y deja escrito el SQL del paso 3 con los valores ya
+puestos, en un archivo que git ignora. No lo imprime: tiene el secreto adentro.
+
+`SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` las inyecta Supabase sola. La
+clave de Brevo, si vas a mandar correos, se agrega al mismo archivo
+`.env.functions.prod.local` y se vuelve a correr el script.
+
+**Sin este paso los avisos no llegan.** El aviso se encola igual —queda en
+`team_alerts`— pero no hay quién lo saque de la cola.
 
 ## 5. Después del primer deploy
 
@@ -197,6 +199,25 @@ una recomendación: es lo que dicen los términos.
 Para una agenda que se usa todos los días no debería pasar, pero una estética
 que cierra por vacaciones vuelve y encuentra la base dormida. Es otro motivo
 para pasar a un plan pago antes de que esto sea el sistema del que dependen.
+
+## Cuando algo no llega
+
+```bash
+cat scripts/diagnostico-avisos.sql
+```
+
+Se pega entero en el SQL editor del proyecto y devuelve una fila por cada cosa
+que tiene que estar bien, en el orden en que se rompen. La primera que dice
+algo raro es la que hay que arreglar; las de abajo son consecuencia.
+
+Lo más común, por orden:
+
+| Lo que se ve | Lo que suele ser |
+| --- | --- |
+| Cero suscripciones | «Activar notificaciones» no llegó a guardar |
+| Hay turnos pero no avisos | El turno lo cargó el equipo: eso no avisa, a propósito |
+| Avisos sin entregar | Falta el paso 4: nadie está sacando la cola |
+| Hay un error de envío | El emisor corrió y falló; el texto dice por qué |
 
 ## Lo que todavía no está
 

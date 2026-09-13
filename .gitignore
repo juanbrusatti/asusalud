@@ -36,6 +36,9 @@ yarn-error.log*
 # arranque mandan a copiarla, y hasta ahora quien clonaba no la encontraba.
 !.env.example
 
+# Lo genera scripts/deploy-funciones.sh y lleva el secreto del emisor adentro.
+platform-settings.*.sql
+
 # vercel
 .vercel
 
