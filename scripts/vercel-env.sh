@@ -39,7 +39,7 @@ if [ ! -f .vercel/project.json ]; then
   exit 1
 fi
 
-echo "Cargando variables en el entorno «$entorno»…"
+echo "Cargando variables en el entorno «${entorno}»…"
 
 while IFS= read -r linea || [ -n "$linea" ]; do
   # Comentarios y líneas en blanco.
