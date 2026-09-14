@@ -43,6 +43,10 @@
   --danger-wash: #f7e4e2;
   --warn: #8c6114;
   --warn-wash: #f3ebda;
+  /* Verde apagado, del mismo registro sobrio que el ámbar y el rojo: es un
+     color de estado, no un segundo color de marca. */
+  --ok: #2c6b43;
+  --ok-wash: #e2efe7;
 
   color-scheme: light;
 }
@@ -67,6 +71,8 @@
     --danger-wash: #2d1a18;
     --warn: #d9ae62;
     --warn-wash: #2a2216;
+    --ok: #8ccfa3;
+    --ok-wash: #16271d;
     color-scheme: dark;
   }
 }
@@ -90,6 +96,8 @@
   --danger-wash: #2d1a18;
   --warn: #d9ae62;
   --warn-wash: #2a2216;
+  --ok: #8ccfa3;
+  --ok-wash: #16271d;
   color-scheme: dark;
 }
 
@@ -113,6 +121,8 @@
   --color-danger-wash: var(--danger-wash);
   --color-warn: var(--warn);
   --color-warn-wash: var(--warn-wash);
+  --color-ok: var(--ok);
+  --color-ok-wash: var(--ok-wash);
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-hand: var(--font-caveat), "Comic Sans MS", cursive;
