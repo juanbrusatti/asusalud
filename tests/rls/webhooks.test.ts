@@ -169,7 +169,7 @@ describe("respuestas de los clientes", () => {
 
     await comoSistema(async (c) => {
       const { rows } = await c.query(
-        `select app.handle_inbound($1, 'wamid.btn1', $2, 'button', 'Confirmar', $3) as accion`,
+        `select app.handle_inbound($1, 'wamid.btn1', $2, 'button', 'Confirmar', $3) ->> 'accion' as accion`,
         [PHONE_ID, TELEFONO, `confirmar:${turno}`],
       );
       expect(rows[0].accion).toBe("turno_confirmado");
@@ -181,6 +181,145 @@ describe("respuestas de los clientes", () => {
       // Es el ahorro concreto: un mensaje menos que alguien tiene que leer y
       // ejecutar a mano.
       expect(estado[0].status).toBe("confirmed");
+    });
+  });
+
+  it("el botón de cancelar cancela de verdad y libera el horario", async () => {
+    const turno = await comoSistema(async (c) => {
+      await c.query("select set_config('request.jwt.claims', $1, false)", [
+        JSON.stringify({ sub: s.owner, role: "authenticated" }),
+      ]);
+      const { rows } = await c.query(
+        `select public.book_appointment($1, $2::uuid[], now() + interval '2 days') as id`,
+        [cliente, [servicio]],
+      );
+      await c.query("select set_config('request.jwt.claims', '', false)");
+      return rows[0].id as string;
+    });
+
+    await comoSistema(async (c) => {
+      const { rows } = await c.query(
+        `select app.handle_inbound($1, 'wamid.cancel1', $2, 'button', 'Cancelar', $3) as r`,
+        [PHONE_ID, TELEFONO, `cancelar:${turno}`],
+      );
+      const r = rows[0].r as { accion: string; responder?: { texto: string } };
+      expect(r.accion).toBe("turno_cancelado");
+
+      const { rows: estado } = await c.query(
+        `select status, cancel_reason from public.appointments where id = $1`,
+        [turno],
+      );
+      expect(estado[0].status).toBe("cancelled");
+      // Que quede escrito quién lo canceló: en la agenda, un turno que
+      // desaparece sin explicación es una discusión al día siguiente.
+      expect(estado[0].cancel_reason).toContain("el cliente");
+    });
+  });
+
+  it("queda registrado que lo canceló el cliente y no el equipo", async () => {
+    const turno = await comoSistema(async (c) => {
+      await c.query("select set_config('request.jwt.claims', $1, false)", [
+        JSON.stringify({ sub: s.owner, role: "authenticated" }),
+      ]);
+      const { rows } = await c.query(
+        `select public.book_appointment($1, $2::uuid[], now() + interval '2 days') as id`,
+        [cliente, [servicio]],
+      );
+      await c.query("select set_config('request.jwt.claims', '', false)");
+      return rows[0].id as string;
+    });
+
+    await comoSistema(async (c) => {
+      await c.query(
+        `select app.handle_inbound($1, 'wamid.cancel2', $2, 'button', 'Cancelar', $3)`,
+        [PHONE_ID, TELEFONO, `cancelar:${turno}`],
+      );
+
+      const { rows } = await c.query(
+        `select by_client from public.appointment_status_history
+         where appointment_id = $1 and to_status = 'cancelled'`,
+        [turno],
+      );
+      expect(rows[0].by_client).toBe(true);
+    });
+  });
+
+  it("el botón de cambiar horario contesta con el enlace del turno", async () => {
+    const { turno, token } = await comoSistema(async (c) => {
+      await c.query("select set_config('request.jwt.claims', $1, false)", [
+        JSON.stringify({ sub: s.owner, role: "authenticated" }),
+      ]);
+      const { rows } = await c.query(
+        `select public.book_appointment($1, $2::uuid[], now() + interval '2 days') as id`,
+        [cliente, [servicio]],
+      );
+      await c.query("select set_config('request.jwt.claims', '', false)");
+      const { rows: t } = await c.query(
+        `select manage_token from public.appointments where id = $1`,
+        [rows[0].id],
+      );
+      return { turno: rows[0].id as string, token: t[0].manage_token as string };
+    });
+
+    await comoSistema(async (c) => {
+      const { rows } = await c.query(
+        `select app.handle_inbound($1, 'wamid.mover1', $2, 'button', 'Cambiar horario', $3) as r`,
+        [PHONE_ID, TELEFONO, `reprogramar:${turno}`],
+      );
+      const r = rows[0].r as { accion: string; responder?: { texto: string } };
+
+      expect(r.accion).toBe("pidio_reprogramar");
+      // Antes esto sólo dejaba una nota y alguien tenía que llamar. Ahora el
+      // cliente recibe el enlace y elige el horario solo.
+      expect(r.responder?.texto).toContain(token);
+    });
+  });
+
+  it("no cancela el turno de otro negocio aunque le manden el id correcto", async () => {
+    const turno = await comoSistema(async (c) => {
+      await c.query("select set_config('request.jwt.claims', $1, false)", [
+        JSON.stringify({ sub: s.owner, role: "authenticated" }),
+      ]);
+      const { rows } = await c.query(
+        `select public.book_appointment($1, $2::uuid[], now() + interval '3 days') as id`,
+        [cliente, [servicio]],
+      );
+      await c.query("select set_config('request.jwt.claims', '', false)");
+      return rows[0].id as string;
+    });
+
+    await comoSistema(async (c) => {
+      // El otro negocio, con su propio número conectado.
+      await c.query(
+        `insert into public.whatsapp_accounts
+           (tenant_id, phone_number_id, access_token, app_secret, verify_token, status)
+         values ($1, 'numero-del-otro', 'token', 'secreto', 'verif', 'connected')`,
+        [s.tenantB],
+      );
+
+      const { rows } = await c.query(
+        `select app.handle_inbound('numero-del-otro', 'wamid.cruzado', $1,
+                                   'button', 'Cancelar', $2) ->> 'accion' as accion`,
+        [TELEFONO, `cancelar:${turno}`],
+      );
+      expect(rows[0].accion).toBe("cancelacion_sin_efecto");
+
+      const { rows: estado } = await c.query(
+        `select status from public.appointments where id = $1`,
+        [turno],
+      );
+      // El id de un turno no es una llave. Sin el filtro por negocio, quien
+      // conociera un id podría cancelar turnos ajenos desde su propio número.
+      expect(estado[0].status).toBe("pending");
+
+      // Se limpia acá: las pruebas de aislamiento cuentan lo que hay, y esta
+      // cuenta prestada les cambiaría el resultado.
+      await c.query(
+        `delete from public.whatsapp_inbound where wa_message_id = 'wamid.cruzado'`,
+      );
+      await c.query(
+        `delete from public.whatsapp_accounts where phone_number_id = 'numero-del-otro'`,
+      );
     });
   });
 
@@ -199,24 +338,26 @@ describe("respuestas de los clientes", () => {
 
     await comoSistema(async (c) => {
       const { rows } = await c.query(
-        `select app.handle_inbound($1, 'wamid.btn2', $2, 'button', 'Reprogramar', $3) as accion`,
+        `select app.handle_inbound($1, 'wamid.btn2', $2, 'button', 'Reprogramar', $3) ->> 'accion' as accion`,
         [PHONE_ID, TELEFONO, `reprogramar:${turno}`],
       );
       expect(rows[0].accion).toBe("pidio_reprogramar");
 
-      // El turno sigue en pie: moverlo solo sería peor que no hacer nada.
+      // El turno sigue en pie: moverlo solo sería peor que no hacer nada. Lo
+      // que cambió es que ahora se le contesta con el enlace para que elija.
       const { rows: estado } = await c.query(
         `select status from public.appointments where id = $1`,
         [turno],
       );
-      expect(estado[0].status).toBe("confirmed");
+      expect(estado[0].status).toBe("pending");
 
       const { rows: notas } = await c.query(
         `select body from public.client_notes where client_id = $1`,
         [cliente],
       );
       expect(notas).toHaveLength(1);
-      expect(notas[0].body).toContain("reprogramar");
+      // La nota dice lo mismo que leyó el cliente en el botón.
+      expect(notas[0].body).toContain("cambiar el horario");
     });
   });
 
@@ -225,10 +366,10 @@ describe("respuestas de los clientes", () => {
       await comoSistema(async (c) => {
         await c.query(`delete from public.opt_outs where tenant_id = $1`, [s.tenantA]);
         const { rows } = await c.query(
-          `select app.handle_inbound($1, $2, $3, 'text', $4, null) as accion`,
+          `select app.handle_inbound($1, $2, $3, 'text', $4, null) ->> 'accion' as accion`,
           [PHONE_ID, `wamid.baja${i}`, TELEFONO, texto],
         );
-        expect(rows[0].accion, `con "${texto}"`).toBe("dada_de_baja");
+        expect(rows[0].accion, `con "${texto}"`).toBe("dado_de_baja");
 
         const { rows: bajas } = await c.query(
           `select channel from public.opt_outs where client_id = $1`,
@@ -259,7 +400,7 @@ describe("respuestas de los clientes", () => {
   it("un mensaje cualquiera se registra sin hacer nada", async () => {
     await comoSistema(async (c) => {
       const { rows } = await c.query(
-        `select app.handle_inbound($1, 'wamid.hola', $2, 'text', 'Hola, gracias!', null) as accion`,
+        `select app.handle_inbound($1, 'wamid.hola', $2, 'text', 'Hola, gracias!', null) ->> 'accion' as accion`,
         [PHONE_ID, TELEFONO],
       );
       expect(rows[0].accion).toBe("registrado");
@@ -274,7 +415,7 @@ describe("respuestas de los clientes", () => {
       );
       // Meta reintenta lo que no contesta a tiempo.
       const { rows } = await c.query(
-        `select app.handle_inbound($1, 'wamid.repe', $2, 'text', 'BAJA', null) as accion`,
+        `select app.handle_inbound($1, 'wamid.repe', $2, 'text', 'BAJA', null) ->> 'accion' as accion`,
         [PHONE_ID, TELEFONO],
       );
       expect(rows[0].accion).toBe("repetido");
@@ -290,10 +431,10 @@ describe("respuestas de los clientes", () => {
   it("un aviso de un número que no conocemos no hace nada", async () => {
     await comoSistema(async (c) => {
       const { rows } = await c.query(
-        `select app.handle_inbound('numero-ajeno', 'wamid.x', $1, 'text', 'BAJA', null) as accion`,
+        `select app.handle_inbound('numero-ajeno', 'wamid.x', $1, 'text', 'BAJA', null) ->> 'accion' as accion`,
         [TELEFONO],
       );
-      expect(rows[0].accion).toBe("sin_estetica");
+      expect(rows[0].accion).toBe("sin_negocio");
     });
   });
 });

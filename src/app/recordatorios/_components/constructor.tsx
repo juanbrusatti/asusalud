@@ -192,7 +192,16 @@ export function Constructor({
                 <input
                   type="number"
                   min={1}
-                  step={15}
+                  // Un `step` mayor a 1 no sólo mueve las flechitas: el
+                  // navegador rechaza todo lo que no caiga justo en un
+                  // escalón. Con min=1 y step=15 los únicos valores válidos
+                  // eran 1, 16, 31… así que no se podía escribir ni 1440 (un
+                  // día) ni 10080 (una semana), que son los dos casos reales.
+                  step={1}
+                  // El tope que aguanta la base es un año. Sin esto, escribir
+                  // un número enorme falla recién al guardar y con un error
+                  // crudo de Postgres.
+                  max={525600}
                   value={offset}
                   onChange={(e) => setOffset(Math.abs(Number(e.target.value)))}
                   aria-label="Minutos"

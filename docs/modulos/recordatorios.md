@@ -180,6 +180,24 @@ Dar de baja a alguien, no.
 > importara del módulo de consultas arrastraría `next/headers` al navegador y
 > el build falla.
 
+## Los tres botones del recordatorio
+
+Cada recordatorio de WhatsApp lleva los tres botones que permite Meta, y los
+tres hacen algo de verdad:
+
+| Botón | Qué pasa |
+| --- | --- |
+| **Confirmar** | El turno pasa a confirmado en la agenda y se le contesta «¡Gracias! Te esperamos» |
+| **Cancelar** | El turno se cancela, el horario queda libre, y queda escrito que lo canceló el cliente |
+| **Cambiar horario** | Se le contesta con el enlace de su turno, donde elige otro horario solo |
+
+Contestar no cuesta nada: apretar un botón abre una ventana de veinticuatro
+horas, y dentro de esa ventana el mensaje es de servicio.
+
+El acuse importa más de lo que parece. Sin él, el cliente aprieta «Confirmar»,
+no ve que pase nada de su lado, y vuelve a apretar o escribe preguntando si
+llegó — que es justo el mensaje que el recordatorio venía a evitar.
+
 ## Lo que todavía no está
 
 - **El emisor.** La cola se llena y se puede mirar, pero nadie entrega los
