@@ -132,42 +132,81 @@ La segunda es la que duele. Está en el paso 3.
 > Las variables se aplican al **próximo** deploy. El que ya falló no se rehace
 > solo: hay que volver a desplegar.
 
-## 3. Los ajustes que viven en la base
-
-Hay tres valores que no son variables de entorno porque el reloj de Postgres
-los lee desde adentro. Se cargan una vez por proyecto, desde el SQL editor:
-
-```sql
-insert into public.platform_settings (key, value) values
-  ('site_url',        'https://el-dominio-real'),
-  ('dispatch_url',    'https://<ref>.supabase.co/functions/v1/dispatch'),
-  ('dispatch_secret', '<algo largo y al azar>')
-on conflict (key) do update set value = excluded.value;
-```
-
-Sin `dispatch_url`, `app.trigger_dispatch()` sale sin hacer nada: la cola se
-llena y no la vacía nadie.
-
-## 4. Las Edge Functions
-
-Corren en Supabase, no en Vercel, así que tienen sus propios secretos.
+## 3. Las Edge Functions y sus ajustes
 
 ```bash
 scripts/deploy-funciones.sh prod
 ```
 
-Genera el secreto compartido entre la base y el emisor, carga los secretos,
-despliega las dos funciones y deja escrito el SQL del paso 3 con los valores ya
-puestos, en un archivo que git ignora. No lo imprime: tiene el secreto adentro.
+Un solo comando hace todo: carga los secretos en Supabase, despliega el emisor
+y el webhook, **comprueba que el portero los deje pasar** y escribe los tres
+ajustes que viven dentro de la base (`dispatch_url`, `dispatch_secret`,
+`site_url`).
 
-`SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` las inyecta Supabase sola. La
-clave de Brevo, si vas a mandar correos, se agrega al mismo archivo
-`.env.functions.prod.local` y se vuelve a correr el script.
+> Antes esto terminaba con un SQL para pegar a mano en el panel. Era el paso
+> que se olvidaba, y olvidarlo no da ningún error: la cola se llena y no la
+> vacía nadie.
 
-**Sin este paso los avisos no llegan.** El aviso se encola igual —queda en
-`team_alerts`— pero no hay quién lo saque de la cola.
+### El portero de Supabase
 
-## 5. Después del primer deploy
+Las Edge Functions se despliegan exigiendo un JWT del proyecto y respondiendo
+**401 antes de llegar a nuestro código**. Los dos que las llaman no tienen ni
+pueden tener ese JWT: el reloj de Postgres manda el secreto compartido, y Meta
+manda lo que manda Meta.
+
+Por eso `supabase/config.toml` lleva:
+
+```toml
+[functions.dispatch]
+verify_jwt = false
+
+[functions.whatsapp-webhook]
+verify_jwt = false
+```
+
+No las deja abiertas: el emisor compara `x-dlay-secret` y el webhook valida la
+firma HMAC de Meta sobre el cuerpo crudo. Se defienden solas y mejor.
+
+## 4. Comprobar que quedó andando
+
+```bash
+scripts/diagnostico.sh prod
+```
+
+Pregunta a la base en qué estado quedó cada eslabón. Devuelve cantidades y
+ajustes faltantes, nunca datos de nadie, así que se puede pegar en un chat.
+
+Lo que tiene que decir:
+
+- `ajustes` — las tres claves puestas, ninguna en `FALTA`.
+- `reloj` — dos tareas activas: planificar y despachar.
+- `suscripciones.equipo` — al menos uno, si alguien activó las notificaciones.
+
+Y desde la propia aplicación, el botón **Probar** al lado de las
+notificaciones manda un aviso de prueba que recorre la cadena entera. Si llega
+al teléfono, funciona todo.
+
+## 5. Los secretos, en detalle
+
+Las funciones corren en Supabase, no en Vercel, así que **sus secretos van en
+Supabase**. Ponerlos en Vercel no hace nada: el emisor nunca los ve.
+
+Viven en `.env.functions.prod.local`, que git ignora y el script carga solo:
+
+| Secreto | Para qué |
+| --- | --- |
+| `DISPATCH_SECRET` | Lo genera el script la primera vez. La base lo manda en una cabecera y el emisor lo compara |
+| `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | Firman las notificaciones push. Salen de `node scripts/vapid.mjs` |
+| `VAPID_SUBJECT` | Un `mailto:` de contacto, que el estándar exige |
+| `BREVO_API_KEY` | Sólo si vas a mandar correos |
+
+Para agregar uno nuevo —la clave de Brevo, por ejemplo— se escribe en ese
+archivo y se vuelve a correr `scripts/deploy-funciones.sh prod`.
+
+`SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` las inyecta Supabase sola: no van
+en ese archivo.
+
+## 6. Después del primer deploy
 
 ### Primero: la confirmación por correo
 
