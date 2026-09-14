@@ -67,6 +67,29 @@ npx supabase functions deploy dispatch
 npx supabase functions deploy whatsapp-webhook
 
 # ---------------------------------------------------------------------------
+# Comprobar que el portero deja pasar
+# ---------------------------------------------------------------------------
+# Supabase exige un JWT suyo salvo que `config.toml` diga lo contrario para la
+# función. Si el portero está puesto, el reloj de Postgres y Meta se comen un
+# 401 sin que aparezca un error en ningún lado: simplemente no pasa nada. Es la
+# clase de falla que cuesta días encontrar, así que se verifica acá.
+dispatch_secret_probe=$(grep -E '^DISPATCH_SECRET=' "$secretos" | cut -d= -f2-)
+respuesta=$(curl -s -m 30 -X POST "https://${ref}.supabase.co/functions/v1/dispatch" \
+  -H "content-type: application/json" \
+  -H "x-dlay-secret: ${dispatch_secret_probe}" \
+  -d '{}' || true)
+
+echo
+if printf '%s' "$respuesta" | grep -q '"tomados"'; then
+  echo "El emisor responde: ${respuesta}"
+else
+  echo "AVISO: el emisor no respondió como se esperaba." >&2
+  echo "  Respuesta: ${respuesta}" >&2
+  echo "  Si dice «Missing authorization header», falta redesplegar con el" >&2
+  echo "  bloque [functions.dispatch] verify_jwt = false de supabase/config.toml." >&2
+fi
+
+# ---------------------------------------------------------------------------
 # Lo que todavía hay que correr a mano
 # ---------------------------------------------------------------------------
 # Estas tres filas viven en la base porque el reloj de Postgres las lee desde
