@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Barra } from "@/app/_components/barra";
 import { atLeast, getCurrentTenant } from "@/lib/auth/tenant";
-import { getMessagingSettings, toTimeInput } from "@/lib/data/configuracion";
+import {
+  getMessagingSettings,
+  getMonthSpendCents,
+  toTimeInput,
+} from "@/lib/data/configuracion";
 import { Volver } from "../_components/volver";
 import { FormMensajeria } from "./form";
 
@@ -15,6 +19,8 @@ export default async function MensajeriaPage() {
 
   const settings = await getMessagingSettings();
   if (!settings) notFound();
+
+  const gastadoCents = await getMonthSpendCents(membership.tenant.timezone);
 
   return (
     <>
@@ -36,6 +42,7 @@ export default async function MensajeriaPage() {
           settings={settings}
           quietStart={toTimeInput(settings.quiet_start)}
           quietEnd={toTimeInput(settings.quiet_end)}
+          gastadoCents={gastadoCents}
         />
       </main>
     </>

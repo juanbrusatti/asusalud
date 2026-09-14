@@ -35,9 +35,11 @@ function Submit({ label }: { label: string }) {
 export function FormPlantilla({
   template,
   submitLabel,
+  correoDisponible,
 }: {
   template?: Template;
   submitLabel: string;
+  correoDisponible: boolean;
 }) {
   const action = saveTemplate.bind(null, template?.id ?? null);
   const [state, formAction] = useActionState(action, INITIAL);
@@ -75,11 +77,14 @@ export function FormPlantilla({
             onChange={(e) => setChannel(e.target.value as Channel)}
             hint="Cada canal necesita su propio mensaje: lo que sirve en un correo no sirve en un WhatsApp."
           >
-            {(Object.keys(CHANNEL_LABELS) as Channel[]).map((c) => (
-              <option key={c} value={c}>
-                {CHANNEL_LABELS[c]}
-              </option>
-            ))}
+            {(Object.keys(CHANNEL_LABELS) as Channel[])
+              // El correo no se ofrece mientras no haya con qué enviarlo.
+              .filter((c) => c !== "email" || correoDisponible)
+              .map((c) => (
+                <option key={c} value={c}>
+                  {CHANNEL_LABELS[c]}
+                </option>
+              ))}
           </Select>
 
           {channel === "whatsapp" ? (
