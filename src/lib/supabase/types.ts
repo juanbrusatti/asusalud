@@ -1630,6 +1630,7 @@ export type Database = {
           display_phone: string | null
           last_checked_at: string | null
           messaging_limit: string | null
+          onboarding: string
           phone_number_id: string
           quality_rating: string | null
           status: string
@@ -1645,6 +1646,7 @@ export type Database = {
           display_phone?: string | null
           last_checked_at?: string | null
           messaging_limit?: string | null
+          onboarding?: string
           phone_number_id: string
           quality_rating?: string | null
           status?: string
@@ -1660,6 +1662,7 @@ export type Database = {
           display_phone?: string | null
           last_checked_at?: string | null
           messaging_limit?: string | null
+          onboarding?: string
           phone_number_id?: string
           quality_rating?: string | null
           status?: string
@@ -1740,27 +1743,33 @@ export type Database = {
           has_token: boolean | null
           last_checked_at: string | null
           messaging_limit: string | null
+          onboarding: string | null
           quality_rating: string | null
           status: string | null
           tenant_id: string | null
+          waba_id: string | null
         }
         Insert: {
           display_phone?: string | null
           has_token?: never
           last_checked_at?: string | null
           messaging_limit?: string | null
+          onboarding?: string | null
           quality_rating?: string | null
           status?: string | null
           tenant_id?: string | null
+          waba_id?: string | null
         }
         Update: {
           display_phone?: string | null
           has_token?: never
           last_checked_at?: string | null
           messaging_limit?: string | null
+          onboarding?: string | null
           quality_rating?: string | null
           status?: string | null
           tenant_id?: string | null
+          waba_id?: string | null
         }
         Relationships: [
           {
@@ -2051,6 +2060,19 @@ export type Database = {
         Args: { p_endpoint: string }
         Returns: undefined
       }
+      whatsapp_connect: {
+        Args: {
+          p_access_token: string
+          p_app_secret?: string
+          p_display_phone?: string
+          p_onboarding?: string
+          p_phone_number_id: string
+          p_verify_token?: string
+          p_waba_id?: string
+        }
+        Returns: Json
+      }
+      whatsapp_disconnect: { Args: never; Returns: Json }
     }
     Enums: {
       app_role: "owner" | "admin" | "staff" | "reception"
