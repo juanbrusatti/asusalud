@@ -90,31 +90,43 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Lo que todavía hay que correr a mano
+# Los ajustes que viven dentro de la base
 # ---------------------------------------------------------------------------
-# Estas tres filas viven en la base porque el reloj de Postgres las lee desde
-# adentro, y no hay forma de escribirlas sin la contraseña de la base.
-# La dirección del sitio es la de la aplicación en Vercel, no la de Supabase:
-# es la que termina dentro del enlace que recibe el cliente. Si no está, se
-# deja una marca que no se puede pegar por accidente.
+# `dispatch_url`, `dispatch_secret` y `site_url` viven en una tabla porque el
+# reloj de Postgres los lee desde adentro. Antes había que pegarlos a mano en
+# el panel, que es justo el paso que se olvida: sin `dispatch_url` la cola se
+# llena y no la vacía nadie, sin que aparezca ningún error.
 sitio=$(grep -E '^NEXT_PUBLIC_SITE_URL=' "$archivo" | cut -d= -f2- || true)
-[ -z "$sitio" ] && sitio="https://CAMBIAR-POR-EL-DOMINIO-REAL"
-dispatch_secret=$(grep -E '^DISPATCH_SECRET=' "$secretos" | cut -d= -f2-)
+clave=$(grep -E '^SUPABASE_SERVICE_ROLE_KEY=' "$archivo" | cut -d= -f2-)
 
-pendiente="platform-settings.$destino.sql"
-cat > "$pendiente" <<EOF
--- Pegá esto en el SQL editor de ${ref} y ejecutalo una vez.
--- Si abajo dice CAMBIAR-POR-EL-DOMINIO-REAL, poné el dominio de la aplicación
--- antes de ejecutarlo: de ahí sale el enlace que reciben los clientes.
-insert into public.platform_settings (key, value) values
-  ('site_url',        '$sitio'),
-  ('dispatch_url',    'https://$ref.supabase.co/functions/v1/dispatch'),
-  ('dispatch_secret', '$dispatch_secret')
-on conflict (key) do update set value = excluded.value;
-EOF
-chmod 600 "$pendiente"
+if [ -z "$sitio" ] || printf '%s' "$sitio" | grep -q 'CAMBIAR'; then
+  echo "AVISO: falta NEXT_PUBLIC_SITE_URL en ${archivo}." >&2
+  echo "  Es el dominio de la aplicación, del que sale el enlace que recibe" >&2
+  echo "  cada cliente dentro del mensaje. Ponelo y volvé a correr esto." >&2
+  exit 1
+fi
+
+ajustar() {
+  local k="$1" v="$2"
+  local r
+  r=$(curl -s -m 30 -X POST "${url}/rest/v1/rpc/rpc_set_platform_setting" \
+        -H "apikey: ${clave}" -H "Authorization: Bearer ${clave}" \
+        -H "content-type: application/json" \
+        -d "$(printf '{"p_key":"%s","p_value":"%s"}' "$k" "$v")")
+
+  if printf '%s' "$r" | grep -q '"ok": *true'; then
+    echo "  · ${k}"
+  else
+    echo "  · ${k} — NO se pudo: ${r}" >&2
+    return 1
+  fi
+}
 
 echo
-echo "Funciones desplegadas."
-echo "Falta un paso: abrí $pendiente y pegá su contenido en el SQL editor."
-echo "(Tiene el secreto adentro, por eso no se imprime acá.)"
+echo "Escribiendo los ajustes de plataforma…"
+ajustar site_url        "$sitio"
+ajustar dispatch_url    "https://${ref}.supabase.co/functions/v1/dispatch"
+ajustar dispatch_secret "$dispatch_secret_probe"
+
+echo
+echo "Listo. Comprobá con: scripts/diagnostico.sh ${destino}"
