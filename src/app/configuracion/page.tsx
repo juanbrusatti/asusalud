@@ -5,6 +5,7 @@ import { Barra } from "@/app/_components/barra";
 import { Card, CardBody } from "@/components/ui/card";
 import { atLeast, getCurrentTenant } from "@/lib/auth/tenant";
 import { getBookingSettings, getBusinessHours } from "@/lib/data/configuracion";
+import { getWhatsappStatus } from "@/lib/data/whatsapp";
 
 export const metadata: Metadata = { title: "Configuración" };
 
@@ -27,6 +28,12 @@ const SECCIONES = [
       "Si tus clientes pueden sacar turno por su cuenta, con cuánta anticipación y hasta cuándo.",
   },
   {
+    href: "/configuracion/whatsapp",
+    titulo: "WhatsApp",
+    detalle:
+      "Conectá tu número para que los recordatorios puedan salir también por WhatsApp.",
+  },
+  {
     href: "/configuracion/mensajeria",
     titulo: "Envío de mensajes",
     detalle:
@@ -39,9 +46,10 @@ export default async function ConfiguracionPage() {
   if (!membership) return null;
   if (!atLeast(membership.role, "admin")) notFound();
 
-  const [horarios, reservas] = await Promise.all([
+  const [horarios, reservas, whatsapp] = await Promise.all([
     getBusinessHours(),
     getBookingSettings(),
+    getWhatsappStatus(),
   ]);
 
   // Lo que está sin resolver se marca acá, así nadie tiene que entrar sección
@@ -52,6 +60,9 @@ export default async function ConfiguracionPage() {
   }
   if (!reservas?.enabled) {
     pendientes["/configuracion/reservas"] = "Agenda cerrada al público";
+  }
+  if (!whatsapp) {
+    pendientes["/configuracion/whatsapp"] = "Sin conectar";
   }
 
   return (
