@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Field } from "@/components/ui/field";
+import { formatPrice } from "@/lib/money";
 import { saveMensajeria, type FormState } from "@/lib/actions/configuracion";
 import type { MessagingSettings } from "@/lib/configuracion";
 import { Guardar, Resultado } from "../_components/guardar";
@@ -14,10 +15,12 @@ export function FormMensajeria({
   settings,
   quietStart,
   quietEnd,
+  gastadoCents,
 }: {
   settings: MessagingSettings;
   quietStart: string;
   quietEnd: string;
+  gastadoCents: number;
 }) {
   const [state, action] = useActionState(saveMensajeria, INITIAL);
 
@@ -98,8 +101,52 @@ export function FormMensajeria({
                 : Math.round(Number(settings.monthly_budget_cents) / 100)
             }
             className="w-40"
-            hint="En pesos. Dejalo vacío si no querés tope. Sólo cuentan los mensajes de WhatsApp: el correo y las notificaciones no cuestan nada."
+            hint="En pesos. Dejalo vacío si no querés tope."
           />
+
+          <p className="text-[13.5px] text-muted">
+            Va{" "}
+            <span className="font-medium tabular-nums text-ink">
+              {formatPrice(gastadoCents)}
+            </span>{" "}
+            gastado este mes.
+          </p>
+
+          <p className="text-[12.5px] leading-snug text-muted">
+            Sólo cuentan los mensajes de WhatsApp. Cuando se llega al tope se
+            frenan esos, pero{" "}
+            <strong className="font-medium text-ink">
+              las notificaciones siguen saliendo
+            </strong>
+            : un tope de plata que apaga los canales gratis no protege nada,
+            sólo deja a alguien sin avisar.
+          </p>
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardBody className="grid gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <CardTitle>Correo</CardTitle>
+            <span className="rounded-pill border-[1.5px] border-line px-2.5 py-1 text-[11.5px] font-semibold uppercase tracking-wider text-muted">
+              Más adelante
+            </span>
+          </div>
+
+          <p className="max-w-prose text-[13.5px] leading-relaxed text-muted">
+            El correo es el canal gratis para quien no tiene la aplicación
+            instalada: cada recordatorio que sale por ahí en lugar de WhatsApp
+            son{" "}
+            <strong className="font-medium text-ink">$ 37,68</strong> que no se
+            gastan.
+          </p>
+
+          <p className="max-w-prose text-[13.5px] leading-relaxed text-muted">
+            Está construido y probado, pero todavía no hay proveedor de correo
+            conectado, así que no se ofrece: elegir un canal que no puede
+            entregar es peor que no tenerlo. Cuando esté, se prende acá y las
+            reglas que ya tenés empiezan a usarlo solas, sin tocar ninguna.
+          </p>
         </CardBody>
       </Card>
 

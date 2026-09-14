@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Barra } from "@/app/_components/barra";
 import { atLeast, getCurrentTenant } from "@/lib/auth/tenant";
 import { listTemplates } from "@/lib/data/recordatorios";
+import { isEmailEnabled } from "@/lib/data/configuracion";
 import { FormPlantilla } from "../form-plantilla";
 
 export const metadata: Metadata = { title: "Editar mensaje" };
@@ -22,6 +23,9 @@ export default async function EditarPlantillaPage({
   const template = (await listTemplates()).find((t) => t.id === id);
   if (!template) notFound();
 
+
+  const correoDisponible = await isEmailEnabled();
+
   return (
     <>
       <Barra tenantName={membership.tenant.name} />
@@ -29,7 +33,7 @@ export default async function EditarPlantillaPage({
         <h1 className="text-[28px] font-bold leading-tight tracking-[-0.03em]">
           {template.name}
         </h1>
-        <FormPlantilla template={template} submitLabel="Guardar cambios" />
+        <FormPlantilla correoDisponible={correoDisponible} template={template} submitLabel="Guardar cambios" />
       </main>
     </>
   );
