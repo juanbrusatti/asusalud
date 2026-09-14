@@ -1883,6 +1883,7 @@ export type Database = {
         Returns: string
       }
       report_period: { Args: { p_from: string; p_to: string }; Returns: Json }
+      rpc_avisos_diagnostico: { Args: never; Returns: Json }
       rpc_claim_due_jobs: {
         Args: { p_limit?: number }
         Returns: {
@@ -2036,6 +2037,7 @@ export type Database = {
           verify_token: string
         }[]
       }
+      send_test_alert: { Args: never; Returns: Json }
       session_expected_cents_public: {
         Args: { p_session: string }
         Returns: number

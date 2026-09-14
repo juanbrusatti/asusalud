@@ -384,6 +384,30 @@ deno_version = 2
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
+# ---------------------------------------------------------------------------
+# Las dos funciones que llaman desde afuera
+# ---------------------------------------------------------------------------
+# Por defecto, Supabase exige un JWT suyo en la cabecera `Authorization` y
+# rechaza con 401 ANTES de que el pedido llegue a nuestro código. Para estas
+# dos eso es fatal, y no de forma visible: no aparece ningún error en ningún
+# lado, simplemente no pasa nada.
+#
+#   · El emisor lo llama el reloj de Postgres por pg_net, que manda el secreto
+#     compartido y nada más. Con el portero puesto, la cola se llena y no la
+#     vacía nadie: ni un recordatorio, ni un aviso al equipo, ni un WhatsApp.
+#   · El webhook lo llama Meta, que obviamente no tiene un JWT de nuestro
+#     proyecto. Con el portero puesto, ni siquiera se puede completar el
+#     enlace inicial del número.
+#
+# Que no haya JWT no las deja abiertas: cada una se defiende sola y mejor.
+# El emisor compara `x-dlay-secret` con el secreto compartido; el webhook
+# valida la firma HMAC de Meta sobre el cuerpo crudo del pedido.
+[functions.dispatch]
+verify_jwt = false
+
+[functions.whatsapp-webhook]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327

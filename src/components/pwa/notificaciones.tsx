@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
+  enviarAvisoDePrueba,
   removePushSubscription,
   savePushSubscription,
 } from "@/lib/actions/push";
@@ -52,6 +53,9 @@ export function Notificaciones({
 }) {
   const [estado, setEstado] = useState<Estado>("cargando");
   const [trabajando, setTrabajando] = useState(false);
+  const [prueba, setPrueba] = useState<{ ok: boolean; texto: string } | null>(
+    null,
+  );
   const [falla, setFalla] = useState<string | null>(null);
 
   useEffect(() => {
@@ -146,6 +150,27 @@ export function Notificaciones({
     }
   }
 
+  async function probar() {
+    setTrabajando(true);
+    setPrueba(null);
+    try {
+      const r = await enviarAvisoDePrueba();
+      setPrueba(
+        r.ok
+          ? {
+              ok: true,
+              texto:
+                r.dispositivos && r.dispositivos > 1
+                  ? `Enviada a ${r.dispositivos} dispositivos. Si no llega en un minuto, algo falta del lado del servidor.`
+                  : "Enviada. Si no llega en un minuto, algo falta del lado del servidor.",
+            }
+          : { ok: false, texto: r.error ?? "No se pudo enviar." },
+      );
+    } finally {
+      setTrabajando(false);
+    }
+  }
+
   async function desactivar() {
     setTrabajando(true);
     try {
@@ -174,18 +199,41 @@ export function Notificaciones({
 
   if (estado === "activo") {
     return (
-      <div className="flex flex-wrap items-center gap-3">
-        <p className="text-[13.5px] text-muted">
-          Las notificaciones están activadas en este dispositivo.
-        </p>
-        <Button
-          variant="ghost"
-          size="sm"
-          disabled={trabajando}
-          onClick={() => void desactivar()}
-        >
-          Desactivar
-        </Button>
+      <div className="grid gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="mr-auto text-[13.5px] text-muted">
+            Las notificaciones están activadas en este dispositivo.
+          </p>
+          {/* Probar no es un lujo: es la única forma de saber que la cadena
+              entera funciona sin esperar a que alguien saque un turno. */}
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={trabajando}
+            onClick={() => void probar()}
+          >
+            {trabajando ? "Enviando…" : "Probar"}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={trabajando}
+            onClick={() => void desactivar()}
+          >
+            Desactivar
+          </Button>
+        </div>
+
+        {prueba && (
+          <p
+            role="status"
+            className={`rounded-[14px] px-3.5 py-2.5 text-[13px] leading-snug ${
+              prueba.ok ? "bg-surface-2 text-ink" : "bg-danger-wash text-danger"
+            }`}
+          >
+            {prueba.texto}
+          </p>
+        )}
       </div>
     );
   }
