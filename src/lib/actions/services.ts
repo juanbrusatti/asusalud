@@ -29,6 +29,7 @@ const schema = z
   .object({
     name: z.string().trim().min(2, "Poné el nombre del servicio."),
     description: z.string().trim().max(500).optional(),
+    preparationNote: z.string().trim().max(300).optional(),
     categoryId: z.string().uuid().nullable(),
     durationMinutes: z
       .number()
@@ -67,6 +68,8 @@ function read(formData: FormData) {
   return {
     name: String(formData.get("name") ?? ""),
     description: String(formData.get("description") ?? "").trim() || undefined,
+    preparationNote:
+      String(formData.get("preparationNote") ?? "").trim() || undefined,
     categoryId: (String(formData.get("categoryId") ?? "") || null) as
       | string
       | null,
@@ -84,6 +87,7 @@ function toRow(v: z.infer<typeof schema>) {
   return {
     name: v.name,
     description: v.description ?? null,
+    preparation_note: v.preparationNote ?? null,
     category_id: v.categoryId,
     duration_minutes: v.durationMinutes,
     buffer_minutes: v.bufferMinutes,

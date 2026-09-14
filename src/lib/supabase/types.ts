@@ -1469,6 +1469,7 @@ export type Database = {
           is_active: boolean
           is_bookable_online: boolean
           name: string
+          preparation_note: string | null
           price_cents: number | null
           price_mode: Database["public"]["Enums"]["price_mode"]
           sort_order: number
@@ -1486,6 +1487,7 @@ export type Database = {
           is_active?: boolean
           is_bookable_online?: boolean
           name: string
+          preparation_note?: string | null
           price_cents?: number | null
           price_mode?: Database["public"]["Enums"]["price_mode"]
           sort_order?: number
@@ -1503,6 +1505,7 @@ export type Database = {
           is_active?: boolean
           is_bookable_online?: boolean
           name?: string
+          preparation_note?: string | null
           price_cents?: number | null
           price_mode?: Database["public"]["Enums"]["price_mode"]
           sort_order?: number
@@ -1975,7 +1978,7 @@ export type Database = {
           p_phone_number_id: string
           p_wa_message_id: string
         }
-        Returns: string
+        Returns: Json
       }
       rpc_jobs_payload: {
         Args: { p_ids: string[] }

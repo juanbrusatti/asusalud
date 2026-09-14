@@ -2,9 +2,9 @@
  * Reemplaza los huecos de una plantilla por los datos reales.
  *
  * Las plantillas admiten {{cliente}}, {{fecha}}, {{hora}}, {{servicio}},
- * {{estetica}} y {{link}}. Lo que no se conoce se reemplaza por vacío y no por
- * el texto del hueco: a nadie le tiene que llegar un mensaje que diga
- * "{{servicio}}".
+ * {{estetica}}, {{link}} y {{preparacion}}. Lo que no se conoce se reemplaza
+ * por vacío y no por el texto del hueco: a nadie le tiene que llegar un
+ * mensaje que diga "{{servicio}}".
  */
 
 export type RenderContext = {
@@ -13,8 +13,26 @@ export type RenderContext = {
   tenantTimezone: string;
   appointmentAt: string | null;
   serviceNames: string | null;
-  /** El enlace donde la clienta puede confirmar, mover o cancelar el turno. */
+  /** El enlace donde el cliente puede confirmar, mover o cancelar el turno. */
   manageUrl: string | null;
+  /** Qué tiene que saber antes de venir, según los servicios del turno. */
+  preparation: string | null;
+};
+
+/**
+ * Con qué se reemplaza un hueco vacío en WhatsApp.
+ *
+ * Meta rechaza los parámetros vacíos: la plantilla aprobada espera N valores y
+ * cada uno tiene que traer algo. En los otros canales un hueco vacío se limpia
+ * y no pasa nada, pero acá el mensaje entero se cae.
+ *
+ * Por eso cada hueco tiene con qué llenarse, y el último recurso es una raya:
+ * fea, pero entrega el mensaje. Un recordatorio con una raya llega; uno
+ * rechazado por Meta no llega nunca y nadie se entera.
+ */
+const RELLENO_WHATSAPP: Record<string, string> = {
+  preparacion: "Cualquier duda, escribinos.",
+  servicio: "tu turno",
 };
 
 function formatDate(iso: string, timeZone: string): string {
@@ -47,6 +65,7 @@ export function render(template: string, ctx: RenderContext): string {
       : "",
     servicio: ctx.serviceNames ?? "",
     link: ctx.manageUrl ?? "",
+    preparacion: ctx.preparation ?? "",
   };
 
   return template
@@ -79,11 +98,15 @@ export function templateParameters(
       : "",
     servicio: ctx.serviceNames ?? "",
     link: ctx.manageUrl ?? "",
+    preparacion: ctx.preparation ?? "",
   };
 
   const found: string[] = [];
   for (const match of template.matchAll(/\{\{\s*(\w+)\s*\}\}/g)) {
-    found.push(values[match[1]] ?? "");
+    const key = match[1];
+    const valor = (values[key] ?? "").trim();
+    // Nunca vacío: Meta rechaza el mensaje entero si falta un parámetro.
+    found.push(valor || RELLENO_WHATSAPP[key] || "—");
   }
   return found;
 }

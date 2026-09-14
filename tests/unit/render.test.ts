@@ -12,6 +12,7 @@ const CTX = {
   appointmentAt: "2026-09-14T12:00:00.000Z",
   serviceNames: "Depilación Definitiva",
   manageUrl: "https://dlay.app/t/abc123",
+  preparation: "No te depiles con cera 15 días antes.",
 };
 
 describe("armado del mensaje", () => {
@@ -101,5 +102,40 @@ describe("el enlace del turno", () => {
       "Mirián",
       "https://dlay.app/t/abc123",
     ]);
+  });
+});
+
+describe("las indicaciones de cada servicio", () => {
+  it("entran en el mensaje por su hueco", () => {
+    const texto = render(
+      "Mañana a las {{hora}} para {{servicio}}. {{preparacion}}",
+      CTX,
+    );
+    expect(texto).toContain("No te depiles con cera 15 días antes.");
+  });
+
+  it("un servicio sin indicaciones no deja el hueco a la vista", () => {
+    const texto = render(
+      "Mañana a las {{hora}} para {{servicio}}. {{preparacion}}",
+      { ...CTX, preparation: null },
+    );
+    expect(texto).not.toContain("{{");
+    // Ni un espacio de más antes del punto, ni dos seguidos.
+    expect(texto).not.toMatch(/ {2,}/);
+    expect(texto.endsWith(".")).toBe(true);
+  });
+
+  it("en WhatsApp ningún parámetro puede ir vacío", () => {
+    const parametros = templateParameters(
+      "Hola {{cliente}}, {{servicio}} el {{fecha}}. {{preparacion}}",
+      { ...CTX, preparation: null, serviceNames: null },
+    );
+
+    // Meta rechaza el mensaje entero si falta un valor: la plantilla aprobada
+    // espera N parámetros y cada uno tiene que traer algo.
+    expect(parametros).toHaveLength(4);
+    for (const p of parametros) {
+      expect(p.trim().length).toBeGreaterThan(0);
+    }
   });
 });
