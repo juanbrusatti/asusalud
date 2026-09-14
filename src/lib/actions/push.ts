@@ -47,3 +47,31 @@ export async function removePushSubscription(endpoint: string) {
   await supabase.rpc("unregister_push_subscription", { p_endpoint: endpoint });
   return { error: null };
 }
+
+/**
+ * Manda un aviso de prueba al propio equipo.
+ *
+ * Recorre la misma cadena que un aviso real —cola, reloj, emisor, claves,
+ * teléfono—, así que si esto llega, funciona todo. Y si no llega, el error
+ * dice en qué eslabón se cortó, que es lo que no había forma de saber.
+ */
+export async function enviarAvisoDePrueba(): Promise<{
+  ok: boolean;
+  error: string | null;
+  dispositivos?: number;
+}> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("send_test_alert");
+
+  if (error) return { ok: false, error: error.message };
+
+  const r = data as unknown as {
+    ok: boolean;
+    error?: string;
+    dispositivos?: number;
+  };
+
+  return r.ok
+    ? { ok: true, error: null, dispositivos: r.dispositivos }
+    : { ok: false, error: r.error ?? "No se pudo enviar la prueba." };
+}
