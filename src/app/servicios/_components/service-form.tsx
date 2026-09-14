@@ -89,8 +89,21 @@ export function ServiceForm({
             name="description"
             maxLength={500}
             defaultValue={text("description", service?.description ?? "")}
-            placeholder="Qué incluye, cómo se prepara el cliente, cuántas sesiones suele llevar."
+            placeholder="Qué incluye y cuántas sesiones suele llevar."
             hint="Se muestra en la reserva online. Opcional."
+          />
+
+          <Textarea
+            label="Cómo prepararse"
+            name="preparationNote"
+            maxLength={300}
+            rows={3}
+            defaultValue={text(
+              "preparationNote",
+              service?.preparation_note ?? "",
+            )}
+            placeholder="No te depiles con cera ni pinza 15 días antes, y vení sin cremas."
+            hint="Va dentro del recordatorio de este servicio. Escribilo como se lo dirías al cliente, que lo va a leer tal cual."
           />
         </CardBody>
       </Card>
