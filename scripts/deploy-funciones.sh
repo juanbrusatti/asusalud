@@ -106,6 +106,22 @@ if [ -z "$sitio" ] || printf '%s' "$sitio" | grep -q 'CAMBIAR'; then
   exit 1
 fi
 
+# Que esté escrito no quiere decir que exista. Un dominio equivocado no da
+# ningún error visible: se escribe igual, y meses después alguien se entera de
+# que todos los enlaces que mandó no llevaban a ninguna parte.
+codigo=$(curl -s -o /dev/null -w '%{http_code}' -m 20 "${sitio}/entrar" || echo 000)
+
+case "$codigo" in
+  2*|3*|401) : ;;
+  *)
+    echo "AVISO: ${sitio}/entrar respondió ${codigo}." >&2
+    echo "  Ese no parece el dominio de la aplicación. Como de ahí sale el" >&2
+    echo "  enlace que va dentro de cada recordatorio, no lo escribo." >&2
+    echo "  Corregí NEXT_PUBLIC_SITE_URL en ${archivo} y volvé a correr esto." >&2
+    exit 1
+    ;;
+esac
+
 ajustar() {
   local k="$1" v="$2"
   local r
