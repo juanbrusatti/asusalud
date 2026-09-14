@@ -40,7 +40,7 @@ export const TRIGGER_LABELS: Record<Trigger, string> = {
 };
 
 /**
- * Los desfases que una estética realmente usa. El campo acepta cualquier
+ * Los desfases que un negocio realmente usa. El campo acepta cualquier
  * número, pero ofrecer los habituales evita que alguien tenga que calcular
  * cuántos minutos son siete días.
  */

@@ -41,7 +41,7 @@ export async function getBookingPage(slug: string): Promise<BookingPage | null> 
 
 export type PublicLink = { slug: string; enabled: boolean };
 
-/** El enlace público de la estética, para compartirlo. */
+/** El enlace público del negocio, para compartirlo. */
 export async function getPublicLink(): Promise<PublicLink | null> {
   const supabase = await createClient();
 

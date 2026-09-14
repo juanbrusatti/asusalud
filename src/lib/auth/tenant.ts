@@ -13,7 +13,7 @@ export type Membership = {
 };
 
 /**
- * Estéticas de la persona que está navegando.
+ * Negocios de la persona que está navegando.
  *
  * Va envuelto en `cache` para que varios componentes del mismo render compartan
  * una sola consulta. No hace falta filtrar por usuario: la RLS ya devuelve
@@ -38,7 +38,7 @@ export const getMemberships = cache(async (): Promise<Membership[]> => {
     }));
 });
 
-/** La estética activa. Hoy es la primera; cuando haya varias, un selector. */
+/** El negocio activo. Hoy es la primera; cuando haya varias, un selector. */
 export const getCurrentTenant = cache(async (): Promise<Membership | null> => {
   const memberships = await getMemberships();
   return memberships[0] ?? null;

@@ -15,11 +15,11 @@ const INITIAL: FormState = { error: null };
 
 /** Lo que el sistema reemplaza al enviar. */
 const VARIABLES = [
-  ["{{cliente}}", "el nombre de la clienta"],
+  ["{{cliente}}", "el nombre del cliente"],
   ["{{fecha}}", "la fecha del turno"],
   ["{{hora}}", "la hora del turno"],
   ["{{servicio}}", "qué se le hace"],
-  ["{{estetica}}", "el nombre de tu estética"],
+  ["{{estetica}}", "el nombre de tu negocio"],
   ["{{link}}", "el enlace donde puede mover o cancelar el turno"],
 ] as const;
 
@@ -146,7 +146,7 @@ export function FormPlantilla({
               </div>
               <p className="text-[12.5px] leading-snug text-muted">
                 Tienen que estar cargados en Meta con el mismo orden. Cuando la
-                clienta toca &ldquo;Confirmar turno&rdquo;, la agenda se
+                cliente toca &ldquo;Confirmar turno&rdquo;, la agenda se
                 actualiza sola: es un mensaje menos que alguien tiene que leer y
                 ejecutar a mano.
               </p>
@@ -196,7 +196,7 @@ export function FormPlantilla({
               ))}
             </div>
             <p className="text-[12.5px] leading-snug text-muted">
-              Se reemplazan por los datos reales de cada clienta al enviar.
+              Se reemplazan por los datos reales de cada cliente al enviar.
             </p>
           </div>
 

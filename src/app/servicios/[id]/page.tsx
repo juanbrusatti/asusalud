@@ -24,7 +24,7 @@ export default async function EditarServicioPage({
     listCategories(),
   ]);
 
-  // Si el servicio es de otra estética, la RLS ya devolvió null.
+  // Si el servicio es de otro negocio, la RLS ya devolvió null.
   if (!service) notFound();
 
   const action = updateService.bind(null, id);

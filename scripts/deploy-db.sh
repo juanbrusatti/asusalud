@@ -2,7 +2,7 @@
 #
 # Aplica las migraciones a un proyecto Supabase remoto.
 #
-#   scripts/deploy-db.sh prod      → el proyecto de la estética
+#   scripts/deploy-db.sh prod      → el proyecto del negocio
 #   scripts/deploy-db.sh preview   → el de desarrollo
 #
 # La referencia del proyecto se saca de la URL que hay en el archivo de

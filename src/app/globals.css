@@ -145,7 +145,7 @@
     border-radius: 6px;
   }
 
-  /* Nadie dentro de una estética quiere que la pantalla haga acrobacias. */
+  /* Nadie dentro de un negocio quiere que la pantalla haga acrobacias. */
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

@@ -25,7 +25,7 @@ const DEFAULT_COUNTRY = "AR" as const;
  *
  * Quien escribe "0358 15 412-3456" ya dijo que es celular (el 15 lo indica) y
  * la librería resuelve sola. Pero "3584123456" es ambiguo: puede ser fijo o
- * celular. Para la clientela de una estética es celular casi siempre, así que
+ * celular. Para la clientela de un negocio es celular casi siempre, así que
  * asumimos eso y lo marcamos, en vez de guardar un número que no va a recibir
  * nada.
  */

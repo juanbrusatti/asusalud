@@ -1,7 +1,7 @@
 # Seguridad
 
 Guardamos el teléfono, el historial de tratamientos y el gasto de miles de
-personas reales. El aislamiento entre estéticas está en la base de datos, no en
+personas reales. El aislamiento entre negocios está en la base de datos, no en
 un `if` del código de la aplicación.
 
 ## Principios
@@ -26,7 +26,7 @@ necesitaría consultarse a sí misma).
 Se invocan siempre envueltas en `(select ...)`:
 
 ```sql
-create policy "branches: ver las de mis estéticas"
+create policy "branches: ver las de mis negocios"
   on public.branches for select to authenticated
   using ( (select app.has_tenant(tenant_id)) );
 ```
@@ -64,7 +64,7 @@ queda abierta a quien no tiene sesión, aunque el `grant` diga `authenticated`.
 
 La mayoría no era explotable —las funciones `security invoker` chocan igual
 contra la RLS— pero una sí: `register_push_subscription` es `security definer`
-y acepta el id de clienta que se le pase. Un visitante podía suscribir su
+y acepta el id de cliente que se le pase. Un visitante podía suscribir su
 navegador a los recordatorios de otra persona.
 
 Desde `20260913110000_permisos-anon.sql`:
@@ -79,19 +79,19 @@ Desde `20260913110000_permisos-anon.sql`:
 
 ## `force row level security`
 
-Todas las tablas la tienen. Sin eso, cualquier conexión que corra como dueño de
+Todas las tablas la tienen. Sin eso, cualquier conexión que corra como titular de
 la tabla —una migración, un script, una consola— se saltea las políticas sin
-darse cuenta y puede filtrar datos entre estéticas en un `INSERT ... SELECT`
+darse cuenta y puede filtrar datos entre negocios en un `INSERT ... SELECT`
 inocente.
 
 ## La suite de aislamiento
 
-`tests/rls/isolation.test.ts` levanta el escenario de siempre: dos estéticas que
+`tests/rls/isolation.test.ts` levanta el escenario de siempre: dos negocios que
 no se conocen y un intento explícito de que una lea o escriba sobre la otra.
 
-Cubre: alta de estética, aislamiento de tenants, sucursales, membresías y
-perfiles, el visitante sin sesión, los cuatro roles, la escalada a dueño, la
-última membresía de dueño, la suspensión y la bitácora.
+Cubre: alta de negocio, aislamiento de tenants, sucursales, membresías y
+perfiles, el visitante sin sesión, los cuatro roles, la escalada a titular, la
+última membresía de titular, la suspensión y la bitácora.
 
 ```bash
 npm test

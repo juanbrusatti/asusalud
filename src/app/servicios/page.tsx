@@ -27,8 +27,8 @@ export default async function ServiciosPage() {
               Servicios
             </h1>
             <p className="mt-1 max-w-prose text-[14.5px] text-muted">
-              Lo que ofrece tu estética. De acá salen la duración de cada turno
-              en la agenda, el precio que se cobra y lo que ven tus clientas al
+              Lo que ofrece tu negocio. De acá salen la duración de cada turno
+              en la agenda, el precio que se cobra y lo que ven tus clientes al
               reservar online.
             </p>
           </div>

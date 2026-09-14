@@ -9,7 +9,7 @@ import type { AppointmentStatus } from "@/lib/data/agenda";
  * Las acciones que se usan todos los días, en un toque.
  *
  * Marcar quién vino y quién no es lo que alimenta el índice de ausentismo, y
- * de ahí sale después cuántos recordatorios necesita cada clienta. Si cuesta
+ * de ahí sale después cuántos recordatorios necesita cada cliente. Si cuesta
  * hacerlo, nadie lo hace y el dato no existe.
  */
 export function AccionesEstado({

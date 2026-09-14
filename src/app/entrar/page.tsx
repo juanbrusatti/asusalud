@@ -17,7 +17,7 @@ export default function EntrarPage() {
             </span>
           </h1>
           <p className="mt-2 text-[15px] leading-relaxed text-muted">
-            La agenda, los clientes y los recordatorios de tu estética, en un
+            La agenda, los clientes y los recordatorios de tu negocio, en un
             solo lugar.
           </p>
         </div>

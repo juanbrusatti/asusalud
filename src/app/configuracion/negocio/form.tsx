@@ -28,7 +28,7 @@ export function FormEstetica({
             name="name"
             required
             defaultValue={tenant.name}
-            hint="Es el que ven tus clientas al reservar y el que firma los recordatorios."
+            hint="Es el que ven tus clientes al reservar y el que firma los recordatorios."
           />
 
           <Select
@@ -59,7 +59,7 @@ export function FormEstetica({
             name="phone"
             type="tel"
             defaultValue={branch?.phone ?? ""}
-            hint="El de la estética, no el de tus clientas."
+            hint="El del negocio, no el de tus clientes."
           />
         </CardBody>
       </Card>

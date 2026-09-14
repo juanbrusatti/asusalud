@@ -2,10 +2,10 @@
 
 ## Qué es
 
-La página pública donde una clienta saca turno sola, a cualquier hora, sin que
+La página pública donde un cliente saca turno por su cuenta, a cualquier hora, sin que
 nadie tenga que contestarle.
 
-Vive en `/r/<slug de la estética>` y es lo único del sistema pensado para
+Vive en `/r/<slug del negocio>` y es lo único del sistema pensado para
 alguien **sin cuenta**.
 
 ## La regla de seguridad más estricta del proyecto
@@ -21,9 +21,9 @@ tablas como visitante y verifica que todas responden permiso denegado.
 
 Dos detalles de la misma familia:
 
-- El **precio sólo viaja** si la estética eligió mostrarlo. No se manda al
+- El **precio sólo viaja** si el negocio eligió mostrarlo. No se manda al
   navegador para ocultarlo con CSS.
-- Una estética que no existe y una que todavía no abrió su agenda dan **la
+- Un negocio que no existe y uno que todavía no abrió su agenda dan **la
   misma respuesta**. Distinguirlas filtra información que no hace falta dar.
 
 ## Cómo se calcula un horario libre
@@ -49,8 +49,8 @@ consecuencia.
 ## Al reservar
 
 **La ficha se busca por teléfono.** Si existe, se reutiliza: no se duplica a
-quien la estética ya tenía cargada. Y **no se pisa lo que había**: si la ficha
-decía "Josefina" y la clienta escribe "Jose", queda "Josefina". Sólo se completa
+quien el negocio ya tenía cargado. Y **no se pisa lo que había**: si la ficha
+decía "Josefina" y el cliente escribe "Jose", queda "Josefina". Sólo se completa
 lo que faltaba, como el correo.
 
 Eso importa porque la ficha puede tener un aviso cargado —"alérgica a la
@@ -73,7 +73,7 @@ una tarde.
 
 La verificación de cupos es un trigger diferido que normalmente corre al cerrar
 la transacción. Si se dejara así, el error saltaría **después** de que la
-función terminó, fuera de su manejador, y la clienta vería un error crudo de
+función terminó, fuera de su manejador, y el cliente vería un error crudo de
 base de datos.
 
 Por eso `booking_create` fuerza la verificación adentro, la traduce a *"Justo
@@ -89,9 +89,9 @@ hecho. No queda ningún turno ni ninguna ficha a medias.
 
 `business_hours` no existía hasta ahora a propósito: no había quién la
 consumiera. Varias filas por día permiten cortar al mediodía —una franja de 9 a
-13 y otra de 16 a 20— que es como trabajan muchas estéticas.
+13 y otra de 16 a 20— que es como trabajan muchos negocios.
 
-Toda estética nueva nace con lunes a viernes de 9 a 19 y la **agenda pública
+Toda negocio nuevo nace con lunes a viernes de 9 a 19 y la **agenda pública
 apagada**: abrirla al público es una decisión, no un estado por defecto.
 
 ## Los ajustes
@@ -118,15 +118,15 @@ apagada**: abrirla al público es una decisión, no un estado por defecto.
 ## Después de reservar
 
 La pantalla de confirmación entrega el **enlace del turno**: desde ahí la
-clienta lo mueve o lo cancela sola, sin escribirle a nadie. Está documentado en
-[El turno de la clienta](autogestion.md).
+cliente lo mueve o lo cancela por su cuenta, sin escribirle a nadie. Está documentado en
+[El turno del cliente](autogestion.md).
 
 Es el momento en que más probabilidades hay de que lo guarde: lo tiene en la
 mano y le acaba de importar.
 
 Ahí mismo se le ofrece recibir los avisos por notificación en vez de por
 mensaje —ver [Notificaciones push](push.md)—, que es el único canal que no
-cuesta nada. Y la estética se entera de la reserva en el momento, sin mirar la
+cuesta nada. Y el negocio se entera de la reserva en el momento, sin mirar la
 agenda.
 
 ## Lo que todavía no está

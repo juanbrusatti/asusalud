@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Barra } from "@/app/_components/barra";
 import { Button } from "@/components/ui/button";
-import { CrearEstetica } from "@/app/_components/crear-estetica";
+import { CrearNegocio } from "@/app/_components/crear-negocio";
 import { TenelaAMano } from "@/components/pwa/tenela-a-mano";
 import { RegisterServiceWorker } from "@/components/pwa/register-sw";
 import { Card, CardBody, CardFigure, CardTitle } from "@/components/ui/card";
@@ -10,7 +10,7 @@ import { getPublicLink } from "@/lib/data/reserva";
 import { publicEnv } from "@/lib/env";
 
 const ROLES: Record<string, string> = {
-  owner: "Dueña",
+  owner: "Titular",
   admin: "Administración",
   reception: "Recepción",
   staff: "Profesional",
@@ -29,7 +29,7 @@ export default async function InicioPage() {
       <>
         <RegisterServiceWorker />
         <main className="mx-auto grid min-h-dvh max-w-4xl place-items-center px-4 py-10">
-          <CrearEstetica />
+          <CrearNegocio />
         </main>
       </>
     );
@@ -108,7 +108,7 @@ export default async function InicioPage() {
                 <>
                   <p className="max-w-prose text-[14.5px] leading-relaxed text-muted">
                     Compartilo en tu perfil de Instagram o mandáselo a tus
-                    clientas: pueden sacar turno solas, a cualquier hora, sin
+                    clientes: pueden sacar turno por su cuenta, a cualquier hora, sin
                     que tengas que contestar nada.
                   </p>
                   <a
@@ -123,7 +123,7 @@ export default async function InicioPage() {
               ) : (
                 <p className="max-w-prose text-[14.5px] leading-relaxed text-muted">
                   Tu agenda todavía no está abierta al público. Cuando la
-                  actives, tus clientas van a poder sacar turno solas desde este
+                  actives, tus clientes van a poder sacar turno por su cuenta desde este
                   link.
                 </p>
               )}

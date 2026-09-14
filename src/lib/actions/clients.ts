@@ -103,7 +103,7 @@ export async function createClientAction(
   }
 
   const membership = await getCurrentTenant();
-  if (!membership) return { error: "No encontramos tu estética." };
+  if (!membership) return { error: "No encontramos tu negocio." };
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -162,7 +162,7 @@ export async function addNoteAction(
   }
 
   const membership = await getCurrentTenant();
-  if (!membership) return { error: "No encontramos tu estética." };
+  if (!membership) return { error: "No encontramos tu negocio." };
 
   const supabase = await createClient();
   const {
@@ -239,7 +239,7 @@ export async function createTagAction(
   if (name.length > 40) return { error: "El nombre es demasiado largo." };
 
   const membership = await getCurrentTenant();
-  if (!membership) return { error: "No encontramos tu estética." };
+  if (!membership) return { error: "No encontramos tu negocio." };
 
   const supabase = await createClient();
   const { data, error } = await supabase

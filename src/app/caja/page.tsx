@@ -24,7 +24,7 @@ export default async function CajaPage() {
   const membership = await getCurrentTenant();
   if (!membership) return null;
 
-  // Una profesional no ve la plata de la estética.
+  // Un profesional no ve la plata del negocio.
   if (membership.role === "staff") notFound();
 
   const tz = membership.tenant.timezone;

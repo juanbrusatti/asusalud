@@ -2,7 +2,7 @@
 
 ## Qué es
 
-Lo que entra y lo que sale, día por día. Al cerrar, la estética sabe si lo que
+Lo que entra y lo que sale, día por día. Al cerrar, el negocio sabe si lo que
 hay en el cajón es lo que debería haber.
 
 Es lo que hoy Asusalud **no tiene**: TuTurno lo deja detrás del plan Empresa,
@@ -23,8 +23,8 @@ No alcanza con no poner el botón: la tabla **no tiene permiso de UPDATE ni
 DELETE para nadie**, y además un trigger lo rechaza. Si la tabla lo admitiera,
 tarde o temprano alguien escribe el UPDATE.
 
-> Única excepción: dar de baja una estética entera. El borrado en cascada de su
-> caja es esperado, y sin esa excepción una estética con un solo cobro
+> Única excepción: dar de baja un negocio entera. El borrado en cascada de su
+> caja es esperado, y sin esa excepción un negocio con un solo cobro
 > registrado no se podría eliminar nunca.
 
 ### 2. El arqueo cuenta sólo el efectivo
@@ -71,7 +71,7 @@ mintiendo. Para seguir cobrando se abre otra.
 | Anular un movimiento | ✅ | ✅ | ✅ | ❌ |
 
 Quien atiende el mostrador cobra, así que recepción tiene acceso completo. Una
-profesional **no ve la plata de la estética**.
+profesional **no ve la plata del negocio**.
 
 ## Lo que no pasa por el cajón
 
@@ -91,7 +91,7 @@ arqueo pero sí en los informes del período.
 ## Cobrar desde el turno
 
 La pantalla del turno tiene su propia tarjeta de cobro, y es la vía rápida: el
-importe, el concepto y la clienta ya vienen cargados desde el turno.
+importe, el concepto y el cliente ya vienen cargados desde el turno.
 
 - **El saldo se calcula solo**: total del turno menos lo ya cobrado.
 - **El importe es editable**, porque las señas y los pagos en dos veces son lo
@@ -103,10 +103,10 @@ importe, el concepto y la clienta ya vienen cargados desde el turno.
   aviso y el enlace para abrirla: el error se evita en vez de explicarse
   después.
 
-El movimiento que queda es uno normal de caja, con el turno y la clienta
+El movimiento que queda es uno normal de caja, con el turno y el cliente
 enlazados. Se corrige como cualquier otro: **anulándolo desde la caja**.
 
-Una profesional no ve esta tarjeta, igual que no ve la caja.
+Un profesional no ve esta tarjeta, igual que no ve la caja.
 
 ## Dónde está el código
 
@@ -126,7 +126,7 @@ Una profesional no ve esta tarjeta, igual que no ve la caja.
 ## Lo que todavía no está
 
 - **Señas online** con Mercado Pago: hoy la seña se registra a mano cuando la
-  clienta paga, no se le cobra desde el sistema.
+  cliente paga, no se le cobra desde el sistema.
 - **Facturación**: TuTurno emite facturas de AFIP. Es otro trámite y otra
   integración.
 - **Varias sucursales**: la caja asume la principal.

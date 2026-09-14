@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 /**
- * Lo que puede hacer una clienta con su propio turno.
+ * Lo que puede hacer un cliente con su propio turno.
  *
  * Todo pasa por funciones de la base: acá no hay ninguna comprobación de si se
  * puede o no. La hora de corte, el tope de reprogramaciones y el estado del
@@ -86,9 +86,9 @@ export async function rescheduleAppointment(
 }
 
 /**
- * La clienta acepta las notificaciones de sus turnos.
+ * El cliente acepta las notificaciones de sus turnos.
  *
- * La llave es el token del turno, no un identificador de clienta: si un
+ * La llave es el token del turno, no un identificador de cliente: si un
  * visitante pudiera pasar el id que quisiera, cualquiera podría suscribir su
  * navegador a los recordatorios de otra persona.
  */

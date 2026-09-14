@@ -26,7 +26,7 @@ falta.
 ## Sobre la clave de servicio
 
 `SUPABASE_SERVICE_ROLE_KEY` **se saltea toda la RLS**. Quien la tiene puede
-leer y escribir los datos de todas las estéticas.
+leer y escribir los datos de todas los negocios.
 
 - Nunca con prefijo `NEXT_PUBLIC_`.
 - Nunca importada desde un componente de cliente. `src/lib/supabase/admin.ts`

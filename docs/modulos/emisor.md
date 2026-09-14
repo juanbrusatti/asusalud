@@ -9,7 +9,7 @@ Corre como Edge Function de Supabase y lo llama `pg_cron` cada minuto.
 
 ## La decisión más importante: el modo de prueba
 
-**Toda estética arranca sin poder enviar nada hacia afuera.**
+**Toda negocio arranca sin poder enviar nada hacia afuera.**
 
 En modo de prueba el sistema hace el recorrido completo —arma el texto, elige
 el canal, valida que haya destinatario y credenciales, lo anota en la
@@ -20,8 +20,8 @@ No es una comodidad de desarrollo: es la salvaguarda que evita que la primera
 regla mal configurada le escriba a seis mil personas reales. De ahí no se
 vuelve.
 
-Y el modo de prueba **valida de verdad**: si falta el teléfono de una clienta o
-la estética no conectó WhatsApp, lo marca igual. Sirve para encontrar
+Y el modo de prueba **valida de verdad**: si falta el teléfono de un cliente o
+el negocio no conectó WhatsApp, lo marca igual. Sirve para encontrar
 problemas, no sólo para no molestar.
 
 Cada envío queda marcado con `was_test`, así un mes de pruebas no se confunde
@@ -64,22 +64,22 @@ cuidar.
 Meta no recibe el mensaje escrito: recibe **el nombre de la plantilla aprobada
 más sus parámetros numerados**. El orden de los parámetros lo define la
 plantilla cargada en Meta y tiene que coincidir con el orden en que aparecen
-los huecos en el texto que guardamos. Si no coincide, la clienta recibe los
+los huecos en el texto que guardamos. Si no coincide, el cliente recibe los
 datos cambiados de lugar.
 
 El texto que guardamos sirve para dos cosas: extraer los parámetros en orden y
 poder responder después "¿qué decía el mensaje que le llegó?".
 
-### Correo: el remitente es la estética
+### Correo: el remitente es el negocio
 
-El nombre que se ve es el de la estética, no el nuestro. La clienta conoce a
+El nombre que se ve es el del negocio, no el nuestro. El cliente conoce a
 Asusalud, no a Dlay.
 
 ## Errores: no todos se arreglan reintentando
 
 | Tipo | Ejemplos | Qué hace |
 | --- | --- | --- |
-| **Permanente** | La ficha no tiene teléfono · la estética no conectó WhatsApp · el mensaje no tiene nombre en Meta · Meta devuelve 4xx | Falla de una, con el motivo escrito en castellano |
+| **Permanente** | La ficha no tiene teléfono · el negocio no conectó WhatsApp · el mensaje no tiene nombre en Meta · Meta devuelve 4xx | Falla de una, con el motivo escrito en castellano |
 | **Transitorio** | Meta devuelve 5xx · límite de velocidad · se cortó la red | Vuelve a la cola con espera creciente: 4, 16 y 64 minutos |
 
 Después de tres intentos deja de insistir. Insistir sobre algo que no se
@@ -90,15 +90,15 @@ el motivo está escrito para una persona y no para un programador.
 
 ## Las credenciales
 
-`whatsapp_accounts` guarda el token de cada estética y **no tiene ningún
-permiso para `authenticated`**: ni siquiera la dueña lo puede leer. Sólo llegan
+`whatsapp_accounts` guarda el token de cada negocio y **no tiene ningún
+permiso para `authenticated`**: ni siquiera el titular lo puede leer. Sólo llegan
 el emisor y el webhook, que corren con permisos del sistema.
 
 Para que el panel igual pueda mostrar el estado de la cuenta existe
-`whatsapp_status`, una vista que corre con los permisos de su dueño, devuelve
-sólo las columnas inofensivas y filtra por estética con `app.has_tenant()`.
+`whatsapp_status`, una vista que corre con los permisos de su titular, devuelve
+sólo las columnas inofensivas y filtra por negocio con `app.has_tenant()`.
 Hacen falta las dos cosas: con `security_invoker` no devolvería nada, y sin el
-filtro devolvería las cuentas de todas las estéticas.
+filtro devolvería las cuentas de todas los negocios.
 
 > Endurecimiento pendiente: mover el token a Supabase Vault. Hoy está en una
 > tabla sin acceso, que ya es correcto, pero cifrarlo es mejor.
@@ -164,7 +164,7 @@ Devuelve `{"tomados":N,"enviados":N,"fallados":N}`.
 ## Lo que todavía no está
 
 - **Webhooks de Meta**: entregado, leído, fallido, y las respuestas de la
-  clienta. Sin esto no hay tasa de lectura ni corte automático por calidad.
+  cliente. Sin esto no hay tasa de lectura ni corte automático por calidad.
 - **Notificaciones push**: el canal más barato de los tres y el único que
   falta.
 - **Corte automático por calidad**: el panel ya avisa si Meta marca la cuenta

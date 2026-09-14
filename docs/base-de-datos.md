@@ -19,9 +19,9 @@ Agregarlo después es reescribir el sistema entero.
 ## Tablas de la fase 0
 
 ### `tenants`
-Una fila por estética. Raíz del aislamiento.
+Una fila por negocio. Raíz del aislamiento.
 
-`timezone` define cuándo empieza y termina "hoy" para esa estética. El cierre
+`timezone` define cuándo empieza y termina "hoy" para ese negocio. El cierre
 de caja y la hora a la que sale cada recordatorio se calculan en esa zona,
 nunca en UTC.
 
@@ -31,7 +31,7 @@ sobre `lower(slug)`.
 ### `branches`
 Sucursales. Asusalud arranca con una, pero la agenda, el stock y la caja ya
 cuelgan de acá para que abrir la segunda no sea una migración. Un índice
-parcial garantiza **exactamente una sucursal por defecto** por estética.
+parcial garantiza **exactamente una sucursal por defecto** por negocio.
 
 ### `profiles`
 Datos públicos de un usuario, espejo de `auth.users`. La app nunca consulta
@@ -39,10 +39,10 @@ Datos públicos de un usuario, espejo de `auth.users`. La app nunca consulta
 `on_auth_user_created` crea el perfil al registrarse.
 
 ### `memberships`
-Qué persona pertenece a qué estética y con qué rol. **Es la tabla que gobierna
-todo el aislamiento**: si no hay fila, esa persona no ve nada de esa estética.
+Qué persona pertenece a qué negocio y con qué rol. **Es la tabla que gobierna
+todo el aislamiento**: si no hay fila, esa persona no ve nada de ese negocio.
 
-Una persona puede ser dueña de una estética y recepción en otra: por eso el rol
+Una persona puede ser titular de un negocio y recepción en otra: por eso el rol
 vive acá y no en el usuario.
 
 | Rol | Alcance |
@@ -60,16 +60,16 @@ desde la aplicación.
 
 | Función | Esquema | Para qué |
 | --- | --- | --- |
-| `create_tenant(name, slug)` | `public` | **Único** camino para dar de alta una estética |
-| `app.tenant_ids()` | `app` | Estéticas del usuario actual |
+| `create_tenant(name, slug)` | `public` | **Único** camino para dar de alta un negocio |
+| `app.tenant_ids()` | `app` | Negocios del usuario actual |
 | `app.has_tenant(uuid)` | `app` | Pertenencia |
 | `app.has_role(uuid, ...)` | `app` | Pertenencia con rol |
 | `app.shares_tenant(uuid)` | `app` | Compañeros de equipo |
 
 ### Por qué `create_tenant` es una función
 
-Huevo y gallina: para insertar en `tenants` hay que pertenecer a la estética, y
-para pertenecer tiene que existir. La función crea estética, membresía de dueño
+Huevo y gallina: para insertar en `tenants` hay que pertenecer al negocio, y
+para pertenecer tiene que existir. La función crea negocio, membresía de titular
 y sucursal principal en una sola transacción. `tenants` **no tiene política de
 INSERT** justamente para que no haya otro camino.
 
@@ -80,10 +80,10 @@ necesitan comparar el estado viejo con el nuevo:
 
 | Trigger | Impide |
 | --- | --- |
-| `guard_last_owner` | Que una estética se quede sin dueño activo, por borrado o por cambio de rol |
+| `guard_last_owner` | Que un negocio se quede sin titular activo, por borrado o por cambio de rol |
 | `guard_owner_escalation` | Que un admin se fabrique un owner, o ascienda a alguien |
 
-Los dos se desactivan solos cuando la estética entera se está borrando en
+Los dos se desactivan solos cuando el negocio entera se está borrando en
 cascada: preguntan si la fila padre todavía existe.
 
 ## Tablas de la fase 1
@@ -113,7 +113,7 @@ Lo que conviene saber sin abrir ese documento:
 - **`phone_e164` y `phone_raw`**: el normalizado y el original. WhatsApp exige
   el `9` en los celulares argentinos, así que un número guardado sin él no
   recibe nada.
-- **El teléfono no es único**: en una estética se comparten números. Los
+- **El teléfono no es único**: en un negocio se comparten números. Los
   repetidos se muestran con `count_phone_duplicates()`, no se prohíben.
 - **`search_text`** es una columna generada, sin acentos y en minúsculas, con
   índice GIN de trigramas. Es lo que hace que buscar entre miles de fichas sea
@@ -139,7 +139,7 @@ Lo que conviene saber sin abrir ese documento:
   aplicación: turno y servicios en una sola transacción, porque las
   verificaciones diferidas corren al cerrar y dos llamadas HTTP son dos
   transacciones.
-- Los turnos **no se borran**, se cancelan. Sólo el dueño tiene permiso de
+- Los turnos **no se borran**, se cancelan. Sólo el titular tiene permiso de
   DELETE, y para casos de error grosero.
 
 ## Trabajar con migraciones

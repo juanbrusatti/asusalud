@@ -2,19 +2,19 @@
 
 ## Qué es
 
-Las cuatro pantallas donde la estética maneja cómo funciona por dentro, sin
+Las cuatro pantallas donde el negocio maneja cómo funciona por dentro, sin
 que nadie tenga que tocar la base de datos.
 
 Se toca poco y nada: casi todo se configura una vez y no se vuelve a mirar.
 
 | Sección | Qué decide |
 | --- | --- |
-| Tu estética | Nombre, dirección y **zona horaria** |
+| Tu negocio | Nombre, dirección y **zona horaria** |
 | Horarios de atención | Qué días y en qué franjas se atiende |
-| Reserva online | Si las clientas pueden sacar turno solas y con qué reglas |
+| Reserva online | Si los clientes pueden sacar turno por su cuenta y con qué reglas |
 | Envío de mensajes | Franja de envío, topes por persona y tope de gasto |
 
-Sólo entran dueña y administración: son decisiones de negocio.
+Sólo entran titular y administración: son decisiones de negocio.
 
 ## La zona horaria es el ajuste más peligroso
 
@@ -29,7 +29,7 @@ entre cuatrocientas, inevitable.
 ## Horarios: varias franjas por día
 
 Cada día puede tener más de una franja. Es lo que permite **cortar al
-mediodía**, que es como trabajan muchas estéticas: de 9 a 13 y de 16 a 20.
+mediodía**, que es como trabajan muchos negocios: de 9 a 13 y de 16 a 20.
 
 Un día sin franjas queda cerrado.
 
@@ -63,7 +63,7 @@ horarios no ofrecería ni un turno, y eso es peor que tenerla cerrada.
 ## Envío de mensajes
 
 Los límites que **ninguna regla de recordatorio puede saltear**. Están para que
-un error de configuración no termine en una clienta recibiendo diez mensajes.
+un error de configuración no termine en un cliente recibiendo diez mensajes.
 
 - **Franja de envío**: fuera de ella no sale nada. Lo que venza de madrugada
   espera a la mañana.
@@ -77,7 +77,7 @@ intenta.
 
 ## WhatsApp queda afuera
 
-Conectar el número es un trámite con Meta que hace la dueña de la estética, no
+Conectar el número es un trámite con Meta que hace el titular del negocio, no
 el sistema. La pantalla lo dice y no pretende resolverlo con un campo de texto.
 
 ## Dónde está el código
@@ -93,12 +93,12 @@ el sistema. La pantalla lo dice y no pretende resolverlo con un campo de texto.
 > formularios son componentes de cliente: si importaran las listas de ahí,
 > arrastrarían `next/headers` al navegador y el build falla.
 
-## Que se maneje sola
+## Que se manejen solos
 
 Dentro de **Reserva online** hay un bloque aparte para el enlace del turno: si
-la clienta puede cambiarlo, hasta cuántas horas antes, cuántas veces y a qué
+el cliente puede cambiarlo, hasta cuántas horas antes, cuántas veces y a qué
 teléfono escribir cuando ya es tarde. Los detalles están en
-[El turno de la clienta](autogestion.md).
+[El turno del cliente](autogestion.md).
 
 ## Lo que todavía no está
 

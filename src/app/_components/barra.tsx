@@ -11,7 +11,7 @@ import { NavLink } from "./nav-link";
  *
  * El rol se lee acá adentro en lugar de recibirlo por propiedad: la consulta
  * está memorizada por render, así que no cuesta un viaje más, y evita que una
- * pantalla nueva se olvide de pasarlo y le muestre a una profesional un enlace
+ * pantalla nueva se olvide de pasarlo y le muestre a un profesional un enlace
  * que sólo la va a llevar a un "no encontrado".
  */
 export async function Barra({ tenantName }: { tenantName: string }) {

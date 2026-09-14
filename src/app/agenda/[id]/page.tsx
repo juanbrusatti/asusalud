@@ -35,7 +35,7 @@ export default async function TurnoPage({
   const history = await getStatusHistory(id);
   const tz = membership.tenant.timezone;
 
-  // Una profesional no ve la plata de la estética: tampoco desde el turno.
+  // Un profesional no ve la plata del negocio: tampoco desde el turno.
   const puedeCobrar = atLeast(membership.role, "reception");
   const [cobros, cajaAbierta] = puedeCobrar
     ? await Promise.all([getAppointmentCharges(id), getOpenSession()])
@@ -44,7 +44,7 @@ export default async function TurnoPage({
   const cliente = appointment.client;
   const nombre = cliente
     ? [cliente.first_name, cliente.last_name].filter(Boolean).join(" ")
-    : "Sin clienta";
+    : "Sin cliente";
 
   const dia = new Intl.DateTimeFormat("en-CA", {
     timeZone: tz,
@@ -230,7 +230,7 @@ export default async function TurnoPage({
                   </p>
                   <p className="text-[12px] text-faint">
                     {h.by_client
-                      ? "La clienta"
+                      ? "El cliente"
                       : (h.author?.full_name ?? "Alguien del equipo")}{" "}
                     · {fechaHora.format(new Date(h.created_at))}
                   </p>

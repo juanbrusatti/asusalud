@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Card, CardBody } from "@/components/ui/card";
 
 /**
- * Los estados vacíos explican qué es esta sección y qué gana la estética
+ * Los estados vacíos explican qué es esta sección y qué gana el negocio
  * usándola. Quien entra por primera vez tiene que entenderlo sin que nadie se
  * lo cuente.
  */

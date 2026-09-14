@@ -62,7 +62,7 @@ export function ListaTurnos({
                 ? [cliente.first_name, cliente.last_name]
                     .filter(Boolean)
                     .join(" ")
-                : "Sin clienta";
+                : "Sin cliente";
               const cancelado = a.status === "cancelled";
 
               return (

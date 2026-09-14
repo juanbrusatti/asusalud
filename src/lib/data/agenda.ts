@@ -35,7 +35,7 @@ const DETAIL_SELECT = `
   )
 `;
 
-/** Los turnos de un día, en la zona horaria de la estética. */
+/** Los turnos de un día, en la zona horaria del negocio. */
 export async function getDay(
   date: string,
   timeZone: string,
@@ -134,7 +134,7 @@ export type StatusChange = {
   to_status: AppointmentStatus;
   reason: string | null;
   created_at: string;
-  /** Lo hizo la clienta desde el enlace de su turno, no el equipo. */
+  /** Lo hizo el cliente desde el enlace de su turno, no el equipo. */
   by_client: boolean;
   author: { full_name: string | null } | null;
 };
@@ -163,7 +163,7 @@ export type ClientAgenda = {
 };
 
 /**
- * El resumen de agenda de una clienta: cuándo vino, cuándo vuelve y cómo se
+ * El resumen de agenda de un cliente: cuándo vino, cuándo vuelve y cómo se
  * portó. De las ausencias sale después cuántos recordatorios necesita.
  */
 export async function getClientAgenda(clientId: string): Promise<ClientAgenda> {
@@ -209,7 +209,7 @@ export async function getClientAgenda(clientId: string): Promise<ClientAgenda> {
 export const STATUS_LABELS: Record<AppointmentStatus, string> = {
   pending: "Sin confirmar",
   confirmed: "Confirmado",
-  attended: "Atendida",
+  attended: "Atendido",
   no_show: "No vino",
   cancelled: "Cancelado",
 };

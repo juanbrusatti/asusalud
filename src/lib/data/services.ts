@@ -12,7 +12,7 @@ export type ServiceWithCategory = Service & {
 };
 
 /**
- * Catálogo completo de la estética, activos e inactivos.
+ * Catálogo completo del negocio, activos e inactivos.
  *
  * No hace falta filtrar por tenant: la RLS ya devuelve sólo lo que esta
  * persona puede ver. Filtrar acá además sería engañoso, porque haría parecer

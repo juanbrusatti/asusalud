@@ -203,7 +203,7 @@ export default async function RecordatoriosPage() {
                   ? [j.client.first_name, j.client.last_name]
                       .filter(Boolean)
                       .join(" ")
-                  : "Sin clienta";
+                  : "Sin cliente";
                 const salteado = j.status === "skipped";
 
                 return (

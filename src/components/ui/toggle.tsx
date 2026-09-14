@@ -4,7 +4,7 @@ import { useId, useState } from "react";
 import type { ReactNode } from "react";
 
 /**
- * Interruptor con su explicación al lado. En una estética nadie va a pasar el
+ * Interruptor con su explicación al lado. En un negocio nadie va a pasar el
  * mouse por encima esperando un tooltip: la consecuencia de encenderlo o
  * apagarlo se lee directamente.
  */

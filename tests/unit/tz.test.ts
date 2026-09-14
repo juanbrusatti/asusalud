@@ -30,7 +30,7 @@ describe("hora local a instante real", () => {
   });
 });
 
-describe("el día de la estética", () => {
+describe("el día del negocio", () => {
   it("empieza y termina cuando corresponde, no en UTC", () => {
     const { from, to } = zonedDayRange("2026-09-14", CORDOBA);
     expect(from.toISOString()).toBe("2026-09-14T03:00:00.000Z");
@@ -47,7 +47,7 @@ describe("el día de la estética", () => {
     expect(turno >= from && turno < to).toBe(true);
   });
 
-  it("muestra la hora como se lee en la estética", () => {
+  it("muestra la hora como se lee en el negocio", () => {
     expect(timeIn("2026-09-15T00:30:00.000Z", CORDOBA)).toBe("21:30");
   });
 });
