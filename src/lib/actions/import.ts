@@ -83,7 +83,7 @@ export async function importClientsBatch(
       updated: 0,
       skipped: rows.length,
       problems: [
-        { line: options.startLine, name: "", reason: "No encontramos tu estética." },
+        { line: options.startLine, name: "", reason: "No encontramos tu negocio." },
       ],
     };
   }

@@ -8,15 +8,15 @@ import {
 } from "./helpers";
 
 /**
- * Suite de aislamiento entre estéticas.
+ * Suite de aislamiento entre negocios.
  *
  * Ninguna funcionalidad que toque datos se considera terminada sin su prueba
- * acá. El escenario es siempre el mismo: dos estéticas que no se conocen y un
+ * acá. El escenario es siempre el mismo: dos negocios que no se conocen y un
  * intento explícito de que una lea o escriba sobre la otra.
  */
 
-let alicia: string; // dueña de Estética Aurora
-let bruno: string; // dueño de Estética Boreal, sin relación con Aurora
+let alicia: string; // titular de Negocio Aurora
+let bruno: string; // titular de Negocio Boreal, sin relación con Aurora
 let carla: string; // recepción en Aurora
 let diego: string; // admin en Aurora
 
@@ -47,13 +47,13 @@ beforeAll(async () => {
   carla = await createAuthUser("carla@aurora.test", "Carla Ortiz");
   diego = await createAuthUser("diego@aurora.test", "Diego Salas");
 
-  // Cada dueña crea su estética por el único camino permitido.
+  // Cada titular crea su negocio por el único camino permitido.
   aurora = await asAdmin(async (c) => {
     await c.query("select set_config('request.jwt.claims', $1, false)", [
       JSON.stringify({ sub: alicia, role: "authenticated" }),
     ]);
     const { rows } = await c.query(
-      `select (public.create_tenant('Estética Aurora', 'aurora-test')).id as id`,
+      `select (public.create_tenant('Negocio Aurora', 'aurora-test')).id as id`,
     );
     return rows[0].id as string;
   });
@@ -63,7 +63,7 @@ beforeAll(async () => {
       JSON.stringify({ sub: bruno, role: "authenticated" }),
     ]);
     const { rows } = await c.query(
-      `select (public.create_tenant('Estética Boreal', 'boreal-test')).id as id`,
+      `select (public.create_tenant('Negocio Boreal', 'boreal-test')).id as id`,
     );
     return rows[0].id as string;
   });
@@ -89,8 +89,8 @@ afterAll(async () => {
 
 // ---------------------------------------------------------------------------
 
-describe("alta de una estética", () => {
-  it("deja a quien la crea como dueña y con una sucursal principal", async () => {
+describe("alta de un negocio", () => {
+  it("deja a quien la crea como titular y con una sucursal principal", async () => {
     await asUser(alicia, async (c) => {
       const { rows: members } = await c.query(
         `select role, status from public.memberships
@@ -120,8 +120,8 @@ describe("alta de una estética", () => {
   });
 });
 
-describe("aislamiento entre estéticas", () => {
-  it("cada dueña ve únicamente la suya", async () => {
+describe("aislamiento entre negocios", () => {
+  it("cada titular ve únicamente la suya", async () => {
     await asUser(alicia, async (c) => {
       const { rows } = await c.query(`select id from public.tenants`);
       expect(rows.map((r) => r.id)).toEqual([aurora]);
@@ -133,7 +133,7 @@ describe("aislamiento entre estéticas", () => {
     });
   });
 
-  it("pedir la estética ajena por id devuelve vacío, no un error", async () => {
+  it("pedir el negocio ajena por id devuelve vacío, no un error", async () => {
     await asUser(alicia, async (c) => {
       const { rows } = await c.query(
         `select id from public.tenants where id = $1`,
@@ -143,7 +143,7 @@ describe("aislamiento entre estéticas", () => {
     });
   });
 
-  it("no se puede editar la estética ajena", async () => {
+  it("no se puede editar el negocio ajena", async () => {
     await asUser(alicia, async (c) => {
       const { rowCount } = await c.query(
         `update public.tenants set name = 'Secuestrada' where id = $1`,
@@ -157,7 +157,7 @@ describe("aislamiento entre estéticas", () => {
         `select name from public.tenants where id = $1`,
         [boreal],
       );
-      expect(rows[0].name).toBe("Estética Boreal");
+      expect(rows[0].name).toBe("Negocio Boreal");
     });
   });
 
@@ -171,7 +171,7 @@ describe("aislamiento entre estéticas", () => {
     });
   });
 
-  it("no se puede crear una sucursal en la estética ajena", async () => {
+  it("no se puede crear una sucursal en el negocio ajena", async () => {
     await asUser(alicia, async (c) => {
       const code = await expectRejected(() =>
         c.query(
@@ -194,7 +194,7 @@ describe("aislamiento entre estéticas", () => {
     });
   });
 
-  it("no se puede autoinvitar a la estética ajena", async () => {
+  it("no se puede autoinvitar al negocio ajena", async () => {
     await asUser(alicia, async (c) => {
       const code = await expectRejected(() =>
         c.query(
@@ -207,7 +207,7 @@ describe("aislamiento entre estéticas", () => {
     });
   });
 
-  it("no se ve el perfil de alguien de otra estética", async () => {
+  it("no se ve el perfil de alguien de otro negocio", async () => {
     await asUser(alicia, async (c) => {
       const { rows } = await c.query(
         `select id from public.profiles where id = $1`,
@@ -252,8 +252,8 @@ describe("visitante sin sesión", () => {
   });
 });
 
-describe("roles dentro de una misma estética", () => {
-  it("recepción ve la estética pero no la puede editar", async () => {
+describe("roles dentro de una mismo negocio", () => {
+  it("recepción ve el negocio pero no la puede editar", async () => {
     await asUser(carla, async (c) => {
       const { rows } = await c.query(`select id from public.tenants`);
       expect(rows.map((r) => r.id)).toEqual([aurora]);
@@ -298,7 +298,7 @@ describe("roles dentro de una misma estética", () => {
     });
   });
 
-  it("recepción no lee la bitácora y el dueño sí", async () => {
+  it("recepción no lee la bitácora y el titular sí", async () => {
     await asUser(carla, async (c) => {
       const { rows } = await c.query(`select id from public.audit_log`);
       expect(rows).toHaveLength(0);
@@ -315,7 +315,7 @@ describe("roles dentro de una misma estética", () => {
 });
 
 describe("salvaguardas", () => {
-  it("la estética no se puede quedar sin dueño activo", async () => {
+  it("el negocio no se puede quedar sin titular activo", async () => {
     await asUser(alicia, async (c) => {
       const code = await expectRejected(() =>
         c.query(
@@ -328,7 +328,7 @@ describe("salvaguardas", () => {
     });
   });
 
-  it("una membresía suspendida deja de ver la estética", async () => {
+  it("una membresía suspendida deja de ver el negocio", async () => {
     await asAdmin(async (c) => {
       await c.query("begin");
       await c.query(
@@ -368,7 +368,7 @@ describe("salvaguardas", () => {
  * `public` por privilegios por defecto. Un `revoke ... from public` no lo
  * quita, porque `public` es el pseudo-rol y el de `anon` es un permiso
  * explícito aparte. Así quedó abierta `register_push_subscription`, que acepta
- * el id de clienta que se le pase: un visitante podía suscribir su navegador a
+ * el id de cliente que se le pase: un visitante podía suscribir su navegador a
  * los recordatorios de otra persona.
  *
  * Esta prueba es el guardia: si alguien agrega una función y se olvida de

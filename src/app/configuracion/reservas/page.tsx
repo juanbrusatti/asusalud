@@ -32,7 +32,7 @@ export default async function ReservasPage() {
             Reserva online
           </h1>
           <p className="mt-1 max-w-prose text-[14.5px] text-muted">
-            Tus clientas sacan turno solas, a cualquier hora, sin que tengas que
+            Tus clientes sacan turno por su cuenta, a cualquier hora, sin que tengas que
             contestar nada.
           </p>
         </div>

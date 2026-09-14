@@ -10,9 +10,9 @@ export const metadata: Metadata = { title: "Configuración" };
 
 const SECCIONES = [
   {
-    href: "/configuracion/estetica",
-    titulo: "Tu estética",
-    detalle: "El nombre que ven tus clientas, la dirección y la zona horaria.",
+    href: "/configuracion/negocio",
+    titulo: "Tu negocio",
+    detalle: "El nombre que ven tus clientes, la dirección y la zona horaria.",
   },
   {
     href: "/configuracion/horarios",
@@ -24,7 +24,7 @@ const SECCIONES = [
     href: "/configuracion/reservas",
     titulo: "Reserva online",
     detalle:
-      "Si tus clientas pueden sacar turno solas, con cuánta anticipación y hasta cuándo.",
+      "Si tus clientes pueden sacar turno por su cuenta, con cuánta anticipación y hasta cuándo.",
   },
   {
     href: "/configuracion/mensajeria",
@@ -64,7 +64,7 @@ export default async function ConfiguracionPage() {
             Configuración
           </h1>
           <p className="mt-1 max-w-prose text-[14.5px] text-muted">
-            Cómo funciona tu estética por dentro. Se toca poco y nada: la
+            Cómo funciona tu negocio por dentro. Se toca poco y nada: la
             mayoría de esto se configura una vez.
           </p>
         </header>

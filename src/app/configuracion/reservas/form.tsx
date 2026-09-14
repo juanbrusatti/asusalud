@@ -45,7 +45,7 @@ export function FormReservas({
               {link}
             </a>
             <p className="text-[12.5px] leading-snug text-muted">
-              Ponelo en tu perfil de Instagram o mandáselo a tus clientas.
+              Ponelo en tu perfil de Instagram o mandáselo a tus clientes.
             </p>
           </div>
         </CardBody>
@@ -104,7 +104,7 @@ export function FormReservas({
 
       <Card>
         <CardBody className="grid gap-5">
-          <CardTitle>Qué ven tus clientas</CardTitle>
+          <CardTitle>Qué ven tus clientes</CardTitle>
 
           <Toggle
             name="showPrices"
@@ -134,11 +134,11 @@ export function FormReservas({
 
       <Card>
         <CardBody className="grid gap-5">
-          <CardTitle>Que se maneje sola</CardTitle>
+          <CardTitle>Que se manejen solos</CardTitle>
 
           <p className="-mt-2 max-w-prose text-[13.5px] leading-relaxed text-muted">
             Cada turno tiene su propio enlace, que viaja en los recordatorios.
-            Desde ahí tu clienta puede confirmar, mover el horario o avisar que
+            Desde ahí tu cliente puede confirmar, mover el horario o avisar que
             no viene, sin que vos tengas que contestar ni cancelar a mano.
           </p>
 
@@ -183,7 +183,7 @@ export function FormReservas({
             maxLength={30}
             defaultValue={settings.contact_phone ?? ""}
             placeholder="0358 15 412-3456"
-            hint="Adónde escribirte cuando ya es tarde para cambiarlo sola. Sin esto, el corte es una puerta cerrada sin timbre."
+            hint="Adónde escribirte cuando ya es tarde para cambiarlo por su cuenta. Sin esto, el corte es una puerta cerrada sin timbre."
           />
         </CardBody>
       </Card>

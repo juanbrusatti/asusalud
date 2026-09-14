@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { describeRange, resolveRange, share } from "@/lib/informes";
 
 /**
- * Los períodos se calculan a partir del día de la estética, no del reloj del
+ * Los períodos se calculan a partir del día del negocio, no del reloj del
  * servidor. En Vercel el proceso corre en UTC: a las 21:30 de Río Cuarto allá
  * ya es mañana, y "este mes" saltaría un día antes de tiempo.
  */

@@ -6,7 +6,7 @@ import { getBranch, getTenant } from "@/lib/data/configuracion";
 import { Volver } from "../_components/volver";
 import { FormEstetica } from "./form";
 
-export const metadata: Metadata = { title: "Tu estética" };
+export const metadata: Metadata = { title: "Tu negocio" };
 
 export default async function EsteticaPage() {
   const membership = await getCurrentTenant();
@@ -23,7 +23,7 @@ export default async function EsteticaPage() {
         <div>
           <Volver />
           <h1 className="mt-1 text-[28px] font-bold leading-tight tracking-[-0.03em]">
-            Tu estética
+            Tu negocio
           </h1>
         </div>
         <FormEstetica tenant={tenant} branch={branch} />

@@ -96,7 +96,7 @@ export async function registrarMovimiento(
   }
 
   const membership = await getCurrentTenant();
-  if (!membership) return { error: "No encontramos tu estética." };
+  if (!membership) return { error: "No encontramos tu negocio." };
 
   const supabase = await createClient();
 

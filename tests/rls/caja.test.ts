@@ -367,7 +367,7 @@ describe("quién puede tocar la caja", () => {
     });
   });
 
-  it("una profesional no ve la plata de la estética", async () => {
+  it("un profesional no ve la plata del negocio", async () => {
     await asAdmin(async (c) => {
       const { rows } = await c.query(
         `insert into public.cash_sessions (tenant_id, branch_id, opening_cents)
@@ -391,7 +391,7 @@ describe("quién puede tocar la caja", () => {
     });
   });
 
-  it("la estética vecina no ve nada", async () => {
+  it("el negocio vecino no ve nada", async () => {
     await asAdmin(async (c) => {
       const { rows } = await c.query(
         `insert into public.cash_sessions (tenant_id, branch_id, opening_cents)

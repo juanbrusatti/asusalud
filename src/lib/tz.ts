@@ -1,5 +1,5 @@
 /**
- * Aritmética de fechas en la zona horaria de la estética.
+ * Aritmética de fechas en la zona horaria del negocio.
  *
  * Una agenda se rompe siempre por el mismo lado: el servidor calcula "hoy" en
  * UTC, el turno de las 21:30 de Río Cuarto cae en el día siguiente y aparece
@@ -60,7 +60,7 @@ export function nextDay(date: string, days = 1): string {
   return moved.toISOString().slice(0, 10);
 }
 
-/** Qué día es hoy en la estética, como "2026-09-14". */
+/** Qué día es hoy en el negocio, como "2026-09-14". */
 export function todayIn(timeZone: string): string {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone,
@@ -70,7 +70,7 @@ export function todayIn(timeZone: string): string {
   }).format(new Date());
 }
 
-/** La hora del turno tal como se lee en la estética: "09:30". */
+/** La hora del turno tal como se lee en el negocio: "09:30". */
 export function timeIn(instant: string | Date, timeZone: string): string {
   return new Intl.DateTimeFormat("es-AR", {
     timeZone,

@@ -38,7 +38,7 @@ function encode(buffer: ArrayBuffer | null): string {
  * Activar o desactivar las notificaciones.
  *
  * Es el canal más barato del sistema: cada aviso que sale por acá en lugar de
- * WhatsApp son $37,68 que la estética no gasta. Por eso vale la pena pedirlo
+ * WhatsApp son $37,68 que el negocio no gasta. Por eso vale la pena pedirlo
  * bien y explicar para qué sirve, en vez de disparar el permiso del navegador
  * apenas alguien entra.
  */

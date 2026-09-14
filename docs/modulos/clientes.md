@@ -2,7 +2,7 @@
 
 ## Qué es
 
-La ficha de cada persona que atiende la estética: cómo contactarla, qué hay que
+La ficha de cada persona que atiende el negocio: cómo contactarla, qué hay que
 tener en cuenta antes de tocarla, y el seguimiento de sus sesiones.
 
 ## Para qué sirve
@@ -37,7 +37,7 @@ sentido.
 
 ### 2. El teléfono NO es único
 
-En una estética la madre saca turno para la hija con su propio número. Una
+En un negocio la madre saca turno para la hija con su propio número. Una
 restricción dura haría fallar la importación de datos reales.
 
 Los repetidos **se muestran, no se prohíben**: la ficha avisa "otra ficha usa
@@ -95,7 +95,7 @@ meses toda la clientela activa queda clasificada.
 | Borrar fichas, notas o etiquetas | ✅ | ✅ | ❌ | ❌ |
 
 A diferencia del catálogo de servicios, acá **escriben los cuatro roles**:
-recepción agenda y las profesionales anotan cómo fue la sesión. Lo que se
+recepción agenda y los profesionales anotan cómo fue la sesión. Lo que se
 restringe es borrar.
 
 Las notas **no se pueden editar por nadie**: no hay permiso de UPDATE sobre la

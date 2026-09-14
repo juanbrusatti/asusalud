@@ -18,7 +18,7 @@ export default async function EditarPlantillaPage({
   if (!membership) return null;
   if (!atLeast(membership.role, "admin")) notFound();
 
-  // La RLS ya filtró por estética: si no está en la lista, no es de acá.
+  // La RLS ya filtró por negocio: si no está en la lista, no es de acá.
   const template = (await listTemplates()).find((t) => t.id === id);
   if (!template) notFound();
 

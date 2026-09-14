@@ -4,7 +4,7 @@ import { asAdmin, asUser, expectRejected, pool } from "./helpers";
 import { setupScenario, teardownScenario, type Scenario } from "./fixtures";
 
 /**
- * La clienta manejando su propio turno.
+ * El cliente manejando su propio turno.
  *
  * Lo que se prueba no es que los botones anden, sino que la base sea la que
  * decide: la hora de corte, el tope de cambios y de quién es cada turno tienen
@@ -176,7 +176,7 @@ describe("el enlace es la llave", () => {
     });
   });
 
-  it("el enlace no entrega la ficha de la clienta", async () => {
+  it("el enlace no entrega la ficha del cliente", async () => {
     const t = await crearTurno();
     await asUser(null, async (c) => {
       const { rows } = await c.query(
@@ -203,7 +203,7 @@ describe("el enlace es la llave", () => {
 });
 
 describe("cancelar", () => {
-  it("la clienta cancela y el horario queda libre", async () => {
+  it("el cliente cancela y el horario queda libre", async () => {
     const t = await crearTurno(48);
 
     await comoVisitante(async (c) => {
@@ -222,12 +222,12 @@ describe("cancelar", () => {
       expect(rows[0].status).toBe("cancelled");
       // El motivo queda escrito para que la agenda no tenga que adivinarlo.
       expect(rows[0].cancel_reason).toBe(
-        "Cancelado por la clienta: Me salió un viaje",
+        "Cancelado por el cliente: Me salió un viaje",
       );
     });
   });
 
-  it("el historial dice que fue la clienta, no el equipo", async () => {
+  it("el historial dice que fue el cliente, no el equipo", async () => {
     const t = await crearTurno(48);
     await comoVisitante(async (c) => {
       await c.query(`select public.booking_cancel($1, null)`, [t.token]);
@@ -327,7 +327,7 @@ describe("reprogramar", () => {
          where appointment_id = $1 and from_status = to_status`,
         [t.id],
       );
-      expect(h[0].reason).toMatch(/^Reprogramado por la clienta/);
+      expect(h[0].reason).toMatch(/^Reprogramado por el cliente/);
       expect(h[0].by_client).toBe(true);
     });
   });

@@ -29,8 +29,8 @@ describe("armado del mensaje", () => {
     expect(texto).toContain("Depilación Definitiva");
   });
 
-  it("usa la hora de la estética y no la del servidor", () => {
-    // Las 12:00 UTC son las 09:00 en Córdoba. Si esto se rompe, a la clienta
+  it("usa la hora del negocio y no la del servidor", () => {
+    // Las 12:00 UTC son las 09:00 en Córdoba. Si esto se rompe, al cliente
     // le llega el horario equivocado.
     expect(render("{{hora}}", CTX)).toBe("09:00");
   });

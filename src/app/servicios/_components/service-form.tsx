@@ -15,7 +15,7 @@ import type { Service, ServiceCategory } from "@/lib/data/services";
 
 const INITIAL: FormState = { error: null };
 
-/** Las duraciones que una estética usa el 95% del tiempo. */
+/** Las duraciones que un negocio usa el 95% del tiempo. */
 const DURACIONES = [15, 20, 30, 40, 45, 60, 90];
 
 function Submit({ label }: { label: string }) {
@@ -89,7 +89,7 @@ export function ServiceForm({
             name="description"
             maxLength={500}
             defaultValue={text("description", service?.description ?? "")}
-            placeholder="Qué incluye, cómo se prepara la clienta, cuántas sesiones suele llevar."
+            placeholder="Qué incluye, cómo se prepara el cliente, cuántas sesiones suele llevar."
             hint="Se muestra en la reserva online. Opcional."
           />
         </CardBody>
@@ -145,7 +145,7 @@ export function ServiceForm({
             step={5}
             defaultValue={text("bufferMinutes", String(service?.buffer_minutes ?? 0))}
             className="w-32"
-            hint="Minutos que quedan bloqueados después del turno. Ocupan agenda pero no se cobran ni se le muestran a la clienta."
+            hint="Minutos que quedan bloqueados después del turno. Ocupan agenda pero no se cobran ni se le muestran al cliente."
           />
 
           <Field
@@ -156,7 +156,7 @@ export function ServiceForm({
             max={50}
             defaultValue={text("capacity", String(service?.capacity ?? 1))}
             className="w-32"
-            hint="Cuántas personas podés atender a la vez con este servicio. Si el aparato trabaja solo mientras atendés a otra clienta, poné 2 o 3. Un masaje es siempre 1."
+            hint="Cuántas personas podés atender a la vez con este servicio. Si el aparato trabaja solo mientras atendés a otro cliente, poné 2 o 3. Un masaje es siempre 1."
           />
         </CardBody>
       </Card>

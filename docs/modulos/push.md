@@ -4,7 +4,7 @@
 
 El canal más barato de los tres, y el único verdaderamente gratis e ilimitado.
 Cada recordatorio que sale por acá en lugar de WhatsApp son **$37,68 que la
-estética no gasta**.
+negocio no gasta**.
 
 Funciona con Web Push estándar: el navegador guarda una suscripción y el
 servidor le manda avisos cifrados, sin intermediarios ni costo por mensaje.
@@ -15,8 +15,8 @@ servidor le manda avisos cifrados, sin intermediarios ni costo por mensaje.
 cuando entra una reserva o alguien cancela, sin tener que estar mirando la
 agenda. La adopción es alta: usan el sistema todos los días.
 
-**Las clientas.** Sólo las que acepten notificaciones al reservar online. La
-adopción va a ser baja —la mayoría no instala la aplicación de su estética—
+**Los clientes.** Sólo las que acepten notificaciones al reservar online. La
+adopción va a ser baja —la mayoría no instala la aplicación de su negocio—
 pero cada una que acepta es una que **deja de costar plata para siempre**.
 
 Por eso el pedido de permiso no se dispara apenas alguien entra. Aparece con
@@ -70,7 +70,7 @@ lo mismo es molesto y desorienta.
 
 ## Avisos al equipo
 
-Una reserva que entra a las once de la noche y una cancelación de la clienta
+Una reserva que entra a las once de la noche y una cancelación del cliente
 son las dos cosas que se descubrían al día siguiente, mirando la agenda.
 Avisar en el momento es lo que convierte una cancelación en un horario que
 todavía se puede volver a vender.
@@ -78,8 +78,8 @@ todavía se puede volver a vender.
 | Qué pasó | Qué llega |
 | --- | --- |
 | Reserva online nueva | `Reserva nueva` · nombre, día, hora y servicio |
-| La clienta cancela desde su enlace | `Cancelaron un turno` · y que el horario quedó libre |
-| La clienta mueve su turno | `Movieron un turno` · de qué horario a qué horario |
+| El cliente cancela desde su enlace | `Cancelaron un turno` · y que el horario quedó libre |
+| El cliente mueve su turno | `Movieron un turno` · de qué horario a qué horario |
 
 ### Sólo avisa lo que no hizo el equipo
 
@@ -88,7 +88,7 @@ sabe, lo acaba de hacer. Avisarle a alguien de sus propios actos es la forma
 más rápida de que apague las notificaciones para siempre.
 
 Por eso el alta sólo avisa cuando `source = 'online'`, y la cancelación y la
-reprogramación sólo cuando las hizo la clienta desde el enlace de su turno.
+reprogramación sólo cuando las hizo el cliente desde el enlace de su turno.
 
 ### El aviso espera a que el turno esté completo
 
@@ -117,13 +117,13 @@ queda como red de seguridad. Un recordatorio que sale un minuto más tarde da
 igual; "acaba de entrar una reserva" enterado media hora después ya no es un
 aviso, es una noticia.
 
-## Las clientas, desde su turno
+## Los clientes, desde su turno
 
 El ofrecimiento aparece en dos lugares: al terminar de reservar online —el
-único momento en que una clienta tiene un motivo real para aceptar— y en la
+único momento en que un cliente tiene un motivo real para aceptar— y en la
 pantalla de su turno.
 
-La llave es el **token del turno**, no un identificador de clienta.
+La llave es el **token del turno**, no un identificador de cliente.
 `register_push_subscription` acepta el `client_id` que se le pase, y por eso
 sigue estando prohibida para quien no tiene sesión: si `anon` pudiera llamarla,
 cualquiera podría suscribir su navegador a los recordatorios de otra persona.
@@ -194,9 +194,9 @@ y hay que contarla al pedir el permiso, no después.
 | Qué | Dónde |
 | --- | --- |
 | Tabla y registro | `supabase/migrations/20260912170000_push.sql` |
-| Avisos al equipo y suscripción de la clienta | `supabase/migrations/20260913100000_avisos.sql` |
+| Avisos al equipo y suscripción del cliente | `supabase/migrations/20260913100000_avisos.sql` |
 | Envío de los avisos | `supabase/functions/_shared/alerts.ts` |
-| Ofrecerlas a la clienta | `src/components/pwa/avisos-clienta.tsx` |
+| Ofrecerlas al cliente | `src/components/pwa/avisos-cliente.tsx` |
 | Adaptador del emisor | `supabase/functions/_shared/channels.ts` |
 | Recibir y abrir | `public/sw.js` |
 | Pedir el permiso al equipo | `src/components/pwa/notificaciones.tsx` |
@@ -215,5 +215,5 @@ y hay que contarla al pedir el permiso, no después.
   lo que pasa en la base.
 - **Un resumen en pantalla** de los avisos, para quien no los tenía activados
   cuando pasaron.
-- **Ofrecerle el horario liberado** a otra clienta cuando entra una
+- **Ofrecerle el horario liberado** a otro cliente cuando entra una
   cancelación.

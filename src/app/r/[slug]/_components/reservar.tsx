@@ -5,7 +5,7 @@ import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
-import { AvisosClienta } from "@/components/pwa/avisos-clienta";
+import { AvisosCliente } from "@/components/pwa/avisos-cliente";
 import { createBooking, getSlots } from "@/lib/actions/reserva";
 import { formatDuration, formatPrice } from "@/lib/money";
 import { longDateIn, nextDay, timeIn, todayIn } from "@/lib/tz";
@@ -130,8 +130,7 @@ export function Reservar({
             <>
               <div className="mt-1 grid justify-items-start gap-2 rounded-[16px] bg-white/15 px-4 py-3.5">
                 <p className="text-[13.5px] leading-relaxed">
-                  Si después no podés venir o querés otro horario, cambialo vos
-                  misma desde acá. Guardá el enlace.
+                  Si después no podés venir o querés otro horario, cambialo vos desde acá. Guardá el enlace.
                 </p>
                 <a
                   href={`/t/${token}`}
@@ -142,9 +141,9 @@ export function Reservar({
               </div>
 
               {/* El único canal gratis del sistema, y este es el único momento
-                  en que la clienta tiene un motivo real para aceptarlo: acaba
+                  en que el cliente tiene un motivo real para aceptarlo: acaba
                   de reservar y le importa que le avisen. */}
-              <AvisosClienta
+              <AvisosCliente
                 token={token}
                 vapidPublicKey={vapidPublicKey}
                 tono="acento"

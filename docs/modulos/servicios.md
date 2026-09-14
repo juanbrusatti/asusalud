@@ -2,7 +2,7 @@
 
 ## Qué es
 
-El catálogo de lo que la estética ofrece: cada depilación, limpieza de cutis,
+El catálogo de lo que el negocio ofrece: cada depilación, limpieza de cutis,
 masaje o tratamiento, con su duración, su precio y cuántas personas se pueden
 atender a la vez.
 
@@ -13,27 +13,27 @@ Es la base de casi todo lo demás:
 | Quién lo usa | Para qué |
 | --- | --- |
 | Agenda | Cuánto ocupa el turno y cuántos caben en el mismo horario |
-| Reserva online | Qué puede elegir la clienta y a qué precio |
+| Reserva online | Qué puede elegir el cliente y a qué precio |
 | Caja | Cuánto se cobra |
 | Informes | Qué servicios dejan más plata |
 | Recordatorios | Filtrar reglas por tipo de servicio |
 
 Sin servicios cargados no se pueden agendar turnos. Es el primer paso de una
-estética nueva.
+negocio nuevo.
 
 ## Qué información usa
 
 | Dato | Qué significa | Por qué importa |
 | --- | --- | --- |
-| Nombre | Cómo se llama | Único dentro de la estética. Dos servicios con el mismo nombre son siempre un error de carga |
+| Nombre | Cómo se llama | Único dentro del negocio. Dos servicios con el mismo nombre son siempre un error de carga |
 | Categoría | Agrupación opcional | Para que un listado de treinta ítems siga siendo legible |
 | Descripción | Qué incluye | Se muestra en la reserva online |
 | Duración | Minutos que ocupa | Define el bloque en la agenda |
-| Preparación y limpieza | Minutos bloqueados después | Ocupan agenda, **no se cobran** ni se le muestran a la clienta |
+| Preparación y limpieza | Minutos bloqueados después | Ocupan agenda, **no se cobran** ni se le muestran al cliente |
 | Turnos simultáneos | Cuántas personas a la vez | Ver abajo |
 | Precio | En pesos, o "a convenir" | Se guarda en centavos y como entero |
 | Activo | Si se ofrece hoy | Apagarlo lo saca de la agenda sin tocar los turnos existentes |
-| Reservable online | Si la clienta lo puede elegir sola | Separado de "activo" a propósito |
+| Reservable online | Si el cliente lo puede elegir por su cuenta | Separado de "activo" a propósito |
 
 ### Turnos simultáneos
 
@@ -80,7 +80,7 @@ Modificarlos es cosa de quien manda.
 | Cambiar el precio | Los turnos **futuros** toman el precio nuevo. Los ya cobrados no se tocan. Queda una fila en el historial |
 | Cambiar la duración | Los turnos ya agendados **mantienen** la duración que tenían |
 | Apagar "activo" | Deja de aparecer al agendar. Los turnos existentes siguen en pie |
-| Apagar "reservable online" | La clienta deja de verlo, pero la estética lo puede seguir agendando |
+| Apagar "reservable online" | El cliente deja de verlo, pero el negocio lo puede seguir agendando |
 | Borrar un servicio | **No se ofrece desde la interfaz.** Se desactiva, porque los turnos históricos lo referencian |
 | Borrar una categoría | Los servicios quedan sin categoría. No se borra ninguno |
 

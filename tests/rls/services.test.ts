@@ -11,7 +11,7 @@ beforeAll(async () => {
   // Un servicio real de Asusalud: depilación con aparato, dos cabinas.
   // Se inserta fuera de una transacción reversible porque el resto de las
   // pruebas lo necesita confirmado. El claim se setea igual para que el
-  // trigger de historial registre a la dueña como autora del precio.
+  // trigger de historial registre al titular como autor del precio.
   servicioA = await asAdmin(async (c) => {
     await c.query("select set_config('request.jwt.claims', $1, false)", [
       JSON.stringify({ sub: s.owner, role: "authenticated" }),
@@ -34,14 +34,14 @@ afterAll(async () => {
 });
 
 describe("aislamiento del catálogo", () => {
-  it("la estética vecina no ve los servicios", async () => {
+  it("el negocio vecino no ve los servicios", async () => {
     await asUser(s.intruder, async (c) => {
       const { rows } = await c.query(`select id from public.services`);
       expect(rows).toHaveLength(0);
     });
   });
 
-  it("no se puede crear un servicio en la estética ajena", async () => {
+  it("no se puede crear un servicio en el negocio ajena", async () => {
     await asUser(s.intruder, async (c) => {
       const code = await expectRejected(() =>
         c.query(
@@ -54,7 +54,7 @@ describe("aislamiento del catálogo", () => {
     });
   });
 
-  it("no se puede cambiarle el precio a la estética ajena", async () => {
+  it("no se puede cambiarle el precio al negocio ajena", async () => {
     await asUser(s.intruder, async (c) => {
       const { rowCount } = await c.query(
         `update public.services set price_cents = 1 where id = $1`,
@@ -64,7 +64,7 @@ describe("aislamiento del catálogo", () => {
     });
   });
 
-  it("no se puede mudar un servicio propio a la estética ajena", async () => {
+  it("no se puede mudar un servicio propio al negocio ajena", async () => {
     await asUser(s.owner, async (c) => {
       const code = await expectRejected(() =>
         c.query(`update public.services set tenant_id = $1 where id = $2`, [
@@ -77,7 +77,7 @@ describe("aislamiento del catálogo", () => {
     });
   });
 
-  it("dos estéticas pueden tener un servicio con el mismo nombre", async () => {
+  it("dos negocios pueden tener un servicio con el mismo nombre", async () => {
     await asUser(s.intruder, async (c) => {
       const { rowCount } = await c.query(
         `insert into public.services
@@ -184,7 +184,7 @@ describe("reglas del catálogo", () => {
     });
   });
 
-  it("no se puede repetir el nombre dentro de la misma estética", async () => {
+  it("no se puede repetir el nombre dentro de la mismo negocio", async () => {
     await asUser(s.owner, async (c) => {
       const code = await expectRejected(() =>
         c.query(

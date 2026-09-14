@@ -4,7 +4,7 @@ import { asAdmin, asUser, expectRejected, pool } from "./helpers";
 import { setupScenario, teardownScenario, type Scenario } from "./fixtures";
 
 /**
- * Avisos al equipo y notificaciones para la clienta.
+ * Avisos al equipo y notificaciones para el cliente.
  *
  * Lo que más importa probar no es que el aviso salga, sino **que no salga**
  * cuando lo hizo el equipo: avisarle a alguien de lo que acaba de hacer es la
@@ -163,7 +163,7 @@ describe("qué merece un aviso", () => {
     expect(await avisos()).toEqual([]);
   });
 
-  it("una cancelación de la clienta avisa", async () => {
+  it("una cancelación del cliente avisa", async () => {
     await equipoSuscripto();
     const t = await crearTurno({ source: "online" });
     await asAdmin((c) =>
@@ -228,7 +228,7 @@ describe("la cola", () => {
     await crearTurno({ source: "online" });
 
     await asAdmin(async (c) => {
-      // El emisor vacía la cola entera, de todas las estéticas: acá se filtra
+      // El emisor vacía la cola entera, de todas los negocios: acá se filtra
       // a la propia para no depender de lo que haya dejado otra prueba.
       const { rows: primera } = await c.query(
         `select * from public.rpc_claim_team_alerts(50) where tenant_id = $1`,
@@ -300,7 +300,7 @@ describe("la cola", () => {
 });
 
 describe("quién ve los avisos", () => {
-  it("el equipo ve los de su estética", async () => {
+  it("el equipo ve los de su negocio", async () => {
     await equipoSuscripto();
     await crearTurno({ source: "online" });
 
@@ -310,7 +310,7 @@ describe("quién ve los avisos", () => {
     });
   });
 
-  it("la estética de al lado no ve ninguno", async () => {
+  it("el negocio de al lado no ve ninguno", async () => {
     await equipoSuscripto();
     await crearTurno({ source: "online" });
 
@@ -335,14 +335,14 @@ describe("quién ve los avisos", () => {
   });
 });
 
-describe("la clienta acepta las notificaciones", () => {
+describe("el cliente acepta las notificaciones", () => {
   it("el token de su turno alcanza para suscribirse", async () => {
     const t = await crearTurno({ source: "online" });
 
     await comoVisitante(async (c) => {
       const { rows } = await c.query(
         `select public.booking_subscribe_push($1, $2, 'p256', 'auth', 'iPhone') as r`,
-        [t.token, "https://push.test/clienta-1"],
+        [t.token, "https://push.test/cliente-1"],
       );
       expect((rows[0].r as { ok: boolean }).ok).toBe(true);
     });
@@ -350,7 +350,7 @@ describe("la clienta acepta las notificaciones", () => {
     await asAdmin(async (c) => {
       const { rows } = await c.query(
         `select client_id, user_id, tenant_id from public.push_subscriptions
-         where endpoint = 'https://push.test/clienta-1'`,
+         where endpoint = 'https://push.test/cliente-1'`,
       );
       // Queda colgada de la ficha, no de un usuario del equipo.
       expect(rows[0].client_id).toBe(cliente);
@@ -376,7 +376,7 @@ describe("la clienta acepta las notificaciones", () => {
     });
   });
 
-  it("un visitante no puede elegir a qué clienta suscribir", async () => {
+  it("un visitante no puede elegir a qué cliente suscribir", async () => {
     await asUser(null, async (c) => {
       // `register_push_subscription` acepta un client_id cualquiera y por eso
       // sigue estando prohibida para quien no tiene sesión.

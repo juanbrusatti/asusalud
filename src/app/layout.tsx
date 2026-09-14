@@ -21,11 +21,11 @@ const caveat = Caveat({
 
 export const metadata: Metadata = {
   title: {
-    default: "Dlay Estética",
+    default: "Dlay Agenda",
     template: "%s · Dlay",
   },
   description:
-    "Agenda, clientes y recordatorios automáticos para estéticas. Menos tiempo administrando, más tiempo atendiendo.",
+    "Agenda, clientes y recordatorios automáticos para negocios. Menos tiempo administrando, más tiempo atendiendo.",
   applicationName: "Dlay",
   manifest: "/manifest.webmanifest",
   appleWebApp: {

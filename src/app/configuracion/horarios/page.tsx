@@ -26,7 +26,7 @@ export default async function HorariosPage() {
           </h1>
           <p className="mt-1 max-w-prose text-[14.5px] text-muted">
             Qué días y en qué franjas atendés. Es lo que decide qué horarios se
-            le ofrecen a una clienta que reserva online.
+            le ofrecen a un cliente que reserva online.
           </p>
         </div>
 
