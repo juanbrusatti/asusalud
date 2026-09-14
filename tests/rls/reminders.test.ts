@@ -14,14 +14,30 @@ let sinCanales: string;
 let plantillaEmail: string;
 let plantillaWhatsapp: string;
 
-/** Corre el planificador con permisos del sistema. */
+/**
+ * Corre el planificador y devuelve cuántos envíos programó **para este
+ * negocio**.
+ *
+ * `plan_reminders` planifica para todos los negocios a la vez y devuelve el
+ * total. Como cada negocio nuevo nace con su recordatorio del día anterior
+ * encendido, ese total incluye lo que hayan creado los otros archivos de
+ * prueba corriendo en paralelo, y las cuentas dejan de significar nada. Por
+ * eso se mide la diferencia sobre los envíos propios y no lo que devuelve la
+ * función.
+ */
 async function planificar(horizonte = "72 hours"): Promise<number> {
   return asAdmin(async (c) => {
-    const { rows } = await c.query(
-      `select app.plan_reminders($1::interval) as n`,
-      [horizonte],
-    );
-    return rows[0].n as number;
+    const propios = async () => {
+      const { rows } = await c.query(
+        `select count(*)::int as n from public.message_jobs where tenant_id = $1`,
+        [s.tenantA],
+      );
+      return rows[0].n as number;
+    };
+
+    const antes = await propios();
+    await c.query(`select app.plan_reminders($1::interval)`, [horizonte]);
+    return (await propios()) - antes;
   });
 }
 
