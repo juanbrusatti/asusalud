@@ -1,4 +1,4 @@
-# El turno de la clienta
+# El turno del cliente
 
 ## Qué es
 
@@ -11,9 +11,9 @@ pensado para alguien **sin cuenta**.
 
 ## Qué problema resuelve
 
-Hoy, para mover un turno, la clienta escribe, alguien lee, alguien contesta,
+Hoy, para mover un turno, el cliente escribe, alguien lee, alguien contesta,
 alguien cancela a mano y alguien agenda de nuevo. **Son cuatro pasos de una
-persona** para algo que la clienta podría hacer sola en diez segundos.
+persona** para algo que el cliente podría hacer por su cuenta en diez segundos.
 
 Y el costo no es sólo el tiempo: el horario liberado tarda horas en volver a
 ofrecerse, cuando ya nadie lo va a tomar.
@@ -22,7 +22,7 @@ ofrecerse, cuando ya nadie lo va a tomar.
 
 ### 1. El enlace es la llave
 
-No hay cuenta ni contraseña. Pedirle a una clienta que se registre para avisar
+No hay cuenta ni contraseña. Pedirle a un cliente que se registre para avisar
 que no puede venir es **garantizar que no avise**: va a seguir escribiendo por
 WhatsApp, que es exactamente lo que se quería evitar.
 
@@ -38,9 +38,9 @@ otra cosa deja de ser una llave.
 ### 2. Hay una hora de corte
 
 Cancelar dos horas antes deja un hueco que no se llena con nadie. Por defecto
-son **24 horas**, y lo decide cada estética.
+son **24 horas**, y lo decide cada negocio.
 
-Pasado el corte **no se dice "no"**: se muestra el teléfono de la estética y se
+Pasado el corte **no se dice "no"**: se muestra el teléfono del negocio y se
 explica que avisar igual sigue siendo lo mejor, porque cuanto antes se sepa más
 chances hay de que alguien ocupe el lugar. Una puerta cerrada sin timbre logra
 que la persona escriba lo mismo, más tarde y de peor humor.
@@ -68,20 +68,20 @@ Ese cálculo vive en una sola función, `app.free_slots()`, que usan las dos
 pantallas. Duplicar sesenta líneas de lógica sutil por esa única diferencia es
 la forma segura de que un día dejen de coincidir.
 
-## Lo que ve la estética
+## Lo que ve el negocio
 
 El turno cambia en la agenda **en el momento**, sin que nadie toque nada. Y el
 historial del turno dice quién lo hizo:
 
 ```
-Reprogramado por la clienta: venía del 14/09 01:15
-La clienta · 12-sept, 06:40 p. m.
+Reprogramado por el cliente: venía del 14/09 01:15
+El cliente · 12-sept, 06:40 p. m.
 ```
 
-Sin eso, una cancelación hecha por la clienta figuraría como "alguien del
+Sin eso, una cancelación hecha por el cliente figuraría como "alguien del
 equipo", que es justo lo contrario de lo que pasó. La columna `by_client` lo
 distingue, y el autor queda en nulo aunque haya una sesión abierta: puede pasar
-que la dueña abra el enlace de su clienta desde su propio teléfono, y anotarla
+que el titular abra el enlace de su cliente desde su propio teléfono, y anotarla
 a ella como quien canceló sería mentir.
 
 Mover un turno **no cambia su estado**, así que el trigger del historial no
@@ -103,7 +103,7 @@ La dirección base sale de `platform_settings.site_url`.
 
 ## Los ajustes
 
-En **Ajustes → Reserva online**, bloque "Que se maneje sola":
+En **Ajustes → Reserva online**, bloque "Que se manejen solos":
 
 | Ajuste | Por defecto | Qué hace |
 | --- | --- | --- |
@@ -113,19 +113,19 @@ En **Ajustes → Reserva online**, bloque "Que se maneje sola":
 | Teléfono de contacto | — | Adónde escribir cuando ya es tarde |
 
 **No depende de que la agenda pública esté abierta.** Son dos decisiones
-distintas: una estética puede no querer que cualquiera saque turno por internet
-y querer igual que su clienta pueda avisar sola que no viene.
+distintas: un negocio puede no querer que cualquiera saque turno por internet
+y querer igual que su cliente pueda avisar por su cuenta que no viene.
 
 Apagarlo no invalida los enlaces: siguen mostrando el turno, sin botones.
 
 ## Los avisos gratis
 
-En la pantalla del turno —y al terminar de reservar— se le ofrece a la clienta
+En la pantalla del turno —y al terminar de reservar— se le ofrece al cliente
 recibir los avisos por notificación en lugar de por mensaje. El token del turno
 es lo que la identifica, así que no hace falta ni cuenta ni otro secreto. Está
 contado en [Notificaciones push](push.md).
 
-Es el único canal gratis del sistema: cada clienta que acepta deja de costar
+Es el único canal gratis del sistema: cada cliente que acepta deja de costar
 $37,68 por recordatorio.
 
 ## Seguridad
@@ -135,8 +135,8 @@ ninguna tabla**. Seis funciones más, y nada más que eso.
 
 - `booking_manage` devuelve **el nombre de pila y nada más** de la ficha. Es
   para que quien abre el enlace reconozca que el turno es suyo; el apellido, el
-  teléfono y el identificador de la clienta no viajan.
-- Un token inventado y un turno de una estética dada de baja dan **la misma
+  teléfono y el identificador del cliente no viajan.
+- Un token inventado y un turno de un negocio dado de baja dan **la misma
   respuesta**.
 - La hora de corte, el tope de cambios y el estado del turno los decide **la
   base**, no la pantalla: valen aunque alguien llame a las funciones a mano.
@@ -149,7 +149,7 @@ ninguna tabla**. Seis funciones más, y nada más que eso.
 | Qué | Dónde |
 | --- | --- |
 | Token, ajustes y las cinco funciones | `supabase/migrations/20260912260000_autogestion.sql` |
-| Suscripción de la clienta a los avisos | `supabase/migrations/20260913100000_avisos.sql` |
+| Suscripción del cliente a los avisos | `supabase/migrations/20260913100000_avisos.sql` |
 | Tipos y textos | `src/lib/autogestion.ts` |
 | Lectura | `src/lib/data/autogestion.ts` |
 | Confirmar, cancelar y mover | `src/lib/actions/autogestion.ts` |
@@ -163,4 +163,4 @@ ninguna tabla**. Seis funciones más, y nada más que eso.
   convierte una cancelación en una recuperación.
 - **Agregar o sacar un servicio** del turno: hoy sólo se mueve el horario.
 - **Un enlace que sobreviva al turno**, para ver todos los turnos de una
-  clienta y no sólo uno.
+  cliente y no sólo uno.

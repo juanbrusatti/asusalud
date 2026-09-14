@@ -84,7 +84,7 @@ export type Range = { from: string; to: string; preset: Preset | null };
 /**
  * Qué período se está mirando.
  *
- * `hoy` llega como fecha de la estética, no del servidor: en Vercel el proceso
+ * `hoy` llega como fecha del negocio, no del servidor: en Vercel el proceso
  * corre en UTC y a las 21:30 de Río Cuarto ya sería mañana, así que "este mes"
  * saltaría un día antes de tiempo.
  */

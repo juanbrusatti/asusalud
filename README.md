@@ -1,6 +1,6 @@
-# Dlay Estética
+# Dlay Agenda
 
-SaaS de gestión para estéticas: agenda, clientes, servicios, caja, stock y
+SaaS de gestión para negocios: agenda, clientes, servicios, caja, stock y
 —sobre todo— **recordatorios automáticos que no hacen que te bloqueen el
 WhatsApp**.
 
@@ -46,7 +46,7 @@ cp .env.example .env.local
 npm run dev           # http://localhost:3000
 ```
 
-Entrá, creá una cuenta y después tu estética. Los correos de prueba se ven en
+Entrá, creá una cuenta y después tu negocio. Los correos de prueba se ven en
 Mailpit: http://127.0.0.1:54324
 
 ## Comandos
@@ -68,8 +68,8 @@ Mailpit: http://127.0.0.1:54324
 > Ninguna funcionalidad que toque datos se da por terminada sin su prueba de
 > aislamiento en `tests/rls/`.
 
-La prueba se autentica como la estética A e intenta leer o escribir sobre la
-estética B. Si devuelve una sola fila, la función no está lista.
+La prueba se autentica como el negocio A e intenta leer o escribir sobre la
+negocio B. Si devuelve una sola fila, la función no está lista.
 
 ## Documentación
 
@@ -90,7 +90,7 @@ estética B. Si devuelve una sola fila, la función no está lista.
 - [Webhooks de WhatsApp](docs/modulos/webhooks.md)
 - [Notificaciones push](docs/modulos/push.md)
 - [Reserva online](docs/modulos/reserva-online.md)
-- [El turno de la clienta](docs/modulos/autogestion.md)
+- [El turno del cliente](docs/modulos/autogestion.md)
 - [Configuración](docs/modulos/configuracion.md)
 - [Caja](docs/modulos/caja.md)
 - [Informes](docs/modulos/informes.md)

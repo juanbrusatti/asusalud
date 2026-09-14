@@ -18,7 +18,7 @@ type Panel = "nada" | "mover" | "cancelar";
 type Hecho = "cancelado" | "movido" | "confirmado";
 
 /**
- * Lo que la clienta puede hacer con su turno.
+ * Lo que el cliente puede hacer con su turno.
  *
  * El orden de los botones no es casual: confirmar y mover van primero porque
  * son los que conservan el turno. Cancelar va último y en tono neutro, sin

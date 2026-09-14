@@ -209,7 +209,7 @@ export function Cobro({
           <CardTitle>Cobro</CardTitle>
           {saldado && (
             <span className="rounded-pill bg-accent px-2.5 py-1 text-[11.5px] font-semibold uppercase tracking-wider text-on-accent">
-              {saldoCents === 0 ? "Cobrado" : "A favor de la clienta"}
+              {saldoCents === 0 ? "Cobrado" : "A favor del cliente"}
             </span>
           )}
         </div>

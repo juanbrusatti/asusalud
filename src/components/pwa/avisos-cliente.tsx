@@ -30,9 +30,9 @@ function encode(buffer: ArrayBuffer | null): string {
 }
 
 /**
- * Ofrecerle a la clienta los avisos de su turno.
+ * Ofrecerle al cliente los avisos de su turno.
  *
- * Es el único canal gratis del sistema: cada clienta que acepta es una que
+ * Es el único canal gratis del sistema: cada cliente que acepta es una que
  * deja de costar $37,68 por recordatorio, para siempre.
  *
  * Por eso el permiso **no se dispara solo**. Aparece con una explicación y un
@@ -43,7 +43,7 @@ function encode(buffer: ArrayBuffer | null): string {
  * inicio, un navegador sin soporte— no se muestra nada. Ofrecer algo que no va
  * a andar es peor que no ofrecerlo.
  */
-export function AvisosClienta({
+export function AvisosCliente({
   token,
   vapidPublicKey,
   tono = "claro",

@@ -275,7 +275,7 @@ export default async function InformesPage({
                   Suma {formatPrice(facturadoCents)} de turnos atendidos, al
                   precio que tenían cuando se agendaron. No es lo mismo que lo
                   cobrado: si esta cifra es bastante mayor, o falta cargar
-                  cobros en la caja o hay clientas debiendo.
+                  cobros en la caja o hay clientes debiendo.
                 </p>
               </CardBody>
             </Card>
@@ -377,7 +377,7 @@ export default async function InformesPage({
                   ? "No salió ningún aviso en este período."
                   : messages.costCents === 0
                     ? "Todo lo que salió fue gratis: el email y las notificaciones no se cobran, y los mensajes de WhatsApp dentro de una conversación ya abierta tampoco."
-                    : "Sólo WhatsApp se cobra, y sólo cuando la estética inicia la conversación. El email y las notificaciones son gratis."}
+                    : "Sólo WhatsApp se cobra, y sólo cuando el negocio inicia la conversación. El email y las notificaciones son gratis."}
               </p>
             </CardBody>
           </Card>

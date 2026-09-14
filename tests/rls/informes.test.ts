@@ -6,13 +6,13 @@ import { setupScenario, teardownScenario, type Scenario } from "./fixtures";
 /**
  * El informe es una sola función que contesta seis preguntas. Lo que se prueba
  * acá no es que sepa sumar, sino que sume lo que corresponde: el período
- * correcto, la estética correcta y con las anulaciones ya descontadas.
+ * correcto, el negocio correcta y con las anulaciones ya descontadas.
  */
 
 let s: Scenario;
 let branchA: string;
 let tz: string;
-/** Hoy en la zona horaria de la estética, que es el día que ve la pantalla. */
+/** Hoy en la zona horaria del negocio, que es el día que ve la pantalla. */
 let hoy: string;
 
 type Report = {
@@ -203,7 +203,7 @@ beforeAll(async () => {
     );
   });
 
-  // Los cobros van como la dueña, que es quien los carga en la vida real.
+  // Los cobros van como el titular, que es quien los carga en la vida real.
   await asAdmin(async (c) => {
     await c.query("select set_config('request.jwt.claims', $1, false)", [
       JSON.stringify({ sub: s.owner, role: "authenticated" }),
@@ -360,7 +360,7 @@ describe("si sirven los recordatorios", () => {
 });
 
 describe("quién ve qué", () => {
-  it("la estética de al lado no aparece en el informe", async () => {
+  it("el negocio de al lado no aparece en el informe", async () => {
     await asUser(s.intruder, async (c) => {
       const r = await informe(c);
       expect(r.money.incomeCents).toBe(0);
@@ -369,7 +369,7 @@ describe("quién ve qué", () => {
     });
   });
 
-  it("una profesional ve la agenda pero no la plata", async () => {
+  it("un profesional ve la agenda pero no la plata", async () => {
     await asUser(s.staff, async (c) => {
       const r = await informe(c);
       expect(r.agenda.total).toBe(4);

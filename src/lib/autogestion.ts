@@ -39,7 +39,7 @@ export type ManageView = {
 };
 
 /**
- * Qué se le dice a la clienta cuando no puede hacer el cambio sola.
+ * Qué se le dice al cliente cuando no puede hacer el cambio por su cuenta.
  *
  * Ninguno de estos textos termina en "no se puede" a secas: quien abre el
  * enlace tiene un problema concreto —no puede ir el jueves— y cerrarle la
@@ -65,7 +65,7 @@ export function blockMessage(
       return {
         title: "Los cambios se hacen hablando",
         detail:
-          "Esta estética prefiere que la avises directamente si no podés venir.",
+          "Este negocio prefiere que le avises directamente si no podés venir.",
       };
     case "tarde":
       return {

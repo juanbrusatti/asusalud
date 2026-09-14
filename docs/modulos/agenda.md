@@ -9,7 +9,7 @@ que venga después: los recordatorios, la caja y los informes.
 ## La decisión que define el módulo: los cupos simultáneos
 
 Asusalud atiende a dos o tres personas a la vez. No es desorden: el aparato de
-depilación trabaja solo mientras ellas atienden a otra clienta. En el sistema
+depilación trabaja solo mientras ellas atienden a otro cliente. En el sistema
 anterior eso se resuelve superponiendo turnos a mano, sin que nada lo controle.
 
 Acá cada servicio declara **cuántos turnos suyos pueden correr a la vez** y la
@@ -35,7 +35,7 @@ Dos razones, y las dos son de corrección, no de gusto:
    contar, así que la segunda espera y después se encuentra con que ya no hay
    lugar. Hay una prueba que abre dos transacciones en paralelo justamente
    para esto.
-2. **La reserva online.** Cuando las clientas agenden solas, la regla ya va a
+2. **La reserva online.** Cuando los clientes agenden por su cuenta, la regla ya va a
    estar puesta donde nadie la puede saltear.
 
 ### El cupo es por servicio
@@ -48,9 +48,9 @@ son posibles. Llega cuando haya varias.
 
 | Dato | Notas |
 | --- | --- |
-| Clienta | Obligatoria. El turno sin ficha no existe |
+| Cliente | Obligatoria. El turno sin ficha no existe |
 | Servicios | Uno o varios, seguidos. Se conserva el orden en que se eligieron |
-| Inicio | La hora local de la estética |
+| Inicio | La hora local del negocio |
 | Fin | Inicio más la suma de las duraciones |
 | Bloquea hasta | Fin más la limpieza del servicio más largo |
 | Estado | Sin confirmar, confirmado, atendida, no vino, cancelado |
@@ -59,7 +59,7 @@ son posibles. Llega cuando haya varias.
 
 ### Fin y "bloquea hasta" no son lo mismo
 
-`ends_at` es cuando termina la atención: es lo que ve la clienta.
+`ends_at` es cuando termina la atención: es lo que ve el cliente.
 `blocks_until` suma la limpieza y es lo que ocupa la agenda. Un turno de 09:00
 a 09:40 con 10 minutos de limpieza deja libre recién las 09:50, y la
 verificación de cupos usa ese segundo número.
@@ -74,14 +74,14 @@ cerrado se moverían solos cada vez que alguien actualiza una lista de precios.
 
 | Estado | Ocupa lugar | Cuándo se usa |
 | --- | :-: | --- |
-| Sin confirmar | Sí | Agendado, falta que la clienta confirme |
+| Sin confirmar | Sí | Agendado, falta que el cliente confirme |
 | Confirmado | Sí | Lo normal al agendar desde el mostrador |
 | Atendida | Sí | Vino y se atendió |
 | No vino | **No** | Faltó sin avisar. Libera el horario |
 | Cancelado | **No** | Se canceló. Libera el horario y guarda el motivo |
 
 **Cada cambio de estado queda registrado** con autor, fecha y motivo. De ahí
-sale el índice de ausentismo de cada clienta, que es lo que después decide
+sale el índice de ausentismo de cada cliente, que es lo que después decide
 cuántos recordatorios necesita y por qué canal.
 
 Marcar quién vino y quién no tiene que costar un toque: si cuesta más, nadie
@@ -99,7 +99,7 @@ turno, no escondidas en un menú.
 | **Borrar** un turno | ✅ | ❌ | ❌ | ❌ |
 
 Un turno **no se borra: se cancela**. Borrarlo dejaría la caja y los informes
-sin explicación. La eliminación queda reservada al dueño y para casos de
+sin explicación. La eliminación queda reservada al titular y para casos de
 error grosero.
 
 Un servicio con turnos tampoco se puede borrar: la clave foránea lo impide.
@@ -118,7 +118,7 @@ siempre. Como efecto colateral bueno, la aplicación ya no puede escribir una
 ventana incoherente aunque quiera.
 
 La función es `SECURITY INVOKER`: corre con los permisos de quien llama, así
-que la RLS sigue decidiendo en qué estética se puede agendar y con qué
+que la RLS sigue decidiendo en qué negocio se puede agendar y con qué
 servicios.
 
 ## Zonas horarias
@@ -127,7 +127,7 @@ Toda la aritmética de "qué día es" pasa por `src/lib/tz.ts`.
 
 Una agenda se rompe siempre por el mismo lado: el servidor calcula "hoy" en
 UTC, el turno de las 21:30 de Río Cuarto cae en el día siguiente y aparece en
-la pantalla equivocada. El día de la estética empieza y termina según su
+la pantalla equivocada. El día del negocio empieza y termina según su
 `timezone`, nunca según UTC.
 
 Hay pruebas para el turno de las 21:30 y para una zona con horario de verano.
@@ -144,17 +144,17 @@ que no tener bloqueos.
 ## Cobrar desde el turno
 
 La pantalla del turno tiene su tarjeta de cobro: el saldo se calcula solo y el
-importe, el concepto y la clienta vienen cargados. Está documentada en
+importe, el concepto y el cliente vienen cargados. Está documentada en
 [Caja](caja.md#cobrar-desde-el-turno).
 
-Una profesional no la ve, igual que no ve la caja.
+Un profesional no la ve, igual que no ve la caja.
 
-## Cuando el cambio lo hace la clienta
+## Cuando el cambio lo hace el cliente
 
-Cada turno tiene un enlace propio desde el que la clienta puede confirmarlo,
+Cada turno tiene un enlace propio desde el que el cliente puede confirmarlo,
 moverlo o cancelarlo. El cambio aparece en la agenda en el momento, y el
-historial lo atribuye a **la clienta**, no al equipo. Está documentado en
-[El turno de la clienta](autogestion.md).
+historial lo atribuye a **el cliente**, no al equipo. Está documentado en
+[El turno del cliente](autogestion.md).
 
 ## Dónde está el código
 

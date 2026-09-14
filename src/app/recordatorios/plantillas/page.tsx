@@ -32,7 +32,7 @@ export default async function PlantillasPage() {
               Mensajes
             </h1>
             <p className="mt-1 max-w-prose text-[14.5px] text-muted">
-              Lo que reciben tus clientas. Cada canal necesita el suyo: lo que
+              Lo que reciben tus clientes. Cada canal necesita el suyo: lo que
               sirve en un correo no sirve en un WhatsApp.
             </p>
           </div>
@@ -60,7 +60,7 @@ export default async function PlantillasPage() {
           >
             <p>
               Un mensaje es el texto que se envía, con huecos que el sistema
-              completa: el nombre de la clienta, la fecha y la hora de su turno.
+              completa: el nombre del cliente, la fecha y la hora de su turno.
             </p>
             <p className="mt-2">
               Los de WhatsApp además tienen que estar aprobados por Meta antes

@@ -40,7 +40,7 @@ export function Buscador({ initial }: { initial: string }) {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder="Buscar por nombre, teléfono o correo…"
-        aria-label="Buscar clienta"
+        aria-label="Buscar cliente"
         className="h-11 w-full rounded-pill border-[1.5px] border-line bg-surface px-4 text-[15px] text-ink placeholder:text-faint"
       />
       {pending && (

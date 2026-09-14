@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 export type FormState = { error: string | null };
 
 const schema = z.object({
-  name: z.string().min(2, "Poné el nombre de la estética."),
+  name: z.string().min(2, "Poné el nombre del negocio."),
 });
 
 /** Convierte "Estética Asusalud" en "estetica-asusalud". */
@@ -38,8 +38,8 @@ export async function createTenant(
 
   const supabase = await createClient();
 
-  // El alta pasa sí o sí por la función de la base, que crea estética,
-  // membresía de dueño y sucursal principal en una sola transacción.
+  // El alta pasa sí o sí por la función de la base, que crea negocio,
+  // membresía de titular y sucursal principal en una sola transacción.
   let { error } = await supabase.rpc("create_tenant", {
     p_name: parsed.data.name.trim(),
     p_slug: base,
@@ -56,7 +56,7 @@ export async function createTenant(
 
   if (error) {
     return {
-      error: "No se pudo crear la estética. Probá de nuevo en unos segundos.",
+      error: "No se pudo crear el negocio. Probá de nuevo en unos segundos.",
     };
   }
 

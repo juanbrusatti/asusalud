@@ -4,7 +4,7 @@ import { asAdmin, asUser, pool } from "./helpers";
 import { setupScenario, teardownScenario, type Scenario } from "./fixtures";
 
 let s: Scenario;
-let clienta: string;
+let cliente: string;
 let servicio: string;
 
 const PHONE_ID = "1234567890";
@@ -34,11 +34,11 @@ beforeAll(async () => {
       [s.tenantA, `+${TELEFONO}`],
     );
     await c.query("select set_config('request.jwt.claims', '', false)");
-    return { servicio: sv[0].id as string, clienta: cl[0].id as string };
+    return { servicio: sv[0].id as string, cliente: cl[0].id as string };
   });
 
   servicio = setup.servicio;
-  clienta = setup.clienta;
+  cliente = setup.cliente;
 
   await asAdmin(async (c) => {
     await c.query(
@@ -86,7 +86,7 @@ describe("estados de entrega", () => {
             provider_message_id, dedupe_key)
          values ($1, $2, 'whatsapp', now(), 'sent', $3, 'k-' || gen_random_uuid())
          returning id`,
-        [s.tenantA, clienta, providerId],
+        [s.tenantA, cliente, providerId],
       );
       return rows[0].id as string;
     });
@@ -149,7 +149,7 @@ describe("estados de entrega", () => {
   });
 });
 
-describe("respuestas de las clientas", () => {
+describe("respuestas de los clientes", () => {
   it("confirma el turno desde el botón del recordatorio", async () => {
     const turno = await comoSistema(async (c) => {
       await c.query("select set_config('request.jwt.claims', $1, false)", [
@@ -157,7 +157,7 @@ describe("respuestas de las clientas", () => {
       ]);
       const { rows } = await c.query(
         `select public.book_appointment($1, $2::uuid[], now() + interval '2 days') as id`,
-        [clienta, [servicio]],
+        [cliente, [servicio]],
       );
       await c.query(
         `update public.appointments set status = 'pending' where id = $1`,
@@ -191,7 +191,7 @@ describe("respuestas de las clientas", () => {
       ]);
       const { rows } = await c.query(
         `select public.book_appointment($1, $2::uuid[], now() + interval '2 days') as id`,
-        [clienta, [servicio]],
+        [cliente, [servicio]],
       );
       await c.query("select set_config('request.jwt.claims', '', false)");
       return rows[0].id as string;
@@ -213,7 +213,7 @@ describe("respuestas de las clientas", () => {
 
       const { rows: notas } = await c.query(
         `select body from public.client_notes where client_id = $1`,
-        [clienta],
+        [cliente],
       );
       expect(notas).toHaveLength(1);
       expect(notas[0].body).toContain("reprogramar");
@@ -232,7 +232,7 @@ describe("respuestas de las clientas", () => {
 
         const { rows: bajas } = await c.query(
           `select channel from public.opt_outs where client_id = $1`,
-          [clienta],
+          [cliente],
         );
         expect(bajas).toHaveLength(1);
         expect(bajas[0].channel).toBe("whatsapp");
@@ -249,7 +249,7 @@ describe("respuestas de las clientas", () => {
 
       const { rows } = await c.query(
         `select app.resolve_channel($1, '{whatsapp}'::public.message_channel[]) as canal`,
-        [clienta],
+        [cliente],
       );
       // Una baja ignorada no es un error de producto: es una denuncia.
       expect(rows[0].canal).toBeNull();
@@ -281,7 +281,7 @@ describe("respuestas de las clientas", () => {
 
       const { rows: bajas } = await c.query(
         `select count(*)::int as n from public.opt_outs where client_id = $1`,
-        [clienta],
+        [cliente],
       );
       expect(bajas[0].n).toBe(1);
     });
@@ -336,7 +336,7 @@ describe("salud de la cuenta", () => {
         `insert into public.message_jobs
            (tenant_id, client_id, channel, scheduled_for, status, dedupe_key)
          values ($1, $2, 'whatsapp', now() + interval '1 hour', 'pending', 'pendiente-1')`,
-        [s.tenantA, clienta],
+        [s.tenantA, cliente],
       );
 
       await c.query(`select app.record_account_health($1, 'RED', null, null)`, [
@@ -377,7 +377,7 @@ describe("salud de la cuenta", () => {
 });
 
 describe("aislamiento", () => {
-  it("la estética vecina no ve las respuestas", async () => {
+  it("el negocio vecino no ve las respuestas", async () => {
     await comoSistema(async (c) => {
       await c.query(
         `select app.handle_inbound($1, 'wamid.priv', $2, 'text', 'Hola', null)`,

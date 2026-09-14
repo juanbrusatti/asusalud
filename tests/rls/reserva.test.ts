@@ -13,7 +13,7 @@ let masaje: string;
 /** Un servicio activo pero que no se ofrece online. */
 let soloEnLocal: string;
 
-/** Corre como alguien sin cuenta, que es como llega una clienta. */
+/** Corre como alguien sin cuenta, que es como llega un cliente. */
 async function comoVisitante<T>(fn: (c: PoolClient) => Promise<T>): Promise<T> {
   const c = await pool.connect();
   try {
@@ -150,7 +150,7 @@ describe("lo que un visitante NO puede ver", () => {
     });
   });
 
-  it("no puede reservar en una estética con la agenda cerrada", async () => {
+  it("no puede reservar en un negocio con la agenda cerrada", async () => {
     await asAdmin(async (c) => {
       await c.query(
         `update public.booking_settings set enabled = false where tenant_id = $1`,
@@ -170,7 +170,7 @@ describe("lo que un visitante NO puede ver", () => {
     });
   });
 
-  it("no ve los servicios que la estética no ofrece online", async () => {
+  it("no ve los servicios que el negocio no ofrece online", async () => {
     await comoVisitante(async (c) => {
       const { rows } = await c.query(`select public.booking_page($1) as p`, [slug]);
       const nombres = rows[0].p.services.map((x: { name: string }) => x.name);
@@ -190,7 +190,7 @@ describe("lo que un visitante NO puede ver", () => {
     });
   });
 
-  it("el precio no viaja si la estética eligió no mostrarlo", async () => {
+  it("el precio no viaja si el negocio eligió no mostrarlo", async () => {
     await asAdmin(async (c) => {
       await c.query(
         `update public.booking_settings set show_prices = false where tenant_id = $1`,
@@ -429,7 +429,7 @@ describe("reservar", () => {
       const { rows: ficha } = await c.query(
         `select first_name, alert, email from public.clients where phone_e164 = '+5499990002'`,
       );
-      // No se pisa lo que había cargado la estética, pero sí se completa lo
+      // No se pisa lo que había cargado el negocio, pero sí se completa lo
       // que faltaba.
       expect(ficha[0].first_name).toBe("Josefina");
       expect(ficha[0].alert).toContain("lidocaína");
@@ -466,7 +466,7 @@ describe("reservar", () => {
         [slug, [masaje], LUNES],
       );
 
-      // Lo importante: la clienta recibe una explicación, no un error de base
+      // Lo importante: el cliente recibe una explicación, no un error de base
       // de datos. La función fuerza la verificación adentro justamente para
       // poder traducirlo.
       expect(rows[0].r.ok).toBe(false);
@@ -522,7 +522,7 @@ describe("reservar", () => {
     });
   });
 
-  it("una estética que no existe no dice nada", async () => {
+  it("un negocio que no existe no dice nada", async () => {
     await comoVisitante(async (c) => {
       const { rows } = await c.query(`select public.booking_page('no-existe') as p`);
       expect(rows[0].p).toBeNull();

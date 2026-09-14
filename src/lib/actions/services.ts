@@ -116,7 +116,7 @@ export async function createService(
   }
 
   const membership = await getCurrentTenant();
-  if (!membership) return { error: "No encontramos tu estética." };
+  if (!membership) return { error: "No encontramos tu negocio." };
 
   const supabase = await createClient();
   const { error } = await supabase

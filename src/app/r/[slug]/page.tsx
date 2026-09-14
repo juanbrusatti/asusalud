@@ -26,8 +26,8 @@ export async function generateMetadata({
  * La página pública de reservas.
  *
  * Es lo único del sistema que ve alguien sin cuenta. No muestra nada de la
- * estética más allá de lo necesario para reservar: ni la agenda, ni quién
- * ocupa los otros horarios, ni cuántas clientas tiene.
+ * negocio más allá de lo necesario para reservar: ni la agenda, ni quién
+ * ocupa los otros horarios, ni cuántos clientes tiene.
  */
 export default async function ReservarPage({
   params,
@@ -37,7 +37,7 @@ export default async function ReservarPage({
   const { slug } = await params;
   const page = await getBookingPage(slug);
 
-  // Misma respuesta si la estética no existe o si todavía no abrió su agenda:
+  // Misma respuesta si el negocio no existe o si todavía no abrió su agenda:
   // decir cuál de las dos es filtra información que no hace falta dar.
   if (!page) notFound();
 

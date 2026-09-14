@@ -16,11 +16,11 @@ function friendly(code: string | undefined): string {
 }
 
 // ---------------------------------------------------------------------------
-// La estética
+// El negocio
 // ---------------------------------------------------------------------------
 
 const esteticaSchema = z.object({
-  name: z.string().trim().min(2, "Poné el nombre de la estética."),
+  name: z.string().trim().min(2, "Poné el nombre del negocio."),
   timezone: z.string().trim().min(3),
   address: z.string().trim().max(200).optional(),
   phone: z.string().trim().max(40).optional(),
@@ -42,7 +42,7 @@ export async function saveEstetica(
   }
 
   const membership = await getCurrentTenant();
-  if (!membership) return { error: "No encontramos tu estética." };
+  if (!membership) return { error: "No encontramos tu negocio." };
 
   const supabase = await createClient();
 
@@ -119,7 +119,7 @@ export async function saveHorarios(
   }
 
   const membership = await getCurrentTenant();
-  if (!membership) return { error: "No encontramos tu estética." };
+  if (!membership) return { error: "No encontramos tu negocio." };
 
   const supabase = await createClient();
   const { data: branch } = await supabase
@@ -128,7 +128,7 @@ export async function saveHorarios(
     .eq("is_default", true)
     .maybeSingle();
 
-  if (!branch) return { error: "Tu estética no tiene una sucursal principal." };
+  if (!branch) return { error: "Tu negocio no tiene una sucursal principal." };
 
   const { error: borrado } = await supabase
     .from("business_hours")
@@ -197,7 +197,7 @@ export async function saveReservas(
   }
 
   const membership = await getCurrentTenant();
-  if (!membership) return { error: "No encontramos tu estética." };
+  if (!membership) return { error: "No encontramos tu negocio." };
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -268,7 +268,7 @@ export async function saveMensajeria(
   }
 
   const membership = await getCurrentTenant();
-  if (!membership) return { error: "No encontramos tu estética." };
+  if (!membership) return { error: "No encontramos tu negocio." };
 
   const supabase = await createClient();
   const { error } = await supabase

@@ -15,7 +15,7 @@ type Franja = { weekday: number; opens: string; closes: string };
  * Los horarios, día por día.
  *
  * Cada día puede tener más de una franja: es lo que permite cortar al mediodía,
- * que es como trabajan muchas estéticas. Un día sin franjas es un día cerrado.
+ * que es como trabajan muchos negocios. Un día sin franjas es un día cerrado.
  */
 export function FormHorarios({ franjas }: { franjas: Franja[] }) {
   const [state, action] = useActionState(saveHorarios, INITIAL);

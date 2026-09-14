@@ -4,7 +4,7 @@ import { setupScenario, teardownScenario, type Scenario } from "./fixtures";
 
 let s: Scenario;
 let branchA: string;
-let clienta: string;
+let cliente: string;
 /** Depilación: 40 minutos, 10 de limpieza, dos personas a la vez. */
 let depilacion: string;
 /** Masaje: 60 minutos, una sola persona a la vez. */
@@ -44,7 +44,7 @@ async function agendar(
        $7::public.appointment_status
      )
      returning id`,
-    [tenantId, branchId, clienta, startsAt, durationMinutes, bufferMinutes, status],
+    [tenantId, branchId, cliente, startsAt, durationMinutes, bufferMinutes, status],
   );
 
   const id = rows[0].id as string;
@@ -106,7 +106,7 @@ beforeAll(async () => {
   });
 
   branchA = setup.branch;
-  clienta = setup.client;
+  cliente = setup.client;
   depilacion = setup.dep;
   masaje = setup.mas;
 });
@@ -330,7 +330,7 @@ describe("coherencia del turno", () => {
          values ($1, $2, $3, $4::timestamptz,
                  $4::timestamptz + interval '30 min',
                  $4::timestamptz + interval '30 min')`,
-        [s.tenantA, branchA, clienta, LUNES_9],
+        [s.tenantA, branchA, cliente, LUNES_9],
       );
       const code = await expectRejected(() => flush(c));
       expect(code).toBe("23514");
@@ -346,7 +346,7 @@ describe("coherencia del turno", () => {
                  $4::timestamptz + interval '30 min',
                  $4::timestamptz + interval '30 min')
          returning id`,
-        [s.tenantA, branchA, clienta, LUNES_9],
+        [s.tenantA, branchA, cliente, LUNES_9],
       );
       // El servicio dura 60, pero el turno dice 30.
       await c.query(
@@ -370,7 +370,7 @@ describe("coherencia del turno", () => {
            values ($1, $2, $3, $4::timestamptz,
                    $4::timestamptz - interval '10 min',
                    $4::timestamptz)`,
-          [s.tenantA, branchA, clienta, LUNES_9],
+          [s.tenantA, branchA, cliente, LUNES_9],
         ),
       );
       expect(code).toBe("23514");
@@ -458,7 +458,7 @@ describe("historial de estados", () => {
 });
 
 describe("aislamiento de la agenda", () => {
-  it("la estética vecina no ve los turnos", async () => {
+  it("el negocio vecino no ve los turnos", async () => {
     await asAdmin(async (c) => {
       await c.query("select set_config('request.jwt.claims', $1, false)", [
         JSON.stringify({ sub: s.owner, role: "authenticated" }),
@@ -485,7 +485,7 @@ describe("aislamiento de la agenda", () => {
     });
   });
 
-  it("no se puede agendar en la estética ajena", async () => {
+  it("no se puede agendar en el negocio ajena", async () => {
     await asUser(s.intruder, async (c) => {
       const code = await expectRejected(() =>
         agendar(c, {
@@ -499,7 +499,7 @@ describe("aislamiento de la agenda", () => {
     });
   });
 
-  it("no se puede usar un servicio de otra estética", async () => {
+  it("no se puede usar un servicio de otro negocio", async () => {
     await asUser(s.intruder, async (c) => {
       const { rows: branchB } = await c.query(
         `select id from public.branches where tenant_id = $1 and is_default`,
@@ -521,7 +521,7 @@ describe("aislamiento de la agenda", () => {
         [s.tenantB, branchB[0].id, cliB[0].id, LUNES_9],
       );
 
-      // El servicio pertenece a la otra estética: la RLS no lo deja referenciar.
+      // El servicio pertenece a la otro negocio: la RLS no lo deja referenciar.
       const code = await expectRejected(() =>
         c.query(
           `insert into public.appointment_services
@@ -547,7 +547,7 @@ describe("quién puede hacer qué", () => {
     });
   });
 
-  it("una profesional marca que la clienta no vino", async () => {
+  it("un profesional marca que el cliente no vino", async () => {
     await asUser(s.staff, async (c) => {
       const id = await agendar(c, {
         startsAt: LUNES_9,
@@ -600,7 +600,7 @@ describe("quién puede hacer qué", () => {
 });
 
 describe("bloqueos de agenda", () => {
-  it("se crean y se ven dentro de la estética", async () => {
+  it("se crean y se ven dentro del negocio", async () => {
     await asUser(s.reception, async (c) => {
       const { rowCount } = await c.query(
         `insert into public.agenda_blocks
@@ -613,7 +613,7 @@ describe("bloqueos de agenda", () => {
     });
   });
 
-  it("no se ven desde otra estética", async () => {
+  it("no se ven desde otro negocio", async () => {
     await asAdmin(async (c) => {
       await c.query(
         `insert into public.agenda_blocks
@@ -641,7 +641,7 @@ describe("agendar desde la aplicación", () => {
     await asUser(s.owner, async (c) => {
       const { rows } = await c.query(
         `select public.book_appointment($1, $2::uuid[], $3::timestamptz, 'Viene con su hermana') as id`,
-        [clienta, [depilacion], LUNES_9],
+        [cliente, [depilacion], LUNES_9],
       );
       const id = rows[0].id as string;
 
@@ -672,7 +672,7 @@ describe("agendar desde la aplicación", () => {
     await asUser(s.owner, async (c) => {
       const { rows } = await c.query(
         `select public.book_appointment($1, $2::uuid[], $3::timestamptz) as id`,
-        [clienta, [depilacion, masaje], LUNES_9],
+        [cliente, [depilacion, masaje], LUNES_9],
       );
 
       const { rows: servicios } = await c.query(
@@ -698,7 +698,7 @@ describe("agendar desde la aplicación", () => {
     await asUser(s.owner, async (c) => {
       await c.query(
         `select public.book_appointment($1, $2::uuid[], $3::timestamptz)`,
-        [clienta, [masaje], LUNES_9],
+        [cliente, [masaje], LUNES_9],
       );
       await flush(c);
 
@@ -707,7 +707,7 @@ describe("agendar desde la aplicación", () => {
       // el rechazo se lleva puesto también a sus servicios.
       await c.query(
         `select public.book_appointment($1, $2::uuid[], $3::timestamptz)`,
-        [clienta, [masaje], LUNES_9],
+        [cliente, [masaje], LUNES_9],
       );
 
       const code = await expectRejected(() => flush(c));
@@ -715,7 +715,7 @@ describe("agendar desde la aplicación", () => {
     });
   });
 
-  it("no deja agendar con un servicio de otra estética", async () => {
+  it("no deja agendar con un servicio de otro negocio", async () => {
     await asUser(s.intruder, async (c) => {
       const { rows: cliB } = await c.query(
         `insert into public.clients (tenant_id, first_name)
@@ -732,12 +732,12 @@ describe("agendar desde la aplicación", () => {
     });
   });
 
-  it("no deja agendar para una ficha de otra estética", async () => {
+  it("no deja agendar para una ficha de otro negocio", async () => {
     await asUser(s.intruder, async (c) => {
       const code = await expectRejected(() =>
         c.query(
           `select public.book_appointment($1, $2::uuid[], $3::timestamptz)`,
-          [clienta, [masaje], LUNES_9],
+          [cliente, [masaje], LUNES_9],
         ),
       );
       expect(code).toBe("42501");
@@ -749,7 +749,7 @@ describe("agendar desde la aplicación", () => {
       const code = await expectRejected(() =>
         c.query(
           `select public.book_appointment($1, $2::uuid[], $3::timestamptz)`,
-          [clienta, [], LUNES_9],
+          [cliente, [], LUNES_9],
         ),
       );
       expect(code).toBe("23514");

@@ -37,7 +37,7 @@ eso el simulador muestra el número antes de activar nada.
 
 ### 2. Nada se envía dos veces
 
-Cada envío planificado lleva una **clave de deduplicación** única por estética.
+Cada envío planificado lleva una **clave de deduplicación** única por negocio.
 El planificador puede correr de más, solaparse o reintentarse: la fila ya
 existe y no se duplica.
 
@@ -95,14 +95,14 @@ recordatorio de siete días antes efectivamente se planifica.
 
 ### "Sólo a quien alguna vez faltó"
 
-Una clienta con cien turnos y cero faltas no necesita tres avisos. La regla
+Un cliente con cien turnos y cero faltas no necesita tres avisos. La regla
 mira el historial de estados de sus turnos y la deja afuera. Es la palanca de
 ahorro más grande después de la cascada de canales.
 
 ## Las salvaguardas
 
 Ninguna regla individual las puede saltear. Viven en la configuración de la
-estética y se aplican en el despachador, no al planificar, porque dependen de
+negocio y se aplican en el despachador, no al planificar, porque dependen de
 lo que **realmente salió**.
 
 | Salvaguarda | Por defecto |
@@ -124,7 +124,7 @@ lo que provoca un bloqueo.
 ### Bajas
 
 La lista de bajas se consulta antes de cada envío, y se puede dar de baja un
-canal puntual o todos. Cualquiera del equipo puede darla: si una clienta pide
+canal puntual o todos. Cualquiera del equipo puede darla: si un cliente pide
 que no le escriban más, quien la atiende tiene que poder resolverlo en el
 momento. Una baja ignorada no es un error de producto, es una denuncia.
 
@@ -141,10 +141,10 @@ El texto admite huecos que se completan al enviar: `{{cliente}}`, `{{fecha}}`,
 `{{hora}}`, `{{servicio}}`, `{{estetica}}` y `{{link}}`. El editor muestra la
 vista previa con datos de ejemplo.
 
-`{{link}}` es el enlace del turno: desde ahí la clienta lo confirma, lo mueve o
+`{{link}}` es el enlace del turno: desde ahí el cliente lo confirma, lo mueve o
 avisa que no viene sin escribirle a nadie. Es el hueco que convierte un
 recordatorio en algo que ahorra trabajo en lugar de generarlo — ver
-[El turno de la clienta](autogestion.md). Un aviso que no cuelga de un turno,
+[El turno del cliente](autogestion.md). Un aviso que no cuelga de un turno,
 como un cumpleaños, lo deja vacío en vez de mostrar el hueco.
 
 Los de WhatsApp llevan además el **nombre exacto con el que Meta los aprobó**.
@@ -157,7 +157,7 @@ Sin eso, Meta rechaza el envío, así que la base lo exige.
 | Ver reglas, cola y gasto | ✅ | ✅ | ✅ | ✅ |
 | Crear y activar reglas | ✅ | ✅ | ❌ | ❌ |
 | Escribir mensajes | ✅ | ✅ | ❌ | ❌ |
-| Dar de baja a una clienta | ✅ | ✅ | ✅ | ✅ |
+| Dar de baja a un cliente | ✅ | ✅ | ✅ | ✅ |
 
 Quién le escribe a la clientela y cuánto se gasta es una decisión de negocio.
 Dar de baja a alguien, no.

@@ -13,17 +13,17 @@ function Submit() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" size="lg" disabled={pending}>
-      {pending ? "Creando…" : "Crear mi estética"}
+      {pending ? "Creando…" : "Crear mi negocio"}
     </Button>
   );
 }
 
 /**
- * Primer paso de quien entra sin ninguna estética. Se pide un solo dato: el
+ * Primer paso de quien entra sin ninguna negocio. Se pide un solo dato: el
  * nombre. Todo lo demás (dirección, horarios, servicios) se completa después,
  * cuando ya hay algo que mirar.
  */
-export function CrearEstetica() {
+export function CrearNegocio() {
   const [state, action] = useActionState(createTenant, INITIAL);
 
   return (
@@ -33,9 +33,9 @@ export function CrearEstetica() {
           <p className="font-hand text-[38px] leading-none text-accent-text">
             Empecemos
           </p>
-          <CardTitle>¿Cómo se llama tu estética?</CardTitle>
+          <CardTitle>¿Cómo se llama tu negocio?</CardTitle>
           <p className="text-[14.5px] leading-relaxed text-muted">
-            Es el nombre que van a ver tus clientas cuando reserven un turno.
+            Es el nombre que van a ver tus clientes cuando reserven un turno.
             Después se puede cambiar.
           </p>
         </div>

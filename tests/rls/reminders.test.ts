@@ -26,7 +26,7 @@ async function planificar(horizonte = "72 hours"): Promise<number> {
 }
 
 /**
- * Deja la estética sin reglas ni turnos.
+ * Deja el negocio sin reglas ni turnos.
  *
  * Las pruebas del planificador confirman sus datos a propósito (el
  * planificador corre en su propia conexión y no vería nada de una transacción
@@ -373,7 +373,7 @@ describe("planificador", () => {
     expect(await planificar()).toBe(0);
   });
 
-  it('"sólo a quien ya faltó" deja afuera a la clienta impecable', async () => {
+  it('"sólo a quien ya faltó" deja afuera al cliente impecable', async () => {
     await asAdmin(async (c) => {
       await c.query("select set_config('request.jwt.claims', $1, false)", [
         JSON.stringify({ sub: s.owner, role: "authenticated" }),
@@ -423,7 +423,7 @@ describe("planificador", () => {
 
   });
 
-  it("si la estética tiene los envíos frenados, no se planifica", async () => {
+  it("si el negocio tiene los envíos frenados, no se planifica", async () => {
     await asAdmin(async (c) => {
       await c.query("select set_config('request.jwt.claims', $1, false)", [
         JSON.stringify({ sub: s.owner, role: "authenticated" }),
@@ -548,7 +548,7 @@ describe("simulador", () => {
     });
   });
 
-  it("no ve nada de la estética vecina", async () => {
+  it("no ve nada del negocio vecino", async () => {
     await asAdmin(async (c) => {
       await c.query("select set_config('request.jwt.claims', $1, false)", [
         JSON.stringify({ sub: s.owner, role: "authenticated" }),
@@ -704,7 +704,7 @@ describe("credenciales de WhatsApp", () => {
       );
     });
 
-    // Ni siquiera la dueña de la estética: el token no se expone a la interfaz.
+    // Ni siquiera el titular del negocio: el token no se expone a la interfaz.
     await asUser(s.owner, async (c) => {
       const code = await expectRejected(() =>
         c.query(`select access_token from public.whatsapp_accounts`),
@@ -725,7 +725,7 @@ describe("credenciales de WhatsApp", () => {
     });
   });
 
-  it("la estética vecina no ve nada de esta cuenta", async () => {
+  it("el negocio vecino no ve nada de esta cuenta", async () => {
     await asUser(s.intruder, async (c) => {
       const { rows } = await c.query(`select * from public.whatsapp_status`);
       expect(rows).toHaveLength(0);

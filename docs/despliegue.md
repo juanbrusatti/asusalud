@@ -6,10 +6,10 @@
 | --- | --- | --- |
 | Tu máquina | Supabase local (Docker) | Desarrollo diario y la suite de pruebas |
 | Vercel · Preview | Proyecto de desarrollo | Cada rama y cada pull request |
-| Vercel · Production | Proyecto de la estética | Lo que usa Asusalud |
+| Vercel · Production | Proyecto del negocio | Lo que usa Asusalud |
 
 La regla que no se rompe: **una rama nueva nunca corre contra la base de la
-estética**. Por eso Preview y Production apuntan a proyectos distintos.
+negocio**. Por eso Preview y Production apuntan a proyectos distintos.
 
 El desarrollo local sigue contra Docker: es más rápido, no gasta cuota y la
 suite de aislamiento habla directo con Postgres.
@@ -85,6 +85,13 @@ delete from supabase_migrations.schema_migrations;
 
 Y después, el `scripts/deploy-db.sh` de arriba.
 
+> **Las cuentas no se borran con eso.** Viven en el esquema `auth`, que queda
+> intacto. Si ya te habías registrado antes del reinicio, tu cuenta sobrevive
+> pero su fila en `profiles` no, y después falla todo lo que guarda quién hizo
+> algo: activar notificaciones, abrir la caja, cargar un turno desde la agenda.
+> La migración `20260913120000_perfiles_huerfanos.sql` repone esas filas, así
+> que alcanza con volver a correr `scripts/deploy-db.sh`.
+
 Para ver en qué estado quedó antes de decidir:
 
 ```sql
@@ -106,7 +113,7 @@ ignora**. El script no los imprime.
 
 | Variable | Production | Preview |
 | --- | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | proyecto de la estética | proyecto de desarrollo |
+| `NEXT_PUBLIC_SUPABASE_URL` | proyecto del negocio | proyecto de desarrollo |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | ídem | ídem |
 | `NEXT_PUBLIC_SITE_URL` | el dominio real | se puede omitir |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | la misma en los dos | ídem |
@@ -117,7 +124,7 @@ conviene no confundirlas:
 
 | Dónde | Para qué | Si está mal |
 | --- | --- | --- |
-| `NEXT_PUBLIC_SITE_URL` en Vercel | Mostrar el enlace de la reserva pública en pantalla | La estética copia un enlace que no anda |
+| `NEXT_PUBLIC_SITE_URL` en Vercel | Mostrar el enlace de la reserva pública en pantalla | El negocio copia un enlace que no anda |
 | `platform_settings.site_url` en la base | Armar el enlace del turno que viaja en los recordatorios | Los mensajes salen con un enlace muerto, y los que ya salieron no se arreglan |
 
 La segunda es la que duele. Está en el paso 3.
@@ -173,7 +180,7 @@ si el registro estuviera roto.
 
 Dos salidas, en *Authentication → Sign In / Providers → Email*:
 
-- **Apagar la confirmación** para dar de alta a la dueña, y volver a
+- **Apagar la confirmación** para dar de alta al titular, y volver a
   encenderla después. Es lo más rápido.
 - **Dejarla encendida** y confirmar desde el correo. Tener en cuenta que el
   SMTP que Supabase presta tiene un límite de unos pocos envíos por hora y no
@@ -182,7 +189,7 @@ Dos salidas, en *Authentication → Sign In / Providers → Email*:
 
 ### Después
 
-- Entrar y **crear la estética**. El alta de cuenta crea la primera dueña.
+- Entrar y **crear el negocio**. El alta de cuenta crea la primera titular.
 - Cargar **horarios de atención** en Ajustes: sin ellos la reserva online no
   ofrece ningún horario.
 - Dejar el **modo de prueba encendido** en Ajustes → Envío de mensajes hasta
@@ -192,11 +199,11 @@ Dos salidas, en *Authentication → Sign In / Providers → Email*:
 ## Dos cosas que hay que saber antes de facturar
 
 **El plan Hobby de Vercel es para uso personal y no comercial.** Sirve para
-probar; el día que la estética paga por el sistema, hay que pasar a Pro. No es
+probar; el día que el negocio paga por el sistema, hay que pasar a Pro. No es
 una recomendación: es lo que dicen los términos.
 
 **Un proyecto gratuito de Supabase se pausa tras una semana sin actividad.**
-Para una agenda que se usa todos los días no debería pasar, pero una estética
+Para una agenda que se usa todos los días no debería pasar, pero un negocio
 que cierra por vacaciones vuelve y encuentra la base dormida. Es otro motivo
 para pasar a un plan pago antes de que esto sea el sistema del que dependen.
 

@@ -108,7 +108,7 @@ export function FormTurno({
             maxLength={1000}
             defaultValue={sent?.notes ?? ""}
             placeholder="Viene con su hermana. Pidió que la llamemos antes."
-            hint="Sólo para este turno. Lo que valga siempre va en la ficha de la clienta."
+            hint="Sólo para este turno. Lo que valga siempre va en la ficha del cliente."
           />
         </CardBody>
       </Card>

@@ -7,10 +7,10 @@ import type { MetadataRoute } from "next";
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Dlay Estética",
+    name: "Dlay Agenda",
     short_name: "Dlay",
     description:
-      "Agenda, clientes y recordatorios automáticos para estéticas.",
+      "Agenda, clientes y recordatorios automáticos para negocios.",
     start_url: "/",
     scope: "/",
     display: "standalone",

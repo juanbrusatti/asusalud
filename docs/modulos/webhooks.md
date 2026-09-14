@@ -3,7 +3,7 @@
 ## Qué es
 
 Lo que Meta nos avisa: si un mensaje llegó y lo leyeron, qué contestó la
-clienta, y cómo viene la salud del número.
+cliente, y cómo viene la salud del número.
 
 Cierra el circuito. Hasta acá sabíamos que un mensaje **salió**; ahora sabemos
 qué pasó después.
@@ -34,7 +34,7 @@ son lo que tira abajo la calidad de la cuenta.
 
 ### 3. La autogestión
 
-Una clienta que toca **"Confirmar turno"** en el propio recordatorio actualiza
+Un cliente que toca **"Confirmar turno"** en el propio recordatorio actualiza
 la agenda sola. Es un mensaje menos que alguien tiene que leer y ejecutar a
 mano, que es exactamente el ahorro de tiempo que el producto promete.
 
@@ -47,8 +47,8 @@ nada.
 ### Se verifica la firma
 
 Cada aviso viene con `X-Hub-Signature-256`: el HMAC SHA-256 del cuerpo con el
-`app_secret` de la estética. Sin verificarlo, cualquiera que conozca la URL
-podría inventar estados de entrega, dar de baja clientas o confirmar turnos
+`app_secret` del negocio. Sin verificarlo, cualquiera que conozca la URL
+podría inventar estados de entrega, dar de baja clientes o confirmar turnos
 ajenos.
 
 Dos detalles que parecen menores y no lo son:
@@ -65,7 +65,7 @@ responder, con `EdgeRuntime.waitUntil`.
 
 Y como los reintentos existen, todo es idempotente: `whatsapp_inbound` tiene un
 índice único sobre el identificador del mensaje, y si ya se procesó se sale
-temprano. Sin eso, una clienta podría quedar dada de baja dos veces o recibir
+temprano. Sin eso, un cliente podría quedar dado de baja dos veces o recibir
 dos notas de "pidió reprogramar".
 
 ## Los estados avanzan, nunca retroceden
@@ -150,4 +150,4 @@ Sin firma correcta responde 401.
 - **Tasa de lectura por plantilla**: hoy es global. Por plantilla diría cuál
   reescribir.
 - **Responder automáticamente** dentro de la ventana de 24 horas que abre la
-  clienta al escribir.
+  cliente al escribir.

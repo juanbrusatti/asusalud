@@ -27,7 +27,7 @@ export default async function MensajeriaPage() {
           </h1>
           <p className="mt-1 max-w-prose text-[14.5px] text-muted">
             Los límites que ninguna regla de recordatorio puede saltear. Están
-            para que un error de configuración no termine en una clienta
+            para que un error de configuración no termine en un cliente
             recibiendo diez mensajes.
           </p>
         </div>

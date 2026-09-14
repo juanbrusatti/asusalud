@@ -25,7 +25,7 @@ Dos consecuencias buenas: el producto entra entero en los planes gratuitos, y
 los recordatorios siguen saliendo aunque un deploy de la web falle.
 
 > Los términos de Vercel reservan el plan Hobby para uso **personal y no
-> comercial**. En cuanto la estética pague, corresponde pasar a Pro. La
+> comercial**. En cuanto el negocio pague, corresponde pasar a Pro. La
 > arquitectura no depende de Pro: es una decisión comercial, no técnica.
 
 ## Capas
@@ -35,7 +35,7 @@ los recordatorios siguen saliendo aunque un deploy de la web falle.
 | Interfaz | `src/app`, `src/components` | Pantallas y formularios. Server Components por defecto |
 | Acciones | `src/lib/actions` | Escrituras desde la UI. Validan con Zod antes de tocar la base |
 | Acceso a datos | `src/lib/supabase` | Tres clientes con tres alcances distintos |
-| Sesión y tenant | `src/lib/auth`, `src/proxy.ts` | Refresco de sesión y estética activa |
+| Sesión y tenant | `src/lib/auth`, `src/proxy.ts` | Refresco de sesión y negocio activo |
 | Datos y reglas | `supabase/migrations` | Esquema, RLS, triggers y funciones |
 
 ## Los tres clientes de Supabase

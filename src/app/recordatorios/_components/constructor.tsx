@@ -351,7 +351,7 @@ export function Constructor({
           <Toggle
             name="onlyIfMissed"
             label="Sólo a quien alguna vez faltó"
-            hint="Una clienta con cien turnos y cero faltas no necesita tres avisos. Es la palanca que más ahorra."
+            hint="Un cliente con cien turnos y cero faltas no necesita tres avisos. Es la palanca que más ahorra."
             defaultChecked={onlyIfMissed}
             onChange={setOnlyIfMissed}
           />

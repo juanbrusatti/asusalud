@@ -1,9 +1,9 @@
 import { asAdmin, createAuthUser } from "./helpers";
 
 export type Scenario = {
-  /** Dueña de la estética A. */
+  /** Titular del negocio A. */
   owner: string;
-  /** Dueño de la estética B, sin ninguna relación con A. */
+  /** Titular del negocio B, sin ninguna relación con A. */
   intruder: string;
   /** Recepción en A. */
   reception: string;
@@ -17,7 +17,7 @@ export type Scenario = {
   slugs: string[];
 };
 
-/** Crea una estética actuando como el usuario indicado. */
+/** Crea un negocio actuando como el usuario indicado. */
 async function createTenantAs(userId: string, name: string, slug: string) {
   return asAdmin(async (c) => {
     await c.query("select set_config('request.jwt.claims', $1, false)", [
@@ -33,7 +33,7 @@ async function createTenantAs(userId: string, name: string, slug: string) {
 }
 
 /**
- * Dos estéticas que no se conocen, con los cuatro roles poblados en la
+ * Dos negocios que no se conocen, con los cuatro roles poblados en la
  * primera. Es el escenario base de todas las pruebas de aislamiento.
  *
  * El `prefix` hace que cada archivo de pruebas use sus propios correos y
@@ -60,10 +60,10 @@ export async function setupScenario(prefix: string): Promise<Scenario> {
     ),
   );
 
-  const tenantA = await createTenantAs(owner, `Estética ${prefix} A`, slugs[0]);
+  const tenantA = await createTenantAs(owner, `Negocio ${prefix} A`, slugs[0]);
   const tenantB = await createTenantAs(
     intruder,
-    `Estética ${prefix} B`,
+    `Negocio ${prefix} B`,
     slugs[1],
   );
 

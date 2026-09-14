@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Logo } from "@/components/brand/logo";
-import { AvisosClienta } from "@/components/pwa/avisos-clienta";
+import { AvisosCliente } from "@/components/pwa/avisos-cliente";
 import { RegisterServiceWorker } from "@/components/pwa/register-sw";
 import { Card, CardBody } from "@/components/ui/card";
 import { getManageView } from "@/lib/data/autogestion";
@@ -25,7 +25,7 @@ const ESTADOS: Record<string, string> = {
 };
 
 /**
- * El turno visto por la clienta.
+ * El turno visto por el cliente.
  *
  * No hay cuenta ni contraseña: el enlace es la llave. Pedirle a alguien que se
  * registre para avisar que no puede venir es garantizar que no avise.
@@ -49,7 +49,7 @@ export default async function TurnoPublicoPage({
             </h1>
             <p className="text-[14.5px] leading-relaxed text-muted">
               Puede que el enlace esté viejo o que lo hayan copiado a medias.
-              Si tenías un turno y no estás segura, escribile a la estética.
+              Si tenías un turno y no estás seguro, escribile al negocio.
             </p>
           </CardBody>
         </Card>
@@ -127,7 +127,7 @@ export default async function TurnoPublicoPage({
       <Acciones token={token} vista={vista} />
 
       {activo && (
-        <AvisosClienta
+        <AvisosCliente
           token={token}
           vapidPublicKey={publicEnv.NEXT_PUBLIC_VAPID_PUBLIC_KEY}
         />

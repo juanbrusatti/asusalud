@@ -3,12 +3,12 @@ import { asAdmin, asUser, expectRejected, pool } from "./helpers";
 import { setupScenario, teardownScenario, type Scenario } from "./fixtures";
 
 let s: Scenario;
-let clienta: string;
+let cliente: string;
 
 beforeAll(async () => {
   s = await setupScenario("cli");
 
-  clienta = await asAdmin(async (c) => {
+  cliente = await asAdmin(async (c) => {
     await c.query("select set_config('request.jwt.claims', $1, false)", [
       JSON.stringify({ sub: s.owner, role: "authenticated" }),
     ]);
@@ -31,14 +31,14 @@ afterAll(async () => {
 });
 
 describe("aislamiento de la agenda de clientes", () => {
-  it("la estética vecina no ve ninguna ficha", async () => {
+  it("el negocio vecino no ve ninguna ficha", async () => {
     await asUser(s.intruder, async (c) => {
       const { rows } = await c.query(`select id from public.clients`);
       expect(rows).toHaveLength(0);
     });
   });
 
-  it("no se puede cargar una ficha en la estética ajena", async () => {
+  it("no se puede cargar una ficha en el negocio ajena", async () => {
     await asUser(s.intruder, async (c) => {
       const code = await expectRejected(() =>
         c.query(
@@ -54,18 +54,18 @@ describe("aislamiento de la agenda de clientes", () => {
     await asUser(s.intruder, async (c) => {
       const { rowCount } = await c.query(
         `update public.clients set first_name = 'Robada' where id = $1`,
-        [clienta],
+        [cliente],
       );
       expect(rowCount).toBe(0);
     });
   });
 
-  it("no se puede mudar una ficha propia a la estética ajena", async () => {
+  it("no se puede mudar una ficha propia al negocio ajena", async () => {
     await asUser(s.owner, async (c) => {
       const code = await expectRejected(() =>
         c.query(`update public.clients set tenant_id = $1 where id = $2`, [
           s.tenantB,
-          clienta,
+          cliente,
         ]),
       );
       expect(code).toBe("42501");
@@ -77,7 +77,7 @@ describe("aislamiento de la agenda de clientes", () => {
       await c.query(
         `insert into public.client_notes (tenant_id, client_id, body)
          values ($1, $2, 'Piel sensible, bajar intensidad.')`,
-        [s.tenantA, clienta],
+        [s.tenantA, cliente],
       );
       await c.query("commit");
     });
@@ -89,7 +89,7 @@ describe("aislamiento de la agenda de clientes", () => {
 
     await asAdmin(async (c) => {
       await c.query(`delete from public.client_notes where client_id = $1`, [
-        clienta,
+        cliente,
       ]);
     });
   });
@@ -97,31 +97,31 @@ describe("aislamiento de la agenda de clientes", () => {
 
 describe("quién puede trabajar con clientes", () => {
   // A diferencia del catálogo de servicios, acá escriben los cuatro roles:
-  // recepción agenda y las profesionales anotan cómo fue la sesión.
+  // recepción agenda y los profesionales anotan cómo fue la sesión.
 
   it("recepción puede cargar una ficha", async () => {
     await asUser(s.reception, async (c) => {
       const { rowCount } = await c.query(
         `insert into public.clients (tenant_id, first_name, last_name)
-         values ($1, 'Nueva', 'Clienta')`,
+         values ($1, 'Nueva', 'Cliente')`,
         [s.tenantA],
       );
       expect(rowCount).toBe(1);
     });
   });
 
-  it("una profesional puede editar y dejar notas", async () => {
+  it("un profesional puede editar y dejar notas", async () => {
     await asUser(s.staff, async (c) => {
       const { rowCount } = await c.query(
         `update public.clients set alert = 'Alérgica a la lidocaína' where id = $1`,
-        [clienta],
+        [cliente],
       );
       expect(rowCount).toBe(1);
 
       const { rowCount: notas } = await c.query(
         `insert into public.client_notes (tenant_id, client_id, body, author_id)
          values ($1, $2, 'Primera sesión, buena tolerancia.', $3)`,
-        [s.tenantA, clienta, s.staff],
+        [s.tenantA, cliente, s.staff],
       );
       expect(notas).toBe(1);
     });
@@ -132,7 +132,7 @@ describe("quién puede trabajar con clientes", () => {
       const { rows } = await c.query(
         `insert into public.client_notes (tenant_id, client_id, body)
          values ($1, $2, 'Original') returning id`,
-        [s.tenantA, clienta],
+        [s.tenantA, cliente],
       );
       const code = await expectRejected(() =>
         c.query(`update public.client_notes set body = 'Editada' where id = $1`, [
@@ -148,7 +148,7 @@ describe("quién puede trabajar con clientes", () => {
     await asUser(s.reception, async (c) => {
       const { rowCount } = await c.query(
         `delete from public.clients where id = $1`,
-        [clienta],
+        [cliente],
       );
       expect(rowCount).toBe(0);
     });
@@ -220,13 +220,13 @@ describe("calidad de los datos de contacto", () => {
 
       const { rows } = await c.query(
         `select public.count_phone_duplicates($1) as n`,
-        [clienta],
+        [cliente],
       );
       expect(rows[0].n).toBe(1);
     });
   });
 
-  it("los duplicados no cruzan estéticas", async () => {
+  it("los duplicados no cruzan negocios", async () => {
     await asUser(s.intruder, async (c) => {
       await c.query(
         `insert into public.clients (tenant_id, first_name, phone_e164)
@@ -239,7 +239,7 @@ describe("calidad de los datos de contacto", () => {
     await asUser(s.owner, async (c) => {
       const { rows } = await c.query(
         `select public.count_phone_duplicates($1) as n`,
-        [clienta],
+        [cliente],
       );
       expect(rows[0].n).toBe(0);
     });
@@ -273,7 +273,7 @@ describe("búsqueda", () => {
          where tenant_id = $1 and search_text like '%412-3456%'`,
         [s.tenantA],
       );
-      expect(rows.map((r) => r.id)).toContain(clienta);
+      expect(rows.map((r) => r.id)).toContain(cliente);
     });
   });
 });
@@ -283,13 +283,13 @@ describe("preferencia de canal", () => {
     await asUser(s.reception, async (c) => {
       await c.query(
         `update public.clients set channel_mode = 'whatsapp' where id = $1`,
-        [clienta],
+        [cliente],
       );
 
       const { rows } = await c.query(
         `select channel_mode, channel_decided_by, channel_decided_at
          from public.clients where id = $1`,
-        [clienta],
+        [cliente],
       );
       expect(rows[0].channel_mode).toBe("whatsapp");
       expect(rows[0].channel_decided_by).toBe(s.reception);
@@ -301,17 +301,17 @@ describe("preferencia de canal", () => {
     await asUser(s.reception, async (c) => {
       await c.query(
         `update public.clients set channel_mode = 'email' where id = $1`,
-        [clienta],
+        [cliente],
       );
       await c.query(
         `update public.clients set channel_mode = 'auto' where id = $1`,
-        [clienta],
+        [cliente],
       );
 
       const { rows } = await c.query(
         `select channel_decided_by, channel_decided_at
          from public.clients where id = $1`,
-        [clienta],
+        [cliente],
       );
       expect(rows[0].channel_decided_by).toBeNull();
       expect(rows[0].channel_decided_at).toBeNull();
@@ -363,7 +363,7 @@ describe("etiquetas", () => {
     });
   });
 
-  it("no se puede etiquetar a alguien de otra estética", async () => {
+  it("no se puede etiquetar a alguien de otro negocio", async () => {
     await asUser(s.owner, async (c) => {
       const { rows } = await c.query(
         `insert into public.client_tags (tenant_id, name) values ($1, 'Prueba')
@@ -374,7 +374,7 @@ describe("etiquetas", () => {
         c.query(
           `insert into public.client_tag_assignments (tenant_id, client_id, tag_id)
            values ($1, $2, $3)`,
-          [s.tenantB, clienta, rows[0].id],
+          [s.tenantB, cliente, rows[0].id],
         ),
       );
       expect(code).toBe("42501");

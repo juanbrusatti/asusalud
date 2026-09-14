@@ -76,7 +76,7 @@ export function FormBloqueo({ date }: { date: string }) {
             name="reason"
             maxLength={200}
             placeholder="Turno médico"
-            hint="Opcional. Se ve sólo dentro de la estética, nunca del lado de la clienta."
+            hint="Opcional. Se ve sólo dentro del negocio, nunca del lado del cliente."
           />
 
           <p className="text-[12.5px] leading-snug text-muted">

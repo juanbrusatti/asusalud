@@ -74,7 +74,7 @@ export async function createAppointment(
   }
 
   const membership = await getCurrentTenant();
-  if (!membership) return { error: "No encontramos tu estética." };
+  if (!membership) return { error: "No encontramos tu negocio." };
 
   const startsAt = zonedTimeToUtc(
     `${parsed.data.date}T${parsed.data.time}:00`,
@@ -134,7 +134,7 @@ export async function rescheduleAppointment(
   }
 
   const membership = await getCurrentTenant();
-  if (!membership) return { error: "No encontramos tu estética." };
+  if (!membership) return { error: "No encontramos tu negocio." };
 
   const supabase = await createClient();
   const { data: current } = await supabase
@@ -185,7 +185,7 @@ export async function createBlock(
   if (to <= from) return { error: "La hora de fin tiene que ser posterior." };
 
   const membership = await getCurrentTenant();
-  if (!membership) return { error: "No encontramos tu estética." };
+  if (!membership) return { error: "No encontramos tu negocio." };
 
   const supabase = await createClient();
   const { data: branch } = await supabase
@@ -194,7 +194,7 @@ export async function createBlock(
     .eq("is_default", true)
     .maybeSingle();
 
-  if (!branch) return { error: "Tu estética no tiene una sucursal principal." };
+  if (!branch) return { error: "Tu negocio no tiene una sucursal principal." };
 
   const tz = membership.tenant.timezone;
   const { error } = await supabase.from("agenda_blocks").insert({
