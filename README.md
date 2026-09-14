@@ -92,5 +92,6 @@ negocio B. Si devuelve una sola fila, la función no está lista.
 - [Reserva online](docs/modulos/reserva-online.md)
 - [El turno del cliente](docs/modulos/autogestion.md)
 - [Configuración](docs/modulos/configuracion.md)
+- [Conectar WhatsApp](docs/modulos/whatsapp.md)
 - [Caja](docs/modulos/caja.md)
 - [Informes](docs/modulos/informes.md)
