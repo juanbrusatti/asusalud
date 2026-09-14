@@ -26,6 +26,16 @@ import type { ServiceWithCategory } from "@/lib/data/services";
 const INITIAL: FormState = { error: null };
 const CHANNELS: Channel[] = ["push", "email", "whatsapp"];
 
+/**
+ * El correo está entero y funciona, pero esta instalación todavía no tiene
+ * proveedor configurado. No se ofrece —elegir un canal que no puede entregar
+ * es peor que no tenerlo— pero tampoco se borra de las reglas que ya lo
+ * tengan: el día que se active, vuelven a usarlo solas.
+ */
+function canalesOfrecidos(correoDisponible: boolean): Channel[] {
+  return correoDisponible ? CHANNELS : CHANNELS.filter((c) => c !== "email");
+}
+
 function Submit({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
@@ -46,11 +56,13 @@ function Submit({ label }: { label: string }) {
 export function Constructor({
   rule,
   templates,
+  correoDisponible,
   services,
   submitLabel,
 }: {
   rule?: RuleWithTemplates;
   templates: Template[];
+  correoDisponible: boolean;
   services: ServiceWithCategory[];
   submitLabel: string;
 }) {
@@ -210,7 +222,7 @@ export function Constructor({
           </p>
 
           <ul className="grid gap-1.5">
-            {CHANNELS.map((ch) => {
+            {canalesOfrecidos(correoDisponible).map((ch) => {
               const activo = channels.includes(ch);
               const orden = channels.indexOf(ch) + 1;
 

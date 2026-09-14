@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { isEmailEnabled } from "@/lib/data/configuracion";
 import { notFound } from "next/navigation";
 import { Barra } from "@/app/_components/barra";
 import { atLeast, getCurrentTenant } from "@/lib/auth/tenant";
@@ -11,6 +12,9 @@ export default async function NuevaPlantillaPage() {
   if (!membership) return null;
   if (!atLeast(membership.role, "admin")) notFound();
 
+
+  const correoDisponible = await isEmailEnabled();
+
   return (
     <>
       <Barra tenantName={membership.tenant.name} />
@@ -18,7 +22,7 @@ export default async function NuevaPlantillaPage() {
         <h1 className="text-[28px] font-bold leading-tight tracking-[-0.03em]">
           Nuevo mensaje
         </h1>
-        <FormPlantilla submitLabel="Guardar mensaje" />
+        <FormPlantilla correoDisponible={correoDisponible} submitLabel="Guardar mensaje" />
       </main>
     </>
   );

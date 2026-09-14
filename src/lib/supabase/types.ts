@@ -1074,6 +1074,7 @@ export type Database = {
       messaging_settings: {
         Row: {
           created_at: string
+          email_enabled: boolean
           max_per_client_per_day: number
           max_per_client_per_week: number
           monthly_budget_cents: number | null
@@ -1089,6 +1090,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          email_enabled?: boolean
           max_per_client_per_day?: number
           max_per_client_per_week?: number
           monthly_budget_cents?: number | null
@@ -1104,6 +1106,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          email_enabled?: boolean
           max_per_client_per_day?: number
           max_per_client_per_week?: number
           monthly_budget_cents?: number | null
@@ -2020,6 +2023,10 @@ export type Database = {
       rpc_record_delivery: {
         Args: { p_error?: string; p_provider_id: string; p_status: string }
         Returns: undefined
+      }
+      rpc_set_platform_setting: {
+        Args: { p_key: string; p_value: string }
+        Returns: Json
       }
       rpc_team_push_targets: {
         Args: { p_tenant: string }

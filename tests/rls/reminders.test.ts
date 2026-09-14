@@ -105,6 +105,16 @@ async function turnoEn(c: PoolClient, horas: number, clientId: string) {
 beforeAll(async () => {
   s = await setupScenario("rem");
 
+  // Estas pruebas son sobre la cascada de canales, y la cascada sólo tiene
+  // sentido con el correo disponible. Nace apagado por negocio, así que acá se
+  // enciende a propósito: es el escenario que se está probando.
+  await asAdmin((c) =>
+    c.query(
+      `update public.messaging_settings set email_enabled = true where tenant_id = $1`,
+      [s.tenantA],
+    ),
+  );
+
   const setup = await asAdmin(async (c) => {
     await c.query("select set_config('request.jwt.claims', $1, false)", [
       JSON.stringify({ sub: s.owner, role: "authenticated" }),

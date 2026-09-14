@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Barra } from "@/app/_components/barra";
 import { atLeast, getCurrentTenant } from "@/lib/auth/tenant";
 import { getRule, listTemplates } from "@/lib/data/recordatorios";
+import { isEmailEnabled } from "@/lib/data/configuracion";
 import { listServices } from "@/lib/data/services";
 import { Constructor } from "../_components/constructor";
 
@@ -27,6 +28,9 @@ export default async function EditarReglaPage({
 
   if (!rule) notFound();
 
+
+  const correoDisponible = await isEmailEnabled();
+
   return (
     <>
       <Barra tenantName={membership.tenant.name} />
@@ -35,6 +39,7 @@ export default async function EditarReglaPage({
           {rule.name}
         </h1>
         <Constructor
+          correoDisponible={correoDisponible}
           rule={rule}
           templates={templates}
           services={services.filter((s) => s.is_active)}
