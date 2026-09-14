@@ -167,6 +167,32 @@ historial lo atribuye a **el cliente**, no al equipo. Está documentado en
 | Pantallas | `src/app/agenda/` |
 | Pruebas | `tests/rls/agenda.test.ts`, `tests/unit/tz.test.ts` |
 
+## Confirmado quiere decir que el cliente lo dijo
+
+Un turno nace **sin confirmar**, lo cargue el equipo o lo saque el cliente por
+internet. Reservar no es confirmar: quien sacó turno hace tres semanas no dijo
+nada sobre mañana, y esa es justamente la pregunta que el equipo se hace al
+mirar la agenda del día siguiente.
+
+Pasa a confirmado de dos maneras, y las dos son una persona diciéndolo:
+
+- alguien del equipo toca **Confirmar** en el turno, después de hablar;
+- el cliente toca **Confirmar** en el recordatorio de WhatsApp, y la agenda se
+  actualiza sola.
+
+### Los colores
+
+| Estado | Color | Por qué |
+| --- | --- | --- |
+| Sin confirmar | Gris | Todavía no pasó nada. No es una alerta |
+| Confirmado | Verde | Dijo que viene |
+| **Cambiado** | Ámbar | Ya movió este turno una vez: es el que más chances tiene de volver a moverse |
+| No vino | Rojo | |
+| Cancelado | Apagado | |
+
+El ámbar quedó libre para «cambiado» justamente porque «sin confirmar» dejó de
+ser una alerta.
+
 ## Lo que todavía no está
 
 - **Vista de semana y de calendario**: hoy se ve un día por vez, con la tira

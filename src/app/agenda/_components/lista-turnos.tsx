@@ -8,9 +8,16 @@ import {
   type AppointmentWithDetail,
 } from "@/lib/data/agenda";
 
+/**
+ * El color dice de un vistazo quién va a venir.
+ *
+ * «Sin confirmar» es neutro a propósito: todavía no pasó nada, no es una
+ * alerta. El ámbar queda libre para el turno que se movió, que sí es algo que
+ * conviene mirar antes de empezar el día.
+ */
 const STATUS_STYLE: Record<AppointmentStatus, string> = {
-  pending: "bg-warn-wash text-warn",
-  confirmed: "bg-accent-wash text-accent-text",
+  pending: "bg-surface-2 text-muted",
+  confirmed: "bg-ok-wash text-ok",
   attended: "bg-surface-2 text-muted",
   no_show: "bg-danger-wash text-danger",
   cancelled: "bg-surface-2 text-faint",
@@ -81,6 +88,14 @@ export function ListaTurnos({
                         {cliente?.alert && (
                           <span className="rounded-pill bg-warn-wash px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wider text-warn">
                             Atención
+                          </span>
+                        )}
+                        {/* Un turno que ya se movió es el que más chances
+                            tiene de volver a moverse. El equipo lo usa para
+                            saber a quién conviene llamar. */}
+                        {a.rescheduled_count > 0 && !cancelado && (
+                          <span className="rounded-pill bg-warn-wash px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wider text-warn">
+                            Cambiado
                           </span>
                         )}
                       </div>

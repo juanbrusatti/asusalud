@@ -380,7 +380,9 @@ describe("reservar", () => {
         [resultado.appointmentId],
       );
       expect(rows[0]).toMatchObject({
-        status: "confirmed",
+        // Reservar no es confirmar: el turno nace esperando que la persona
+        // diga que viene, por el botón del recordatorio o hablando.
+        status: "pending",
         // Queda marcado que vino de la web y no del mostrador.
         source: "online",
         first_name: "Mirián",

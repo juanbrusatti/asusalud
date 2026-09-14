@@ -664,7 +664,8 @@ describe("agendar desde la aplicación", () => {
       ).toBe(10);
       expect(Number(turno[0].price_cents)).toBe(1000000);
       expect(turno[0].notes).toBe("Viene con su hermana");
-      expect(turno[0].status).toBe("confirmed");
+      // Agendar no es confirmar: el turno espera a que el cliente lo diga.
+      expect(turno[0].status).toBe("pending");
     });
   });
 

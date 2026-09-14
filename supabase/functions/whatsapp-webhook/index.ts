@@ -66,6 +66,54 @@ function phoneNumberIdOf(payload: unknown): string | null {
   return entry?.changes?.[0]?.value?.metadata?.phone_number_id ?? null;
 }
 
+const GRAPH_VERSION = "v21.0";
+
+type Respuesta = {
+  a: string;
+  texto: string;
+  phone_number_id: string;
+  access_token: string | null;
+};
+
+/**
+ * Le contesta a quien acaba de apretar un botón.
+ *
+ * Apretar un botón abre una ventana de veinticuatro horas, así que esto es un
+ * mensaje de servicio: se puede mandar texto libre y no cuesta lo que cuesta
+ * iniciar una conversación.
+ *
+ * Sin esta respuesta, el cliente aprieta «Confirmar» y no pasa nada visible de
+ * su lado. Entonces vuelve a apretar, o escribe preguntando si llegó, que es
+ * justo el mensaje que el recordatorio venía a evitar.
+ *
+ * Si falla, no se reintenta ni se rompe nada: la acción de fondo —confirmar,
+ * cancelar— ya quedó hecha, que es lo que importa.
+ */
+async function contestar(r: Respuesta | undefined): Promise<void> {
+  if (!r?.texto || !r.access_token) return;
+
+  try {
+    await fetch(
+      `https://graph.facebook.com/${GRAPH_VERSION}/${r.phone_number_id}/messages`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${r.access_token}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          to: r.a,
+          type: "text",
+          text: { body: r.texto, preview_url: true },
+        }),
+      },
+    );
+  } catch {
+    // Que no se pueda contestar no invalida lo que ya se hizo.
+  }
+}
+
 async function process(payload: Record<string, unknown>): Promise<void> {
   const entries = (payload.entry ?? []) as Array<{
     changes?: Array<{ field?: string; value?: Record<string, unknown> }>;
@@ -105,7 +153,7 @@ async function process(payload: Record<string, unknown>): Promise<void> {
           ) ??
           null;
 
-        await supabase.rpc("rpc_handle_inbound", {
+        const { data: resultado } = await supabase.rpc("rpc_handle_inbound", {
           p_phone_number_id: phoneNumberId,
           p_wa_message_id: msg.id as string,
           p_from: msg.from as string,
@@ -113,6 +161,10 @@ async function process(payload: Record<string, unknown>): Promise<void> {
           p_body: text,
           p_payload: payloadBoton,
         });
+
+        await contestar(
+          (resultado as { responder?: Respuesta } | null)?.responder,
+        );
       }
 
       // Salud del número.
