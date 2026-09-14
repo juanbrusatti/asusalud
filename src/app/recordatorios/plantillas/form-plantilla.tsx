@@ -21,6 +21,10 @@ const VARIABLES = [
   ["{{servicio}}", "qué se le hace"],
   ["{{estetica}}", "el nombre de tu negocio"],
   ["{{link}}", "el enlace donde puede mover o cancelar el turno"],
+  [
+    "{{preparacion}}",
+    "las indicaciones del servicio: qué traer, cómo prepararse",
+  ],
 ] as const;
 
 function Submit({ label }: { label: string }) {
@@ -55,7 +59,11 @@ export function FormPlantilla({
     .replaceAll("{{hora}}", "09:00")
     .replaceAll("{{servicio}}", "depilación definitiva")
     .replaceAll("{{estetica}}", "Estética Asusalud")
-    .replaceAll("{{link}}", "dlay.app/t/a1b2c3…");
+    .replaceAll("{{link}}", "dlay.app/t/a1b2c3…")
+    .replaceAll(
+      "{{preparacion}}",
+      "No te depiles con cera ni pinza 15 días antes.",
+    );
 
   return (
     <form action={formAction} className="grid gap-4">
@@ -121,7 +129,8 @@ export function FormPlantilla({
                 {(
                   [
                     ["confirmar", "Confirmar turno"],
-                    ["reprogramar", "Quiero reprogramar"],
+                    ["cancelar", "Cancelar turno"],
+                    ["reprogramar", "Cambiar horario"],
                     ["baja", "No me escriban más"],
                   ] as const
                 ).map(([valor, etiqueta]) => {
@@ -131,6 +140,10 @@ export function FormPlantilla({
                       key={valor}
                       type="button"
                       aria-pressed={activo}
+                      // WhatsApp admite tres botones y no más. Sin este
+                      // freno, el cuarto se carga acá, Meta rechaza la
+                      // plantilla y el motivo aparece recién en el trámite.
+                      disabled={!activo && botones.length >= 3}
                       onClick={() =>
                         setBotones(
                           activo
@@ -138,7 +151,7 @@ export function FormPlantilla({
                             : [...botones, valor],
                         )
                       }
-                      className={`rounded-pill border-[1.5px] px-3 py-1.5 text-[12.5px] font-medium ${
+                      className={`rounded-pill border-[1.5px] px-3 py-1.5 text-[12.5px] font-medium disabled:opacity-40 ${
                         activo
                           ? "border-accent bg-accent text-on-accent"
                           : "border-line bg-surface text-muted hover:text-ink"
@@ -150,10 +163,11 @@ export function FormPlantilla({
                 })}
               </div>
               <p className="text-[12.5px] leading-snug text-muted">
-                Tienen que estar cargados en Meta con el mismo orden. Cuando la
-                cliente toca &ldquo;Confirmar turno&rdquo;, la agenda se
-                actualiza sola: es un mensaje menos que alguien tiene que leer y
-                ejecutar a mano.
+                Hasta tres, y tienen que estar cargados en Meta con el mismo
+                orden. Los tres hacen algo solos: confirmar actualiza la agenda,
+                cancelar libera el horario, y cambiar horario le contesta con el
+                enlace para que elija otro. Son mensajes menos que alguien tiene
+                que leer y ejecutar a mano.
               </p>
             </div>
           )}

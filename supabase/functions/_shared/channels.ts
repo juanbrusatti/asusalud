@@ -21,6 +21,8 @@ export type Job = {
   tenant_timezone: string;
   appointment_at: string | null;
   service_names: string | null;
+  /** Las indicaciones de los servicios del turno, ya encadenadas. */
+  preparation: string | null;
   manage_url: string | null;
   phone_number_id: string | null;
   access_token: string | null;
@@ -58,6 +60,7 @@ function contextOf(job: Job): RenderContext {
     appointmentAt: job.appointment_at,
     serviceNames: job.service_names,
     manageUrl: job.manage_url,
+    preparation: job.preparation,
   };
 }
 

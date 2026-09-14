@@ -279,7 +279,11 @@ const templateSchema = z.object({
     .min(5, "El mensaje es demasiado corto.")
     .max(1024, "El mensaje es demasiado largo."),
   providerName: z.string().trim().max(80).optional(),
-  quickReplies: z.array(z.enum(["confirmar", "reprogramar", "baja"])),
+  // WhatsApp admite tres botones y no más: un cuarto hace que Meta rechace
+  // la plantilla, y el motivo recién aparece en el trámite de aprobación.
+  quickReplies: z
+    .array(z.enum(["confirmar", "cancelar", "reprogramar", "baja"]))
+    .max(3, "WhatsApp permite hasta tres botones."),
 });
 
 export async function saveTemplate(

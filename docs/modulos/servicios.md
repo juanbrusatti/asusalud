@@ -95,6 +95,15 @@ Modificarlos es cosa de quien manda.
 | Pantallas | `src/app/servicios/` |
 | Pruebas | `tests/rls/services.test.ts` |
 
+## Cómo prepararse
+
+Cada servicio puede decir qué tiene que saber el cliente antes de venir: qué
+traer, cómo prepararse, qué no hacer. Ese texto viaja dentro del recordatorio
+por el hueco `{{preparacion}}`, así **una sola plantilla sirve para todos los
+servicios** y no hay que aprobar una en Meta por cada uno.
+
+Se escribe como se lo dirías al cliente, porque lo va a leer tal cual.
+
 ## Lo que todavía no está
 
 - Actualización masiva de precios (subir todo un 15% de una vez). Con

@@ -198,6 +198,39 @@ El acuse importa más de lo que parece. Sin él, el cliente aprieta «Confirmar�
 no ve que pase nada de su lado, y vuelve a apretar o escribe preguntando si
 llegó — que es justo el mensaje que el recordatorio venía a evitar.
 
+## Un mensaje distinto para cada servicio, con una sola plantilla
+
+Asusalud pidió que el recordatorio de depilación diga que no hay que depilarse
+con cera quince días antes, y que el de un masaje diga otra cosa.
+
+El camino obvio es una plantilla por servicio, y es el equivocado: con veinte
+servicios serían sesenta plantillas —una por canal— y, lo grave, **cada
+plantilla de WhatsApp hay que aprobarla en Meta por separado**. Veinte
+trámites, y cada corrección de texto vuelve a la cola de aprobación.
+
+Acá va al revés. Cada servicio tiene un campo **«Cómo prepararse»**, y la
+plantilla lleva el hueco `{{preparacion}}`:
+
+> Hola Mirián! Te recordamos tu turno mañana a las 15:00 para Depilación
+> Definitiva. **No te depiles con cera ni pinza 15 días antes, y vení sin
+> cremas.**
+
+Una sola plantilla, aprobada una vez. Cambiar las indicaciones de un servicio
+no vuelve a pasar por Meta nunca.
+
+Si el turno tiene dos servicios, se encadenan las dos indicaciones en el orden
+en que están cargados.
+
+### El hueco vacío
+
+En WhatsApp no alcanza con dejarlo en blanco: **Meta rechaza el mensaje entero
+si un parámetro viene vacío**, porque la plantilla aprobada espera una
+cantidad fija de valores. Así que un servicio sin indicaciones manda
+«Cualquier duda, escribinos.», que es siempre cierto y nunca queda mal.
+
+En correo y notificaciones el hueco vacío se limpia solo, con los espacios y
+la puntuación que hubieran quedado sueltos.
+
 ## Lo que todavía no está
 
 - **El emisor.** La cola se llena y se puede mirar, pero nadie entrega los
