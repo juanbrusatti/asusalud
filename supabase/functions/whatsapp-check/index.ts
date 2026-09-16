@@ -50,7 +50,7 @@ function traducir(code: number | undefined, mensaje: string): string {
     case 132000:
       return "La plantilla espera otra cantidad de datos que los que mandamos. Suele ser que el texto aprobado en Meta no coincide con el de acá.";
     case 132001:
-      return "Meta no encuentra la plantilla con ese nombre y ese idioma. Revisá que el nombre sea idéntico, incluidos los guiones bajos.";
+      return "Meta no encuentra la plantilla. Si todavía no las creaste, tocá «Crear las plantillas en Meta» acá abajo. Si ya la ves en Meta, el nombre no coincide: tiene que ser idéntico, guiones bajos incluidos.";
     case 132005:
       return "La plantilla está aprobada pero el texto no coincide con el que tenemos guardado.";
     case 133010:
@@ -325,19 +325,34 @@ Deno.serve(async (req) => {
         }
       }
 
-      const problemas = [
-        faltan.length > 0 ? `no existen en Meta: ${faltan.join(", ")}` : "",
-        sinAprobar.length > 0 ? `todavía sin aprobar: ${sinAprobar.join(", ")}` : "",
-      ].filter(Boolean);
+      const total = c.templates?.length ?? 0;
+      let detalle: string;
+
+      if (faltan.length === 0 && sinAprobar.length === 0) {
+        detalle = `Las ${total} plantillas están cargadas y aprobadas.`;
+      } else if (faltan.length === total && sinAprobar.length === 0) {
+        // No falta un nombre: no hay ninguna. Decirle «revisá que el nombre
+        // sea idéntico» manda a buscar una diferencia que no existe, y a
+        // dudar de lo que ya está bien.
+        detalle =
+          "Todavía no están creadas en Meta. Tocá «Crear las plantillas en Meta» acá abajo y volvé a revisar.";
+      } else {
+        const problemas = [
+          faltan.length > 0
+            ? `faltan crear en Meta: ${faltan.join(", ")}`
+            : "",
+          sinAprobar.length > 0
+            ? `todavía sin aprobar: ${sinAprobar.join(", ")}`
+            : "",
+        ].filter(Boolean);
+        detalle = `${problemas.join("; ")}. Si alguna dice que falta y vos la ves en Meta, el nombre no coincide: tiene que ser idéntico, guiones bajos incluidos.`;
+      }
 
       pasos.push({
         clave: "plantillas",
         titulo: "Las plantillas están aprobadas",
-        ok: problemas.length === 0,
-        detalle:
-          problemas.length === 0
-            ? `Las ${c.templates?.length ?? 0} plantillas están cargadas y aprobadas.`
-            : `Revisá que el nombre sea idéntico — ${problemas.join("; ")}.`,
+        ok: faltan.length === 0 && sinAprobar.length === 0,
+        detalle,
       });
     }
   } else if (numero.ok) {
