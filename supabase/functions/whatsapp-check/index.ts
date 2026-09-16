@@ -160,6 +160,14 @@ function cuerpoEnMeta(
   );
 }
 
+const dormir = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** Meta avisa que el borrado anterior todavía se está propagando. */
+function borradoEnCurso(detalle: string): boolean {
+  const t = detalle.toLowerCase();
+  return t.includes("mientras se elimina") || t.includes("while deleting");
+}
+
 /** Crea una plantilla en Meta. Si ya existe, lo dice sin tratarlo como error. */
 async function crearPlantilla(
   waba: string,
@@ -377,7 +385,26 @@ Deno.serve(async (req) => {
         }
       }
 
-      const paso = await crearPlantilla(c.waba_id, c.access_token, p);
+      // Borrar una plantilla no es inmediato del lado de Meta: tarda hasta
+      // un minuto en propagarse, y mientras tanto rechaza crear otra con el
+      // mismo nombre. Lo dice él mismo en el error, así que se espera y se
+      // reintenta en vez de devolver una falla que no es una falla.
+      let paso = await crearPlantilla(c.waba_id, c.access_token, p);
+
+      for (let intento = 0; intento < 4 && !paso.ok; intento += 1) {
+        if (!borradoEnCurso(paso.detalle)) break;
+        await dormir(12000);
+        paso = await crearPlantilla(c.waba_id, c.access_token, p);
+      }
+
+      if (!paso.ok && borradoEnCurso(paso.detalle)) {
+        paso = {
+          ...paso,
+          detalle:
+            "Meta todavía está borrando la plantilla anterior. Esperá un minuto y volvé a tocar este botón.",
+        };
+      }
+
       pasos.push(paso);
       if (paso.ok) {
         await supabase.rpc("rpc_mark_template_status", {
