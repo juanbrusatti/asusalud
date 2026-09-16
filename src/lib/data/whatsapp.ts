@@ -19,6 +19,14 @@ export type WhatsappStatus = {
   onboarding: "manual" | "embedded";
   last_checked_at: string | null;
   has_token: boolean;
+  /**
+   * La palabra de verificación sí sale: no es una credencial —sólo sirve para
+   * el saludo inicial entre Meta y nosotros— y quien conecta tiene que poder
+   * copiarla para pegarla del otro lado.
+   */
+  verify_token: string | null;
+  /** El secreto de firma no sale nunca. Sólo si está cargado o no. */
+  has_app_secret: boolean;
 };
 
 export async function getWhatsappStatus(): Promise<WhatsappStatus | null> {

@@ -5,7 +5,9 @@ import { atLeast, getCurrentTenant } from "@/lib/auth/tenant";
 import { getWhatsappStatus } from "@/lib/data/whatsapp";
 import { CALIDAD, ESTADOS } from "@/lib/whatsapp";
 import { Volver } from "../_components/volver";
+import { publicEnv } from "@/lib/env";
 import { FormWhatsapp } from "./form";
+import { Webhook } from "./webhook";
 import { RevisionWhatsapp } from "./revision";
 
 export const metadata: Metadata = { title: "WhatsApp" };
@@ -64,6 +66,14 @@ export default async function WhatsappPage() {
 
   const cuenta = await getWhatsappStatus();
   const estado = cuenta ? ESTADOS[cuenta.status] : null;
+
+  /**
+   * La palabra de verificación. Antes había que inventarla, que es justo
+   * donde se traba quien no es técnico: no sabe qué poner ni para qué sirve.
+   * Si todavía no hay ninguna se propone una y se guarda al confirmar.
+   */
+  const verifyToken =
+    cuenta?.verify_token ?? `dlay-${crypto.randomUUID().replace(/-/g, "")}`;
 
   return (
     <>
@@ -172,7 +182,15 @@ export default async function WhatsappPage() {
 
         {cuenta && <RevisionWhatsapp />}
 
-        <FormWhatsapp conectada={Boolean(cuenta)} />
+        {cuenta && (
+          <Webhook
+            url={`${publicEnv.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/whatsapp-webhook`}
+            verifyToken={verifyToken}
+            tieneFirma={Boolean(cuenta.has_app_secret)}
+          />
+        )}
+
+        <FormWhatsapp conectada={Boolean(cuenta)} verifyToken={verifyToken} />
 
         <p className="px-1 text-[12.5px] leading-relaxed text-faint">
           El token se guarda del lado del servidor, en una tabla que el panel
