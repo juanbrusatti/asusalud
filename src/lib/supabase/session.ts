@@ -30,6 +30,22 @@ function isPublic(pathname: string) {
  * la RLS. Aunque alguien saltee el middleware, la base no le devuelve nada.
  */
 export async function updateSession(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  /**
+   * Una página pública sin ninguna cookie de sesión no necesita nada de esto:
+   * no hay sesión que refrescar ni permiso que chequear. Es el caso de quien
+   * abre el enlace de su turno o la reserva online, que además es quien peor
+   * conexión suele tener.
+   */
+  const traeSesion = request.cookies
+    .getAll()
+    .some((c) => c.name.startsWith("sb-"));
+
+  if (!traeSesion && isPublic(pathname)) {
+    return NextResponse.next({ request });
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -53,13 +69,24 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // getUser() revalida el token contra Supabase. getSession() sólo lee la
-  // cookie, que el navegador puede haber manipulado: acá no sirve.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { pathname } = request.nextUrl;
+  /**
+   * `getClaims()` verifica la firma del token CON LA CLAVE PÚBLICA DEL
+   * PROYECTO, acá mismo, sin preguntarle nada a Supabase. `getUser()` hacía lo
+   * mismo pero gastando un viaje de red en cada navegación: con el servidor en
+   * Washington y la base en Canadá, eso eran un par de décimas por cada clic,
+   * ocho horas por día.
+   *
+   * No se pierde seguridad. `getSession()` sí sería inseguro —lee la cookie y
+   * le cree—, pero esto comprueba la firma criptográfica: una cookie
+   * manipulada no pasa. Y si el proyecto usara claves simétricas, la propia
+   * biblioteca vuelve sola a preguntarle a Supabase.
+   *
+   * El refresco del token sigue igual: `getClaims()` pasa por `getSession()`,
+   * que renueva cuando está por vencer y deja las cookies nuevas en la
+   * respuesta.
+   */
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims ?? null;
 
   if (!user && !isPublic(pathname)) {
     const url = request.nextUrl.clone();

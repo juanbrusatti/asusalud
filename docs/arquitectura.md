@@ -73,6 +73,30 @@ que el navegador puede haber manipulado.
   producción.
 - Los iconos se generan con `node scripts/make-icons.mjs`.
 
+## Por qué la navegación se siente inmediata
+
+Dos cosas, y ninguna hace que el servidor conteste más rápido: hacen que la
+espera no se note y que haya menos espera.
+
+**La barra vive en un layout, no en cada página.** Al navegar, Next mantiene
+los layouts y sólo reemplaza el contenido. Con la barra adentro de cada
+página, el marco entero tenía que esperar al servidor.
+
+**Cada pantalla tiene su esqueleto.** Sin un `loading.tsx`, Next no puede
+mostrar *nada* de la pantalla nueva hasta que el servidor conteste entera: la
+anterior se queda congelada y el clic parece perdido. Con él, la forma de la
+pantalla aparece al instante.
+
+**Y el token se verifica acá, no en Supabase.** El guardia de navegación usaba
+`getUser()`, que gasta un viaje de red por cada clic. Ahora usa `getClaims()`,
+que comprueba la firma con la clave pública del proyecto sin salir del
+servidor. No se pierde seguridad —una cookie manipulada no pasa la
+verificación criptográfica— y el refresco del token sigue igual.
+
+Una página pública sin cookie de sesión ni siquiera crea el cliente de
+Supabase: quien abre el enlace de su turno no necesita nada de eso, y suele
+ser quien peor conexión tiene.
+
 ## Lo que todavía no está
 
 El scheduler, las Edge Functions y los canales de envío llegan en la fase 2.
