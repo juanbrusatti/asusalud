@@ -15,6 +15,10 @@ const PUBLIC_PREFIXES = [
   // iniciar sesión a quien sólo quiere avisar que no puede venir es
   // garantizar que no avise.
   "/t",
+  // Los textos legales. Los tiene que poder abrir cualquiera sin cuenta:
+  // los lee quien evalúa en Meta y quien quiere saber qué guardamos
+  // antes de decidir si nos confía sus datos.
+  "/legal",
 ];
 
 function isPublic(pathname: string) {
