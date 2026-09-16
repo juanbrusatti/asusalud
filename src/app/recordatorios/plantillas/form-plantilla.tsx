@@ -18,6 +18,7 @@ const VARIABLES = [
   ["{{cliente}}", "el nombre del cliente"],
   ["{{fecha}}", "la fecha del turno"],
   ["{{hora}}", "la hora del turno"],
+  ["{{cuando}}", "fecha y hora juntas, en un solo hueco"],
   ["{{servicio}}", "qué se le hace"],
   ["{{estetica}}", "el nombre de tu negocio"],
   ["{{link}}", "el enlace donde puede mover o cancelar el turno"],
@@ -57,6 +58,7 @@ export function FormPlantilla({
     .replaceAll("{{cliente}}", "Mirián")
     .replaceAll("{{fecha}}", "lunes 14 de septiembre")
     .replaceAll("{{hora}}", "09:00")
+    .replaceAll("{{cuando}}", "lunes 14 de septiembre a las 09:00")
     .replaceAll("{{servicio}}", "depilación definitiva")
     .replaceAll("{{estetica}}", "Estética Asusalud")
     .replaceAll("{{link}}", "dlay.app/t/a1b2c3…")

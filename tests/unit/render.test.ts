@@ -139,3 +139,22 @@ describe("las indicaciones de cada servicio", () => {
     }
   });
 });
+
+describe("fecha y hora en un solo hueco", () => {
+  it("{{cuando}} las junta", () => {
+    const texto = render("Te esperamos el {{cuando}}.", CTX);
+
+    // No es azúcar: Meta rechaza las plantillas con muchas variables para el
+    // largo del texto, y juntar estas dos saca una sin perder nada.
+    expect(texto).toContain("a las");
+    expect(texto).toMatch(/Te esperamos el .+ a las \d{2}:\d{2}\./);
+  });
+
+  it("sin turno no deja el hueco a la vista", () => {
+    const texto = render("Te esperamos el {{cuando}}.", {
+      ...CTX,
+      appointmentAt: null,
+    });
+    expect(texto).not.toContain("{{");
+  });
+});
