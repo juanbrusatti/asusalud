@@ -73,7 +73,16 @@ function porCodigo(code: number | undefined): string {
       // Por eso acá no se afirma la causa: la dice Meta abajo.
       return "Meta rechazó algo del pedido";
     case 131030:
-      return "Ese número no está en la lista de destinatarios permitidos. Con el número de prueba de Meta sólo se puede escribir a los cinco que hayas verificado.";
+      // El 9 de los móviles argentinos es la causa más común acá: Meta suele
+      // guardar el número sin el 9 y el sistema lo manda con el 9, que es lo
+      // que WhatsApp necesita para entregar. Son dos números distintos para
+      // la lista de permitidos.
+      return (
+        "Ese número no está en la lista de destinatarios permitidos de Meta. " +
+        "Si es argentino, fijate que esté cargado CON el 9 (+549…), que es " +
+        "como lo manda el sistema: Meta suele guardarlo sin el 9 y para la " +
+        "lista son dos números distintos."
+      );
     case 132000:
       return "La plantilla espera otra cantidad de datos que los que mandamos. Suele ser que el texto aprobado en Meta no coincide con el de acá.";
     case 132001:
