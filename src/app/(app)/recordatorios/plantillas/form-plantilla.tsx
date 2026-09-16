@@ -107,6 +107,19 @@ export function FormPlantilla({
                 placeholder="recordatorio_turno"
                 hint="El nombre exacto con el que aprobaste la plantilla en WhatsApp Manager. Sin eso, Meta rechaza el envío."
               />
+              <Field
+                label="Idioma en Meta"
+                name="providerLanguage"
+                required
+                defaultValue={
+                  sent?.providerLanguage ??
+                  template?.provider_language ??
+                  "es_AR"
+                }
+                placeholder="es_AR"
+                className="w-40"
+                hint="Tiene que ser exactamente el de la plantilla aprobada. Casi siempre es es_AR; las de muestra de Meta, como hello_world, son en_US. Si no coincide, Meta responde que la plantilla no existe — y habla del idioma, no del nombre."
+              />
               <Select
                 label="Categoría"
                 name="category"

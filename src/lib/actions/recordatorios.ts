@@ -279,6 +279,15 @@ const templateSchema = z.object({
     .min(5, "El mensaje es demasiado corto.")
     .max(1024, "El mensaje es demasiado largo."),
   providerName: z.string().trim().max(80).optional(),
+  // El idioma de la plantilla aprobada en Meta. Sin esto quedaba fijo en
+  // es_AR y no había forma de usar una en otro idioma —ni las de muestra de
+  // Meta, que son en_US—. Cuando no coincide, Meta contesta que la plantilla
+  // no existe «in the translation», y eso manda a revisar el nombre.
+  providerLanguage: z
+    .string()
+    .trim()
+    .regex(/^[a-z]{2}(_[A-Z]{2})?$/, "El idioma va como es_AR, es o en_US.")
+    .optional(),
   // WhatsApp admite tres botones y no más: un cuarto hace que Meta rechace
   // la plantilla, y el motivo recién aparece en el trámite de aprobación.
   quickReplies: z
@@ -298,6 +307,8 @@ export async function saveTemplate(
     subject: String(formData.get("subject") ?? "").trim() || undefined,
     body: String(formData.get("body") ?? ""),
     providerName: String(formData.get("providerName") ?? "").trim() || undefined,
+    providerLanguage:
+      String(formData.get("providerLanguage") ?? "").trim() || undefined,
     quickReplies: formData.getAll("quickReplies").map(String),
   });
 
@@ -330,6 +341,10 @@ export async function saveTemplate(
     subject: v.subject ?? null,
     body: v.body,
     provider_name: v.providerName ?? null,
+    // Sólo WhatsApp pide plantilla aprobada; en los otros canales el idioma
+    // no significa nada.
+    provider_language:
+      v.channel === "whatsapp" ? (v.providerLanguage ?? "es_AR") : null,
     // Los botones sólo existen en WhatsApp: el correo no los tiene.
     quick_replies: v.channel === "whatsapp" ? v.quickReplies : [],
   };
