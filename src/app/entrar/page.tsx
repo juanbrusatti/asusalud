@@ -24,6 +24,18 @@ export default function EntrarPage() {
       </header>
 
       <AuthForm />
+
+      <footer className="flex flex-wrap justify-center gap-x-5 gap-y-1 text-[13px] text-faint">
+        <a className="hover:text-muted" href="/legal/privacidad">
+          Privacidad
+        </a>
+        <a className="hover:text-muted" href="/legal/terminos">
+          Términos
+        </a>
+        <a className="hover:text-muted" href="/legal/eliminar-datos">
+          Eliminar datos
+        </a>
+      </footer>
     </main>
   );
 }
