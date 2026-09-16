@@ -146,7 +146,18 @@ export default function TerminosPage() {
 
       <Seccion titulo="Contacto">
         <Parrafo>
-          {EMPRESA.razonSocial} — {EMPRESA.domicilio}
+          {EMPRESA.titular ? (
+            <>
+              {EMPRESA.titular}
+              {EMPRESA.cuit ? ` — CUIT ${EMPRESA.cuit}` : ""}
+              <br />
+              Responsable de {EMPRESA.nombre}
+            </>
+          ) : (
+            EMPRESA.razonSocial
+          )}
+          <br />
+          {EMPRESA.domicilio}
           <br />
           {EMPRESA.correo}
         </Parrafo>
