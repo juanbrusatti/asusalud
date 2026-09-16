@@ -23,8 +23,8 @@ export const EMPRESA = {
    * Una política de privacidad que nombra a una empresa que no existe en
    * ningún registro no protege a nadie.
    */
-  titular: "",
-  cuit: "",
+  titular: "Juan Máximo Molina Brusatti",
+  cuit: "20-44606672-3",
   /** Domicilio, tal cual figura en los papeles. */
   domicilio: "Ituzaingó 1608, Río Cuarto, Córdoba, Argentina",
   /** Casilla a la que llegan los pedidos de datos. Tiene que existir. */
