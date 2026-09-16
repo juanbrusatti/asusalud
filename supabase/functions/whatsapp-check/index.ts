@@ -133,6 +133,33 @@ type Plantilla = {
   quick_replies?: string[];
 };
 
+/** Borra una plantilla de Meta por nombre. */
+async function borrarPlantilla(
+  waba: string,
+  token: string,
+  nombre: string,
+): Promise<boolean> {
+  try {
+    const r = await fetch(
+      `https://graph.facebook.com/${GRAPH}/${waba}/message_templates?name=${encodeURIComponent(nombre)}`,
+      { method: "DELETE", headers: { Authorization: `Bearer ${token}` } },
+    );
+    return r.ok;
+  } catch {
+    return false;
+  }
+}
+
+/** El cuerpo que Meta tiene hoy para esa plantilla, si la tiene. */
+function cuerpoEnMeta(
+  m: { components?: Array<{ type?: string; text?: string }> } | undefined,
+): string {
+  return (
+    m?.components?.find((c) => (c.type ?? "").toUpperCase() === "BODY")?.text ??
+    ""
+  );
+}
+
 /** Crea una plantilla en Meta. Si ya existe, lo dice sin tratarlo como error. */
 async function crearPlantilla(
   waba: string,
@@ -280,7 +307,76 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Qué hay hoy en Meta. Sin esto, una plantilla rechazada deja trabado
+    // para siempre: crear de nuevo da «already exists» y no hay forma de
+    // reemplazarla desde acá.
+    const lista = await preguntar(
+      `https://graph.facebook.com/${GRAPH}/${c.waba_id}/message_templates` +
+        `?fields=name,status,language,components&limit=200`,
+      c.access_token,
+    );
+
+    const enMeta = (
+      lista.ok ? ((lista.datos.data ?? []) as Array<Record<string, unknown>>) : []
+    ) as Array<{
+      name: string;
+      status: string;
+      language: string;
+      components?: Array<{ type?: string; text?: string }>;
+    }>;
+
     for (const p of c.templates ?? []) {
+      const actual = enMeta.find(
+        (m) => m.name === p.en_meta && m.language === p.idioma,
+      );
+
+      if (actual) {
+        const estado = (actual.status ?? "").toUpperCase();
+        const nuestro = paraMeta(p.cuerpo ?? "").texto;
+        const suyo = cuerpoEnMeta(actual);
+
+        if (estado === "APPROVED" && suyo === nuestro) {
+          pasos.push({
+            clave: `plantilla-${p.en_meta}`,
+            titulo: p.nombre,
+            ok: true,
+            detalle: "Ya está aprobada en Meta y coincide con el texto de acá.",
+          });
+          await supabase.rpc("rpc_mark_template_status", {
+            p_tenant: tenantId,
+            p_provider_name: p.en_meta,
+            p_status: "approved",
+          });
+          continue;
+        }
+
+        if (estado === "PENDING" && suyo === nuestro) {
+          pasos.push({
+            clave: `plantilla-${p.en_meta}`,
+            titulo: p.nombre,
+            ok: true,
+            detalle: "Ya está en Meta esperando aprobación. No hace falta tocarla.",
+          });
+          continue;
+        }
+
+        // Rechazada, o el texto de acá cambió. En los dos casos hay que
+        // reemplazarla: dejar una que no coincide es peor que no tener
+        // ninguna, porque Meta acepta el envío y manda los datos corridos.
+        const borrada = await borrarPlantilla(c.waba_id, c.access_token, p.en_meta);
+        if (!borrada) {
+          pasos.push({
+            clave: `plantilla-${p.en_meta}`,
+            titulo: p.nombre,
+            ok: false,
+            detalle:
+              `Está en Meta como «${estado.toLowerCase()}» y no se pudo borrar para reemplazarla. ` +
+              "Borrala a mano en WhatsApp Manager y volvé a tocar este botón.",
+          });
+          continue;
+        }
+      }
+
       const paso = await crearPlantilla(c.waba_id, c.access_token, p);
       pasos.push(paso);
       if (paso.ok) {
