@@ -7,6 +7,7 @@ import { getWhatsappStatus } from "@/lib/data/whatsapp";
 import { CALIDAD, ESTADOS } from "@/lib/whatsapp";
 import { Volver } from "../_components/volver";
 import { FormWhatsapp } from "./form";
+import { RevisionWhatsapp } from "./revision";
 
 export const metadata: Metadata = { title: "WhatsApp" };
 
@@ -170,6 +171,8 @@ export default async function WhatsappPage() {
             </Card>
           </>
         )}
+
+        {cuenta && <RevisionWhatsapp />}
 
         <FormWhatsapp conectada={Boolean(cuenta)} />
 
