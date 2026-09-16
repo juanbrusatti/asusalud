@@ -1,5 +1,6 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import webpush from "npm:web-push@3.6.7";
+import { sinNueveArgentino } from "./plantillas.ts";
 import { render, templateParameters, type RenderContext } from "./render.ts";
 
 export type Job = {
@@ -265,7 +266,49 @@ async function sendWhatsApp(
     },
   );
 
-  const data = await response.json().catch(() => ({}));
+  let data = await response.json().catch(() => ({}));
+
+  // El 9 de los móviles argentinos: con el número de prueba de Meta, la lista
+  // de permitidos compara SIN el 9, aunque para entregar haga falta CON el 9.
+  // En producción esto no pasa —no hay lista— así que este reintento no se
+  // ejecuta nunca y no cambia lo que se manda de verdad.
+  if (!response.ok && data?.error?.code === 131030) {
+    const alternativo = sinNueveArgentino(job.client_phone ?? "");
+    if (alternativo) {
+      const segundo = await fetch(
+        `https://graph.facebook.com/${GRAPH_VERSION}/${job.phone_number_id}/messages`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${job.access_token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            messaging_product: "whatsapp",
+            recipient_type: "individual",
+            to: alternativo,
+            type: "template",
+            template: {
+              name: job.provider_name,
+              language: { code: job.provider_language ?? "es_AR" },
+              components: components.length > 0 ? components : undefined,
+            },
+          }),
+        },
+      );
+
+      if (segundo.ok) {
+        const datos = await segundo.json().catch(() => ({}));
+        return {
+          ok: true,
+          providerId: datos?.messages?.[0]?.id,
+          body,
+          wasTest: false,
+        };
+      }
+      data = await segundo.json().catch(() => data);
+    }
+  }
 
   if (!response.ok) {
     const meta = data?.error;

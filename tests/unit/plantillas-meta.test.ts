@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { paraMeta } from "../../supabase/functions/_shared/plantillas";
+import {
+  paraMeta,
+  sinNueveArgentino,
+} from "../../supabase/functions/_shared/plantillas";
 
 /**
  * Nuestro cuerpo se escribe con huecos con nombre —{{cliente}}— porque una
@@ -51,5 +54,22 @@ describe("el cuerpo que se manda a Meta", () => {
     const { texto, ejemplos } = paraMeta("{{cliente}}, gracias {{cliente}}");
     expect(texto).toBe("{{1}}, gracias {{2}}");
     expect(ejemplos).toHaveLength(2);
+  });
+});
+
+describe("el 9 de los móviles argentinos", () => {
+  it("lo saca, que es como Meta guarda el número en la lista de prueba", () => {
+    expect(sinNueveArgentino("+5493584178955")).toBe("543584178955");
+    expect(sinNueveArgentino("5493584178955")).toBe("543584178955");
+    expect(sinNueveArgentino("+54 9 358 417 8955")).toBe("543584178955");
+  });
+
+  it("no toca lo que no es un móvil argentino", () => {
+    // Un fijo argentino ya va sin 9, y un número de otro país no tiene nada
+    // que ver con esta regla.
+    expect(sinNueveArgentino("+543584178955")).toBeNull();
+    expect(sinNueveArgentino("+5491155551234")).toBe("541155551234");
+    expect(sinNueveArgentino("+13055551234")).toBeNull();
+    expect(sinNueveArgentino("")).toBeNull();
   });
 });
