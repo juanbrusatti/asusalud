@@ -1749,6 +1749,7 @@ export type Database = {
       whatsapp_status: {
         Row: {
           display_phone: string | null
+          has_app_secret: boolean | null
           has_token: boolean | null
           last_checked_at: string | null
           messaging_limit: string | null
@@ -1756,10 +1757,12 @@ export type Database = {
           quality_rating: string | null
           status: string | null
           tenant_id: string | null
+          verify_token: string | null
           waba_id: string | null
         }
         Insert: {
           display_phone?: string | null
+          has_app_secret?: never
           has_token?: never
           last_checked_at?: string | null
           messaging_limit?: string | null
@@ -1767,10 +1770,12 @@ export type Database = {
           quality_rating?: string | null
           status?: string | null
           tenant_id?: string | null
+          verify_token?: string | null
           waba_id?: string | null
         }
         Update: {
           display_phone?: string | null
+          has_app_secret?: never
           has_token?: never
           last_checked_at?: string | null
           messaging_limit?: string | null
@@ -1778,6 +1783,7 @@ export type Database = {
           quality_rating?: string | null
           status?: string | null
           tenant_id?: string | null
+          verify_token?: string | null
           waba_id?: string | null
         }
         Relationships: [

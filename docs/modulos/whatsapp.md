@@ -181,6 +181,26 @@ la cuenta real con volumen: la calificación de calidad y los escalones de enví
 (250 → 1.000 → 10.000) dependen de cómo responde la gente de verdad, y eso
 empieza a medirse recién con el número definitivo.
 
+## El webhook, que es el tramo que trababa a todos
+
+Sin webhook los mensajes salen igual, pero **las respuestas no vuelven**: los
+tres botones del recordatorio no hacen nada. El cliente aprieta «Confirmar» y
+del lado del negocio no pasa nada.
+
+La pantalla lo escondía detrás de un «opcional» y le pedía a la persona que
+**inventara** una palabra de verificación, sin mostrarle siquiera la dirección
+que hay que pegar en Meta. Quien no es técnico se trababa justo ahí.
+
+Ahora los dos valores están a la vista, con botón de copiar y el camino exacto:
+
+| | |
+| --- | --- |
+| **URL de devolución de llamada** | La misma para todos los negocios. Una sola función que reconoce a cada uno por su palabra de verificación |
+| **Token de verificación** | Se propone uno y se guarda al confirmar. Antes había que inventarlo |
+
+Y una tarjeta arriba dice si falta la clave secreta de la aplicación, que es
+lo único que queda por buscar en Meta.
+
 ## Lo que todavía no está
 
 - **El Embedded Signup**, que es el punto de todo esto. Necesita que Dlay esté
