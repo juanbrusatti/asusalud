@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { paraMeta } from "../../supabase/functions/_shared/plantillas.ts";
+import { paraMeta } from "../../supabase/functions/_shared/plantillas";
 
 /**
  * Nuestro cuerpo se escribe con huecos con nombre —{{cliente}}— porque una
