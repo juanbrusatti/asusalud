@@ -65,6 +65,7 @@ fi
 npx supabase secrets set --env-file "$secretos"
 npx supabase functions deploy dispatch
 npx supabase functions deploy whatsapp-webhook
+npx supabase functions deploy whatsapp-check
 
 # ---------------------------------------------------------------------------
 # Comprobar que el portero deja pasar
