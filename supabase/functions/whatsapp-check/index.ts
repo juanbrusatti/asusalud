@@ -35,8 +35,32 @@ const supabase = createClient(
   { auth: { persistSession: false } },
 );
 
-/** Lo que dice Meta, en castellano y con qué hacer al respecto. */
-function traducir(code: number | undefined, mensaje: string): string {
+type ErrorMeta = {
+  code?: number;
+  message?: string;
+  error_user_title?: string;
+  error_user_msg?: string;
+};
+
+/**
+ * Lo que dice Meta, en castellano y con qué hacer al respecto.
+ *
+ * Siempre se agrega lo que dijo Meta con sus palabras. La traducción sola ya
+ * hizo daño una vez: el código 100 es un cajón de sastre —lo usa para IDs mal
+ * copiados y también para cualquier cosa del cuerpo de una plantilla— y
+ * traducirlo a una sola causa mandó a revisar lo único que estaba bien.
+ */
+function traducir(err: ErrorMeta | undefined): string {
+  const mio = porCodigo(err?.code);
+  const deMeta = (err?.error_user_msg ?? err?.message ?? "").trim();
+
+  if (mio && deMeta) return `${mio} · Meta dice: «${deMeta}»`;
+  if (mio) return mio;
+  if (deMeta) return `Meta lo rechazó: «${deMeta}»`;
+  return "Meta rechazó el pedido y no explicó por qué.";
+}
+
+function porCodigo(code: number | undefined): string {
   switch (code) {
     case 190:
       return "El token venció o fue revocado. Hay que generar uno nuevo en Meta y volver a pegarlo acá.";
@@ -44,7 +68,10 @@ function traducir(code: number | undefined, mensaje: string): string {
     case 10:
       return "El token no tiene permiso para este número. Suele pasar cuando se generó para otra app o sin los permisos de WhatsApp.";
     case 100:
-      return "Meta no reconoce el identificador del número o el de la cuenta. Revisá que estén copiados enteros y sin espacios.";
+      // Es el código genérico de Meta: lo usa para identificadores mal
+      // copiados y para cualquier problema del contenido de una plantilla.
+      // Por eso acá no se afirma la causa: la dice Meta abajo.
+      return "Meta rechazó algo del pedido";
     case 131030:
       return "Ese número no está en la lista de destinatarios permitidos. Con el número de prueba de Meta sólo se puede escribir a los cinco que hayas verificado.";
     case 132000:
@@ -63,7 +90,7 @@ function traducir(code: number | undefined, mensaje: string): string {
     case 131031:
       return "Meta restringió la cuenta. Hay que entrar al panel de Meta y ver qué pide.";
     default:
-      return mensaje || "Meta rechazó el pedido y no explicó por qué.";
+      return "";
   }
 }
 
@@ -78,13 +105,11 @@ async function preguntar(
     const datos = (await r.json()) as Record<string, unknown>;
 
     if (!r.ok) {
-      const err = datos.error as
-        | { code?: number; message?: string }
-        | undefined;
+      const err = datos.error as ErrorMeta | undefined;
       return {
         ok: false,
         datos,
-        detalle: traducir(err?.code, err?.message ?? ""),
+        detalle: traducir(err),
       };
     }
     return { ok: true, datos, detalle: "" };
@@ -163,7 +188,7 @@ async function crearPlantilla(
       };
     }
 
-    const err = datos.error as { code?: number; message?: string } | undefined;
+    const err = datos.error as ErrorMeta | undefined;
 
     // Ya existía: no es un problema, es el estado al que queríamos llegar.
     if (
@@ -182,7 +207,7 @@ async function crearPlantilla(
       clave: `plantilla-${p.en_meta}`,
       titulo: p.nombre,
       ok: false,
-      detalle: traducir(err?.code, err?.message ?? ""),
+      detalle: traducir(err),
     };
   } catch (e) {
     return {
@@ -418,7 +443,7 @@ Deno.serve(async (req) => {
             clave: "envio",
             titulo: "Llega un mensaje de prueba",
             ok: false,
-            detalle: traducir(err?.code, err?.message ?? ""),
+            detalle: traducir(err),
           });
         }
       } catch (e) {
