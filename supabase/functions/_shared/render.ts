@@ -1,8 +1,9 @@
 /**
  * Reemplaza los huecos de una plantilla por los datos reales.
  *
- * Las plantillas admiten {{cliente}}, {{fecha}}, {{hora}}, {{servicio}},
- * {{estetica}}, {{link}} y {{preparacion}}. Lo que no se conoce se reemplaza
+ * Las plantillas admiten {{cliente}}, {{fecha}}, {{hora}}, {{cuando}},
+ * {{servicio}}, {{estetica}}, {{link}} y {{preparacion}}. Lo que no se conoce
+ * se reemplaza
  * por vacío y no por el texto del hueco: a nadie le tiene que llegar un
  * mensaje que diga "{{servicio}}".
  */
@@ -33,6 +34,7 @@ export type RenderContext = {
 const RELLENO_WHATSAPP: Record<string, string> = {
   preparacion: "Cualquier duda, escribinos.",
   servicio: "tu turno",
+  cuando: "la fecha acordada",
 };
 
 function formatDate(iso: string, timeZone: string): string {
@@ -62,6 +64,18 @@ export function render(template: string, ctx: RenderContext): string {
       : "",
     hora: ctx.appointmentAt
       ? formatTime(ctx.appointmentAt, ctx.tenantTimezone)
+      : "",
+    /**
+     * Fecha y hora en un solo hueco.
+     *
+     * No es azúcar: Meta rechaza las plantillas con muchas variables para el
+     * largo del texto, y juntar estas dos saca una sin perder nada. De paso
+     * se lee mejor: «martes 17 de septiembre a las 15:00» en lugar de una
+     * fecha y una hora sueltas separadas por palabras de relleno.
+     */
+    cuando: ctx.appointmentAt
+      ? `${formatDate(ctx.appointmentAt, ctx.tenantTimezone)} a las ` +
+        formatTime(ctx.appointmentAt, ctx.tenantTimezone)
       : "",
     servicio: ctx.serviceNames ?? "",
     link: ctx.manageUrl ?? "",
@@ -95,6 +109,18 @@ export function templateParameters(
       : "",
     hora: ctx.appointmentAt
       ? formatTime(ctx.appointmentAt, ctx.tenantTimezone)
+      : "",
+    /**
+     * Fecha y hora en un solo hueco.
+     *
+     * No es azúcar: Meta rechaza las plantillas con muchas variables para el
+     * largo del texto, y juntar estas dos saca una sin perder nada. De paso
+     * se lee mejor: «martes 17 de septiembre a las 15:00» en lugar de una
+     * fecha y una hora sueltas separadas por palabras de relleno.
+     */
+    cuando: ctx.appointmentAt
+      ? `${formatDate(ctx.appointmentAt, ctx.tenantTimezone)} a las ` +
+        formatTime(ctx.appointmentAt, ctx.tenantTimezone)
       : "",
     servicio: ctx.serviceNames ?? "",
     link: ctx.manageUrl ?? "",
