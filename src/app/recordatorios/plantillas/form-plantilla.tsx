@@ -217,6 +217,23 @@ export function FormPlantilla({
             <p className="text-[12.5px] leading-snug text-muted">
               Se reemplazan por los datos reales de cada cliente al enviar.
             </p>
+
+            {/* Meta rechaza las plantillas cuyo cuerpo empieza o termina con
+                un hueco, y lo hace con un código genérico que no explica
+                nada. Mejor decirlo acá que descubrirlo en el trámite. */}
+            {channel === "whatsapp" && /(^\s*\{\{|\}\}\s*$)/.test(body) && (
+              <p
+                role="alert"
+                className="rounded-[14px] bg-warn-wash px-3.5 py-2.5 text-[12.5px] leading-snug text-ink"
+              >
+                WhatsApp no acepta que el mensaje{" "}
+                <strong className="font-semibold">
+                  empiece o termine en un hueco
+                </strong>
+                . Agregá algo de texto antes o después —un saludo, un «¡Te
+                esperamos!»— o Meta va a rechazar la plantilla.
+              </p>
+            )}
           </div>
 
           {body && (

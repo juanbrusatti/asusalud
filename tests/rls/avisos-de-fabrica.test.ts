@@ -118,6 +118,26 @@ describe("una cuenta recién creada", () => {
     }
   });
 
+  it("ninguna plantilla de WhatsApp termina en un hueco", async () => {
+    const cuerpos = await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `select name, body from public.message_templates
+         where tenant_id = $1 and channel = 'whatsapp'`,
+        [s.tenantA],
+      );
+      return rows as Array<{ name: string; body: string }>;
+    });
+
+    expect(cuerpos.length).toBeGreaterThan(0);
+    for (const t of cuerpos) {
+      // Meta rechaza las plantillas cuyo cuerpo empieza o termina con una
+      // variable, y lo hace con un «código 100» genérico que no explica nada.
+      // Nos pasó en la primera prueba real contra Meta.
+      expect(t.body.trim(), t.name).not.toMatch(/\}\}$/);
+      expect(t.body.trim(), t.name).not.toMatch(/^\{\{/);
+    }
+  });
+
   it("no vuelve a escribir encima de lo que ya está", async () => {
     const antes = await asAdmin(async (c) => {
       const { rows } = await c.query(
