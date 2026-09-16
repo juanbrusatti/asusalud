@@ -1,5 +1,9 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { ETIQUETA_BOTON, paraMeta } from "../_shared/plantillas.ts";
+import {
+  ETIQUETA_BOTON,
+  paraMeta,
+  sinNueveArgentino,
+} from "../_shared/plantillas.ts";
 
 /**
  * Revisar la conexión de WhatsApp.
@@ -600,6 +604,30 @@ Deno.serve(async (req) => {
     const soloDigitos = destino.replace(/\D/g, "");
     const plantilla = (c.templates ?? [])[0];
 
+    /** Manda la plantilla a un número y devuelve qué contestó Meta. */
+    const mandar = async (a: string) => {
+      const r = await fetch(
+        `https://graph.facebook.com/${GRAPH}/${c.phone_number_id}/messages`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${c.access_token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            messaging_product: "whatsapp",
+            to: a,
+            type: "template",
+            template: {
+              name: plantilla?.en_meta,
+              language: { code: plantilla?.idioma },
+            },
+          }),
+        },
+      );
+      return { ok: r.ok, datos: (await r.json()) as Record<string, unknown> };
+    };
+
     if (!plantilla) {
       pasos.push({
         clave: "envio",
@@ -609,44 +637,41 @@ Deno.serve(async (req) => {
       });
     } else {
       try {
-        const r = await fetch(
-          `https://graph.facebook.com/${GRAPH}/${c.phone_number_id}/messages`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${c.access_token}`,
-              "content-type": "application/json",
-            },
-            body: JSON.stringify({
-              messaging_product: "whatsapp",
-              to: soloDigitos,
-              type: "template",
-              template: {
-                name: plantilla.en_meta,
-                language: { code: plantilla.idioma },
-              },
-            }),
-          },
-        );
-        const datos = (await r.json()) as Record<string, unknown>;
+        let { ok, datos } = await mandar(soloDigitos);
+        let nota = "";
 
-        if (r.ok) {
+        // El 9 de los móviles argentinos: con el número de prueba, la lista
+        // de permitidos de Meta compara SIN el 9. En producción no hay lista
+        // y este reintento no se ejecuta nunca.
+        if (!ok && (datos.error as ErrorMeta | undefined)?.code === 131030) {
+          const alternativo = sinNueveArgentino(soloDigitos);
+          if (alternativo) {
+            const segundo = await mandar(alternativo);
+            if (segundo.ok) {
+              ok = true;
+              datos = segundo.datos;
+              nota =
+                " Salió sin el 9 del móvil argentino, que es como la lista de " +
+                "prueba de Meta guarda el número. En producción no hace falta.";
+            }
+          }
+        }
+
+        if (ok) {
           pasos.push({
             clave: "envio",
             titulo: "Llega un mensaje de prueba",
             ok: true,
             detalle:
-              "Meta lo aceptó. Si no aparece en el teléfono en un minuto, el problema está del lado de WhatsApp y no del sistema.",
+              "Meta lo aceptó. Si no aparece en el teléfono en un minuto, el problema está del lado de WhatsApp y no del sistema." +
+              nota,
           });
         } else {
-          const err = datos.error as
-            | { code?: number; message?: string }
-            | undefined;
           pasos.push({
             clave: "envio",
             titulo: "Llega un mensaje de prueba",
             ok: false,
-            detalle: traducir(err),
+            detalle: traducir(datos.error as ErrorMeta | undefined),
           });
         }
       } catch (e) {
