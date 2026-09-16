@@ -758,3 +758,57 @@ describe("credenciales de WhatsApp", () => {
     });
   });
 });
+
+describe("los envoltorios que usa el emisor", () => {
+  /**
+   * Cada uno declara su lista de columnas a mano. Cuando la función de adentro
+   * cambia y el envoltorio no, Postgres tira «return type mismatch» y el
+   * emisor toma los envíos, falla al pedir los datos y los deja en `sending`
+   * para siempre: desaparecen de la cola y no aparecen en ningún contador.
+   *
+   * Pasó de verdad al agregar {{preparacion}}. Estas pruebas no comprueban
+   * lógica: comprueban que las firmas no se hayan separado.
+   */
+  it("rpc_jobs_payload sigue coincidiendo con app.jobs_payload", async () => {
+    await asAdmin(async (c) => {
+      await c.query(`select * from public.rpc_jobs_payload(array[]::uuid[])`);
+    });
+  });
+
+  it("rpc_claim_due_jobs sigue coincidiendo con app.claim_due_jobs", async () => {
+    await asAdmin(async (c) => {
+      await c.query(`select * from public.rpc_claim_due_jobs(0)`);
+    });
+  });
+
+  it("un envío tomado y nunca cerrado vuelve solo a la cola", async () => {
+    const id = await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `insert into public.message_jobs
+           (tenant_id, client_id, channel, scheduled_for, status, attempts,
+            updated_at, dedupe_key)
+         values ($1, $2, 'whatsapp', now() - interval '1 hour', 'sending', 1,
+                 now() - interval '30 minutes', 'trabado-' || gen_random_uuid())
+         returning id`,
+        [s.tenantA, conAmbos],
+      );
+      return rows[0].id as string;
+    });
+
+    const recuperado = await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `select id from app.claim_due_jobs(50) where id = $1`,
+        [id],
+      );
+      return rows.length === 1;
+    });
+
+    // Sin esto, si el emisor se cae en el medio el envío queda muerto y nadie
+    // se entera: ni sale, ni falla, ni aparece en ninguna pantalla.
+    expect(recuperado).toBe(true);
+
+    await asAdmin((c) =>
+      c.query(`delete from public.message_jobs where id = $1`, [id]),
+    );
+  });
+});
