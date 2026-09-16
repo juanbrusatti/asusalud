@@ -369,6 +369,11 @@ Deno.serve(async (req) => {
   }
 
   const pasos: Paso[] = [];
+  // Qué estado tiene cada plantilla en Meta. El paso del envío lo necesita:
+  // una plantilla en revisión no se puede usar, y decir «no existe» cuando
+  // en realidad está esperando aprobación manda a buscar un problema que no
+  // hay.
+  const estadoEnMeta = new Map<string, string>();
 
   // ---------------------------------------------------------------------
   // Crear las plantillas, si eso es lo que se pidió
@@ -551,6 +556,7 @@ Deno.serve(async (req) => {
 
       for (const t of c.templates ?? []) {
         const encontrada = enMeta.find((m) => m.name === t.en_meta);
+        if (encontrada) estadoEnMeta.set(t.en_meta, encontrada.status);
         if (!encontrada) faltan.push(t.en_meta);
         else if (encontrada.status !== "APPROVED") {
           sinAprobar.push(`${t.en_meta} (${encontrada.status.toLowerCase()})`);
@@ -577,7 +583,11 @@ Deno.serve(async (req) => {
             ? `todavía sin aprobar: ${sinAprobar.join(", ")}`
             : "",
         ].filter(Boolean);
-        detalle = `${problemas.join("; ")}. Si alguna dice que falta y vos la ves en Meta, el nombre no coincide: tiene que ser idéntico, guiones bajos incluidos.`;
+        detalle =
+          `${problemas.join("; ")}.` +
+          (faltan.length > 0
+            ? " Si alguna dice que falta y vos la ves en Meta, el nombre no coincide: tiene que ser idéntico, guiones bajos incluidos."
+            : " No hay nada para arreglar: la revisión de Meta suele tardar minutos.");
       }
 
       pasos.push({
@@ -628,12 +638,29 @@ Deno.serve(async (req) => {
       return { ok: r.ok, datos: (await r.json()) as Record<string, unknown> };
     };
 
+    const estado = plantilla
+      ? (estadoEnMeta.get(plantilla.en_meta) ?? "").toUpperCase()
+      : "";
+
     if (!plantilla) {
       pasos.push({
         clave: "envio",
         titulo: "Llega un mensaje de prueba",
         ok: false,
         detalle: "No hay ninguna plantilla de WhatsApp cargada para probar.",
+      });
+    } else if (estado && estado !== "APPROVED") {
+      // Ni se intenta: Meta rechaza cualquier envío con una plantilla que no
+      // está aprobada, y el error que devuelve —«no existe»— hace pensar que
+      // el nombre está mal.
+      pasos.push({
+        clave: "envio",
+        titulo: "Llega un mensaje de prueba",
+        ok: false,
+        detalle:
+          estado === "PENDING"
+            ? `«${plantilla.en_meta}» todavía está en revisión. Hasta que Meta la apruebe no se puede mandar nada con ella: no hay nada para arreglar, sólo esperar.`
+            : `«${plantilla.en_meta}» está en Meta como «${estado.toLowerCase()}», así que no se puede usar para enviar.`,
       });
     } else {
       try {
