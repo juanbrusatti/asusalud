@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { PoolClient } from "pg";
-import { asAdmin, asUser, pool } from "./helpers";
+import { asAdmin, asUser, expectRejected, pool } from "./helpers";
 import { setupScenario, teardownScenario, type Scenario } from "./fixtures";
 
 let s: Scenario;
@@ -514,6 +514,20 @@ describe("salud de la cuenta", () => {
       );
       expect(rows[0].sending_enabled).toBe(false);
     });
+  });
+});
+
+describe("las credenciales de Meta", () => {
+  it("no las puede leer nadie que navegue, ni la dueña", async () => {
+    const codigo = await asUser(s.owner, (c) =>
+      expectRejected(() =>
+        c.query(`select public.rpc_whatsapp_credentials($1)`, [s.tenantA]),
+      ),
+    );
+    // El token manda mensajes en nombre del negocio. No vuelve nunca a la
+    // aplicación: lo leen el emisor y la revisión, que corren con permisos
+    // del sistema.
+    expect(codigo).toBe("42501");
   });
 });
 

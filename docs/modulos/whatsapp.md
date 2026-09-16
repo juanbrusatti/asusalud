@@ -102,6 +102,60 @@ hasta que Meta diga otra cosa.
 | Pantalla | `src/app/configuracion/whatsapp/` |
 | Pruebas | `tests/rls/whatsapp.test.ts` |
 
+## Revisar la conexión
+
+Los cinco pasos de Meta terminan sin que nadie te diga si quedaron bien. Y lo
+peor de un recordatorio que no sale es que **nadie se entera de que no salió**:
+no hay error en ninguna pantalla, simplemente el cliente no recibe nada y
+aparece —o no— al día siguiente.
+
+Por eso hay un botón **Revisar la conexión** que le pregunta a Meta las tres
+cosas que se rompen, en el orden en que se rompen:
+
+| Revisa | Qué detecta |
+| --- | --- |
+| El token sirve y el número responde | Token vencido, revocado, o generado para otra app |
+| Las plantillas están aprobadas | Nombre distinto al que espera el emisor, o todavía en revisión |
+| Llega un mensaje de prueba | Todo lo demás: número no registrado, destinatario no verificado, formato |
+
+El tercero es opcional: si ponés un teléfono, manda una plantilla de verdad a
+ese número.
+
+### Traduce lo que contesta Meta
+
+Los códigos de Meta no le dicen nada a quien no es técnico. `#132001` es
+«Meta no encuentra la plantilla con ese nombre y ese idioma. Revisá que sea
+idéntico, incluidos los guiones bajos». `#131030` es «ese número no está en la
+lista de destinatarios permitidos».
+
+Esa traducción es la mitad del valor: sin ella, quien hizo los cinco pasos y le
+falló uno no tiene forma de saber cuál.
+
+### Corre en el emisor, no en la aplicación
+
+Por dos motivos. El token no sale nunca de Supabase, y así la revisión prueba
+**el mismo camino de red** por el que salen los mensajes de verdad, en lugar de
+una imitación que podría funcionar cuando el real no.
+
+## Probarlo todo sin gastar un peso
+
+Meta crea **un número de prueba** junto con la aplicación, y sirve para
+verificar el sistema entero antes de tener nada:
+
+- no necesita verificación de empresa;
+- no necesita medio de pago cargado;
+- manda gratis a **hasta cinco teléfonos** que verifiques ahí;
+- tiene límites de envío relajados.
+
+Alcanza para probar el recorrido completo —recordatorio, botones, confirmación
+en la agenda, cancelación, enlace para cambiar el horario— con el teléfono de
+uno mismo, antes de que lo toque un cliente.
+
+Lo que **no** se puede saber con el número de prueba es cómo se va a comportar
+la cuenta real con volumen: la calificación de calidad y los escalones de envío
+(250 → 1.000 → 10.000) dependen de cómo responde la gente de verdad, y eso
+empieza a medirse recién con el número definitivo.
+
 ## Lo que todavía no está
 
 - **El Embedded Signup**, que es el punto de todo esto. Necesita que Dlay esté
