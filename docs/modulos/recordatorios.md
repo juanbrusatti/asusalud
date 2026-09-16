@@ -231,6 +231,20 @@ cantidad fija de valores. Así que un servicio sin indicaciones manda
 En correo y notificaciones el hueco vacío se limpia solo, con los espacios y
 la puntuación que hubieran quedado sueltos.
 
+## Borrar un mensaje
+
+Se borra desde la pantalla del mensaje, en dos pasos: el primer toque pregunta,
+el segundo borra. Un botón que borra de una, al lado de «Guardar cambios», es
+un accidente esperando.
+
+**Si alguna regla lo está usando, no se borra**, y se dice cuál. La base lo
+impide por su cuenta —la clave foránea es `restrict`— pero el error de Postgres
+diría «viola una restricción» y quien lo lee no tendría forma de saber cuál de
+sus reglas es el problema. Por eso se pregunta antes y se nombra la regla.
+
+**Lo ya enviado no se toca.** Cada envío guarda el texto que realmente salió,
+así que la bitácora sigue diciendo la verdad aunque el mensaje ya no exista.
+
 ## Lo que todavía no está
 
 - **El emisor.** La cola se llena y se puede mirar, pero nadie entrega los

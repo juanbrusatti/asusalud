@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { asAdmin, pool } from "./helpers";
+import { asAdmin, asUser, expectRejected, pool } from "./helpers";
 import { setupScenario, teardownScenario, type Scenario } from "./fixtures";
 
 /**
@@ -160,5 +160,87 @@ describe("una cuenta recién creada", () => {
     });
 
     expect(despues).toBe(antes);
+  });
+});
+
+describe("borrar un mensaje", () => {
+  it("la base no deja borrar uno que una regla está usando", async () => {
+    const enUso = await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `select rt.template_id from public.rule_templates rt
+         where rt.tenant_id = $1 limit 1`,
+        [s.tenantA],
+      );
+      return rows[0].template_id as string;
+    });
+
+    const codigo = await asUser(s.owner, (c) =>
+      expectRejected(() =>
+        c.query(`delete from public.message_templates where id = $1`, [enUso]),
+      ),
+    );
+
+    // 23503: la regla se quedaría sin qué mandar por ese canal, y eso no se
+    // descubre hasta que alguien no recibe su recordatorio.
+    expect(codigo).toBe("23503");
+  });
+
+  it("uno que no usa ninguna regla se borra", async () => {
+    const suelto = await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `insert into public.message_templates
+           (tenant_id, name, channel, category, body)
+         values ($1, 'Mensaje suelto de prueba', 'push', 'utility',
+                 'Hola {{cliente}}, te esperamos.')
+         returning id`,
+        [s.tenantA],
+      );
+      return rows[0].id as string;
+    });
+
+    // La comprobación va DENTRO de la misma transacción: `asUser` revierte al
+    // terminar, así que mirar después no diría nada sobre el borrado.
+    const quedan = await asUser(s.owner, async (c) => {
+      await c.query(`delete from public.message_templates where id = $1`, [
+        suelto,
+      ]);
+      const { rows } = await c.query(
+        `select count(*)::int as n from public.message_templates where id = $1`,
+        [suelto],
+      );
+      return rows[0].n as number;
+    });
+
+    expect(quedan).toBe(0);
+
+    await asAdmin((c) =>
+      c.query(`delete from public.message_templates where id = $1`, [suelto]),
+    );
+  });
+
+  it("una profesional no puede borrar mensajes", async () => {
+    const alguno = await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `select id from public.message_templates where tenant_id = $1 limit 1`,
+        [s.tenantA],
+      );
+      return rows[0].id as string;
+    });
+
+    const quedan = await asUser(s.staff, async (c) => {
+      // La RLS no da error: simplemente no borra nada. Por eso hay que
+      // contar adentro de la transacción, o el test pasaría igual aunque
+      // la política no existiera.
+      await c.query(`delete from public.message_templates where id = $1`, [
+        alguno,
+      ]);
+      const { rows } = await c.query(
+        `select count(*)::int as n from public.message_templates where id = $1`,
+        [alguno],
+      );
+      return rows[0].n as number;
+    });
+
+    expect(quedan).toBe(1);
   });
 });
