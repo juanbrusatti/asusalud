@@ -20,7 +20,11 @@ const INICIAL: ConexionState = { error: null };
  * cargar credenciales es lo raro, no lo común, y tenerlo abierto invita a
  * romper algo que funciona.
  */
-export function FormWhatsapp({ conectada }: { conectada: boolean }) {
+export function FormWhatsapp({ conectada,
+  verifyToken,
+}: { conectada: boolean;
+  verifyToken: string;
+}) {
   const [state, action] = useActionState(conectarWhatsapp, INICIAL);
   const [abierto, setAbierto] = useState(!conectada);
   const [soltando, startSoltar] = useTransition();
@@ -88,14 +92,13 @@ export function FormWhatsapp({ conectada }: { conectada: boolean }) {
 
               <details className="grid gap-4">
                 <summary className="cursor-pointer text-[13.5px] font-medium text-muted">
-                  Para recibir respuestas y estados de entrega
+                  Clave secreta de la aplicación
                 </summary>
 
                 <p className="max-w-prose text-[13px] leading-relaxed text-muted">
                   Sin esto los mensajes salen igual, pero no vas a saber si
-                  llegaron ni vas a recibir las respuestas de los botones. Los
-                  dos valores salen de la configuración de tu aplicación en
-                  Meta.
+                  llegaron ni van a volver las respuestas de los botones. Está
+                  en Meta, en «Configuración de la app → Básica».
                 </p>
 
                 <Field
@@ -107,13 +110,10 @@ export function FormWhatsapp({ conectada }: { conectada: boolean }) {
                   hint="Meta la llama «App secret». Con ella se comprueba que cada aviso venga de verdad de Meta."
                 />
 
-                <Field
-                  label="Palabra de verificación"
-                  name="verifyToken"
-                  defaultValue={enviados?.verifyToken ?? ""}
-                  placeholder="Opcional"
-                  hint="La inventás vos y la escribís igual de los dos lados."
-                />
+                {/* Va fija y sin mostrarse acá: la persona ya la copió de
+                    la tarjeta de arriba, y volver a pedirla en un campo vacío
+                    invita a escribir otra cosa y a que no coincidan. */}
+                <input type="hidden" name="verifyToken" value={verifyToken} />
               </details>
 
               <Resultado state={state} />

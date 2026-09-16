@@ -245,6 +245,22 @@ sus reglas es el problema. Por eso se pregunta antes y se nombra la regla.
 **Lo ya enviado no se toca.** Cada envío guarda el texto que realmente salió,
 así que la bitácora sigue diciendo la verdad aunque el mensaje ya no exista.
 
+## El turno que se carga tarde
+
+Con un recordatorio de 24 horas antes, quien saca turno para mañana a la tarde
+**no recibía nada**: el momento del aviso ya había pasado cuando se cargó el
+turno. Para un negocio que agenda para la misma semana eso puede ser una
+porción grande de los turnos — y son justo los que más se olvidan.
+
+Ahora el aviso sale en la próxima corrida del planificador, con dos límites:
+
+- **Sólo avisos previos.** Un «gracias por venir» atrasado no tiene sentido.
+- **Sólo si el turno es para otro día.** El recordatorio dice «mañana»:
+  mandarlo un rato antes del turno de hoy sería mentira, y avisarle a alguien
+  que ya está saliendo de su casa no le sirve de nada.
+
+Se apaga por regla, en «Avisar igual si el turno se carga tarde».
+
 ## Lo que todavía no está
 
 - **El emisor.** La cola se llena y se puede mirar, pero nadie entrega los

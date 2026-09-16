@@ -80,6 +80,7 @@ export function Constructor({
     rule?.service_ids ?? [],
   );
   const [onlyIfMissed, setOnlyIfMissed] = useState(rule?.only_if_missed ?? false);
+  const [catchUp, setCatchUp] = useState(rule?.catch_up ?? true);
 
   const [sim, setSim] = useState<Simulation>([]);
   const [simulando, startSim] = useTransition();
@@ -376,6 +377,16 @@ export function Constructor({
             defaultChecked={onlyIfMissed}
             onChange={setOnlyIfMissed}
           />
+
+          {trigger === "before_appointment" && (
+            <Toggle
+              name="catchUp"
+              label="Avisar igual si el turno se carga tarde"
+              hint="Quien saca turno para mañana a la tarde ya pasó el momento del aviso, y sin esto no recibe nada. Con esto le llega al ratito de cargarlo. Nunca el mismo día del turno: a esa altura ya está saliendo de su casa."
+              defaultChecked={catchUp}
+              onChange={setCatchUp}
+            />
+          )}
         </CardBody>
       </Card>
 

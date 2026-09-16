@@ -37,6 +37,7 @@ const ruleSchema = z.object({
     .min(1, "Elegí al menos un canal por el que avisar."),
   serviceIds: z.array(z.string().uuid()),
   onlyIfMissed: z.boolean(),
+  catchUp: z.boolean(),
   enabled: z.boolean(),
 });
 
@@ -48,6 +49,7 @@ function read(formData: FormData) {
     channelOrder: formData.getAll("channelOrder").map(String),
     serviceIds: formData.getAll("serviceIds").map(String).filter(Boolean),
     onlyIfMissed: formData.get("onlyIfMissed") === "on",
+    catchUp: formData.get("catchUp") === "on",
     enabled: formData.get("enabled") === "on",
   };
 }
@@ -126,6 +128,7 @@ export async function saveRule(
     channel_order: v.channelOrder,
     service_ids: v.serviceIds,
     only_if_missed: v.onlyIfMissed,
+    catch_up: v.catchUp,
     enabled: v.enabled,
   };
 

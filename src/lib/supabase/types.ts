@@ -1277,6 +1277,7 @@ export type Database = {
       }
       reminder_rules: {
         Row: {
+          catch_up: boolean
           channel_order: Database["public"]["Enums"]["message_channel"][]
           created_at: string
           enabled: boolean
@@ -1293,6 +1294,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          catch_up?: boolean
           channel_order?: Database["public"]["Enums"]["message_channel"][]
           created_at?: string
           enabled?: boolean
@@ -1309,6 +1311,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          catch_up?: boolean
           channel_order?: Database["public"]["Enums"]["message_channel"][]
           created_at?: string
           enabled?: boolean
@@ -1746,6 +1749,7 @@ export type Database = {
       whatsapp_status: {
         Row: {
           display_phone: string | null
+          has_app_secret: boolean | null
           has_token: boolean | null
           last_checked_at: string | null
           messaging_limit: string | null
@@ -1753,10 +1757,12 @@ export type Database = {
           quality_rating: string | null
           status: string | null
           tenant_id: string | null
+          verify_token: string | null
           waba_id: string | null
         }
         Insert: {
           display_phone?: string | null
+          has_app_secret?: never
           has_token?: never
           last_checked_at?: string | null
           messaging_limit?: string | null
@@ -1764,10 +1770,12 @@ export type Database = {
           quality_rating?: string | null
           status?: string | null
           tenant_id?: string | null
+          verify_token?: string | null
           waba_id?: string | null
         }
         Update: {
           display_phone?: string | null
+          has_app_secret?: never
           has_token?: never
           last_checked_at?: string | null
           messaging_limit?: string | null
@@ -1775,6 +1783,7 @@ export type Database = {
           quality_rating?: string | null
           status?: string | null
           tenant_id?: string | null
+          verify_token?: string | null
           waba_id?: string | null
         }
         Relationships: [
@@ -1994,6 +2003,7 @@ export type Database = {
           job_id: string
           manage_url: string
           phone_number_id: string
+          preparation: string
           provider_language: string
           provider_name: string
           quick_replies: string[]
@@ -2005,6 +2015,10 @@ export type Database = {
           tenant_timezone: string
           test_mode: boolean
         }[]
+      }
+      rpc_mark_template_status: {
+        Args: { p_provider_name: string; p_status: string; p_tenant: string }
+        Returns: undefined
       }
       rpc_push_targets: {
         Args: { p_client: string }
@@ -2031,6 +2045,14 @@ export type Database = {
         Args: { p_key: string; p_value: string }
         Returns: Json
       }
+      rpc_set_template_provider_name: {
+        Args: {
+          p_nuevo_nombre: string
+          p_provider_name: string
+          p_tenant: string
+        }
+        Returns: undefined
+      }
       rpc_team_push_targets: {
         Args: { p_tenant: string }
         Returns: {
@@ -2047,6 +2069,7 @@ export type Database = {
           verify_token: string
         }[]
       }
+      rpc_whatsapp_credentials: { Args: { p_tenant: string }; Returns: Json }
       send_test_alert: { Args: never; Returns: Json }
       session_expected_cents_public: {
         Args: { p_session: string }
