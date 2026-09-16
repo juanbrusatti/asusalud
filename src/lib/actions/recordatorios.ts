@@ -343,3 +343,56 @@ export async function saveTemplate(
   revalidatePath("/recordatorios/plantillas");
   redirect("/recordatorios/plantillas");
 }
+
+/**
+ * Borra un mensaje.
+ *
+ * Antes pregunta si alguna regla lo usa, en vez de dejar que falle la clave
+ * foránea: el error de Postgres diría «viola una restricción» y quien lo lee
+ * no tiene forma de saber cuál de sus reglas es el problema.
+ *
+ * Lo ya enviado no se toca. Cada envío guarda el texto que realmente salió, así
+ * que la bitácora sigue diciendo la verdad aunque el mensaje ya no exista.
+ */
+export async function deleteTemplate(
+  templateId: string,
+): Promise<{ error: string | null }> {
+  const membership = await getCurrentTenant();
+  if (!membership) return { error: "No encontramos tu negocio." };
+
+  const supabase = await createClient();
+
+  const { data: usos } = await supabase
+    .from("rule_templates")
+    .select("rule:reminder_rules ( name )")
+    .eq("template_id", templateId);
+
+  if (usos && usos.length > 0) {
+    const nombres = [
+      ...new Set(
+        usos
+          .map((u) => (u.rule as { name?: string } | null)?.name)
+          .filter(Boolean) as string[],
+      ),
+    ];
+
+    return {
+      error:
+        nombres.length === 1
+          ? `No se puede borrar: lo usa la regla «${nombres[0]}». Cambiá esa regla primero.`
+          : `No se puede borrar: lo usan ${nombres.length} reglas (${nombres.join(", ")}). Cambiálas primero.`,
+    };
+  }
+
+  const { error } = await supabase
+    .from("message_templates")
+    .delete()
+    .eq("id", templateId);
+
+  if (error) {
+    return { error: "No se pudo borrar. Probá de nuevo en unos segundos." };
+  }
+
+  revalidatePath("/recordatorios/plantillas");
+  redirect("/recordatorios/plantillas");
+}
