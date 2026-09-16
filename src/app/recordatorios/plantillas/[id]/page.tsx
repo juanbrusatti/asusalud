@@ -4,6 +4,7 @@ import { Barra } from "@/app/_components/barra";
 import { atLeast, getCurrentTenant } from "@/lib/auth/tenant";
 import { listTemplates } from "@/lib/data/recordatorios";
 import { isEmailEnabled } from "@/lib/data/configuracion";
+import { BorrarPlantilla } from "../borrar";
 import { FormPlantilla } from "../form-plantilla";
 
 export const metadata: Metadata = { title: "Editar mensaje" };
@@ -23,7 +24,6 @@ export default async function EditarPlantillaPage({
   const template = (await listTemplates()).find((t) => t.id === id);
   if (!template) notFound();
 
-
   const correoDisponible = await isEmailEnabled();
 
   return (
@@ -33,7 +33,17 @@ export default async function EditarPlantillaPage({
         <h1 className="text-[28px] font-bold leading-tight tracking-[-0.03em]">
           {template.name}
         </h1>
-        <FormPlantilla correoDisponible={correoDisponible} template={template} submitLabel="Guardar cambios" />
+        <FormPlantilla
+          correoDisponible={correoDisponible}
+          template={template}
+          submitLabel="Guardar cambios"
+        />
+
+        {/* Fuera del formulario a propósito: acá nada de lo que se toque
+            puede enviarlo sin querer. */}
+        <div className="border-t-[1.5px] border-line pt-5">
+          <BorrarPlantilla id={template.id} />
+        </div>
       </main>
     </>
   );
