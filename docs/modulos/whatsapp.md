@@ -137,6 +137,31 @@ Por dos motivos. El token no sale nunca de Supabase, y así la revisión prueba
 **el mismo camino de red** por el que salen los mensajes de verdad, en lugar de
 una imitación que podría funcionar cuando el real no.
 
+## Las plantillas se crean solas
+
+De los cinco pasos del alta, el que se rompe siempre es el de las plantillas.
+Hay que escribir a mano el nombre exacto —`recordatorio_dia_anterior`, con
+guiones bajos y sin tildes—, el cuerpo con los huecos numerados en el orden
+correcto y tres botones también en orden.
+
+Un guión de más y Meta aprueba una plantilla que el emisor nunca va a
+encontrar. Y eso no falla en el trámite: falla meses después, con un
+recordatorio que no sale.
+
+El botón **Crear las plantillas en Meta** las carga por la API con el nombre y
+el texto que el emisor espera, traduciendo los huecos:
+
+| Nosotros escribimos | Meta recibe |
+| --- | --- |
+| `Hola {{cliente}}! … para {{servicio}}. {{preparacion}}` | `Hola {{1}}! … para {{5}}. {{6}}` |
+
+El orden es el de aparición, y tiene que ser **el mismo** que usa el emisor al
+mandar los parámetros: si se desalinea, el cliente recibe la hora donde va su
+nombre. Por eso la conversión tiene pruebas propias.
+
+Meta además exige un ejemplo por hueco o rechaza la plantilla, así que van con
+uno cada uno. Si la plantilla ya existía, se dice y no se toca.
+
 ## Probarlo todo sin gastar un peso
 
 Meta crea **un número de prueba** junto con la aplicación, y sirve para

@@ -1,11 +1,15 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState, useTransition } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Field } from "@/components/ui/field";
-import { revisarWhatsapp, type RevisionState } from "@/lib/actions/whatsapp";
+import {
+  crearPlantillasEnMeta,
+  revisarWhatsapp,
+  type RevisionState,
+} from "@/lib/actions/whatsapp";
 
 const INICIAL: RevisionState = { error: null };
 
@@ -29,6 +33,10 @@ function Revisar() {
  */
 export function RevisionWhatsapp() {
   const [state, action] = useActionState(revisarWhatsapp, INICIAL);
+  const [creando, empezarCreacion] = useTransition();
+  const [creacion, setCreacion] = useState<RevisionState | null>(null);
+
+  const mostrar = creacion ?? state;
 
   return (
     <Card>
@@ -65,9 +73,42 @@ export function RevisionWhatsapp() {
           </div>
         </form>
 
-        {state.pasos && state.pasos.length > 0 && (
+        <div className="grid gap-2 border-t-[1.5px] border-line pt-4">
+          <p className="text-[13.5px] font-medium">Las plantillas, en Meta</p>
+          <p className="max-w-prose text-[13px] leading-relaxed text-muted">
+            En vez de cargarlas a mano en WhatsApp Manager, las crea acá con el
+            nombre y el texto exactos que el emisor espera. Es el paso del alta
+            que más se rompe: un guión de más y Meta aprueba una plantilla que
+            después no encuentra nadie.
+          </p>
+          <div className="flex">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={creando}
+              onClick={() =>
+                empezarCreacion(async () => {
+                  setCreacion(await crearPlantillasEnMeta());
+                })
+              }
+            >
+              {creando ? "Creándolas en Meta…" : "Crear las plantillas en Meta"}
+            </Button>
+          </div>
+        </div>
+
+        {mostrar.error && creacion && (
+          <p
+            role="alert"
+            className="rounded-[14px] bg-danger-wash px-3.5 py-2.5 text-[13.5px] text-danger"
+          >
+            {mostrar.error}
+          </p>
+        )}
+
+        {mostrar.pasos && mostrar.pasos.length > 0 && (
           <ul className="grid gap-2 border-t-[1.5px] border-line pt-4">
-            {state.pasos.map((p) => (
+            {mostrar.pasos.map((p) => (
               <li
                 key={p.clave}
                 className={`grid gap-1 rounded-[14px] px-3.5 py-3 ${
