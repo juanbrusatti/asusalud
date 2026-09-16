@@ -812,3 +812,90 @@ describe("los envoltorios que usa el emisor", () => {
     );
   });
 });
+
+describe("el turno que se carga tarde", () => {
+  /**
+   * Con un aviso de 24 horas antes, quien saca turno para mañana a la tarde no
+   * recibía NADA: el momento del aviso ya había pasado cuando se cargó el
+   * turno. Son justo los turnos que más se olvidan.
+   *
+   * El desfase de estas pruebas es de siete días a propósito: así el momento
+   * del aviso queda seis días en el pasado corra la suite a la hora que corra,
+   * y el resultado no depende del reloj.
+   */
+  async function reglaConDesfaseLargo(catchUp: boolean): Promise<string> {
+    return asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `insert into public.reminder_rules
+           (tenant_id, name, enabled, trigger, offset_minutes, catch_up)
+         values ($1, 'Tardía ' || gen_random_uuid(), true,
+                 'before_appointment', -10080, $2)
+         returning id`,
+        [s.tenantA, catchUp],
+      );
+      const regla = rows[0].id as string;
+      await c.query(
+        `insert into public.rule_templates (rule_id, channel, template_id, tenant_id)
+         values ($1, 'whatsapp', $2, $3)`,
+        [regla, plantillaWhatsapp, s.tenantA],
+      );
+      return regla;
+    });
+  }
+
+  /** Un turno para dentro de 25 horas: siempre cae en otro día. */
+  async function turnoDeOtroDia(): Promise<string> {
+    return asAdmin(async (c) => {
+      await c.query("select set_config('request.jwt.claims', $1, false)", [
+        JSON.stringify({ sub: s.owner, role: "authenticated" }),
+      ]);
+      const { rows } = await c.query(
+        `select public.book_appointment($1, $2::uuid[], now() + interval '25 hours') as id`,
+        [conAmbos, [servicio]],
+      );
+      await c.query("select set_config('request.jwt.claims', '', false)");
+      return rows[0].id as string;
+    });
+  }
+
+  it("igual recibe su recordatorio, y sale ahora y no en el pasado", async () => {
+    await limpiarTodo();
+    const regla = await reglaConDesfaseLargo(true);
+    const turno = await turnoDeOtroDia();
+
+    const envio = await asAdmin(async (c) => {
+      await c.query(`select app.plan_reminders('72 hours'::interval)`);
+      const { rows } = await c.query(
+        `select scheduled_for, status::text
+         from public.message_jobs
+         where rule_id = $1 and appointment_id = $2`,
+        [regla, turno],
+      );
+      return rows[0] as { scheduled_for: string; status: string } | undefined;
+    });
+
+    expect(envio).toBeDefined();
+    // Programado para ahora, no para hace seis días: un envío con fecha
+    // pasada saldría igual pero la bitácora diría cualquier cosa.
+    const cuando = new Date(envio!.scheduled_for).getTime();
+    expect(cuando).toBeGreaterThan(Date.now() - 5 * 60 * 1000);
+  });
+
+  it("y se puede apagar, porque no todos los negocios lo quieren", async () => {
+    await limpiarTodo();
+    const regla = await reglaConDesfaseLargo(false);
+    const turno = await turnoDeOtroDia();
+
+    const cuantos = await asAdmin(async (c) => {
+      await c.query(`select app.plan_reminders('72 hours'::interval)`);
+      const { rows } = await c.query(
+        `select count(*)::int as n from public.message_jobs
+         where rule_id = $1 and appointment_id = $2`,
+        [regla, turno],
+      );
+      return rows[0].n as number;
+    });
+
+    expect(cuantos).toBe(0);
+  });
+});
