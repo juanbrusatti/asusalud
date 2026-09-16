@@ -128,21 +128,14 @@ export type RevisionState = {
  * Corre en el emisor y no acá: el token no sale nunca de Supabase, y de paso
  * se prueba el mismo camino de red por el que salen los mensajes de verdad.
  */
-export async function revisarWhatsapp(
-  _prev: RevisionState,
-  formData: FormData,
+/** El llamado al emisor, que es quien tiene el token. */
+async function pedirleAlEmisor(
+  cuerpo: Record<string, unknown>,
 ): Promise<RevisionState> {
-  const membership = await getCurrentTenant();
-  if (!membership) return { error: "No encontramos tu negocio." };
-  if (!atLeast(membership.role, "admin")) {
-    return { error: "Sólo la dueña o administración pueden revisar esto." };
-  }
-
-  const destino = String(formData.get("destino") ?? "").trim();
   const env = serverEnv();
 
   if (!env.SUPABASE_SERVICE_ROLE_KEY) {
-    return { error: "Falta configurar el servidor para poder revisar." };
+    return { error: "Falta configurar el servidor para poder hacer esto." };
   }
 
   try {
@@ -154,27 +147,70 @@ export async function revisarWhatsapp(
           Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
           "content-type": "application/json",
         },
-        body: JSON.stringify({
-          tenantId: membership.tenantId,
-          destino: destino || undefined,
-        }),
+        body: JSON.stringify(cuerpo),
       },
     );
 
     const datos = (await r.json()) as { pasos?: Paso[]; error?: string };
 
     if (!r.ok || datos.error) {
-      return {
-        error: datos.error ?? "No se pudo completar la revisión.",
-        values: { destino },
-      };
+      return { error: datos.error ?? "No se pudo completar la operación." };
     }
 
-    return { error: null, pasos: datos.pasos ?? [], values: { destino } };
+    return { error: null, pasos: datos.pasos ?? [] };
   } catch {
-    return {
-      error: "No se pudo hablar con el servidor de envíos.",
-      values: { destino },
-    };
+    return { error: "No se pudo hablar con el servidor de envíos." };
   }
+}
+
+/**
+ * Le pregunta a Meta si la conexión quedó bien.
+ *
+ * Los cinco pasos de Meta terminan sin que nadie te diga si funcionaron. Esto
+ * revisa las tres cosas que se rompen —el token, el nombre de las plantillas y
+ * el envío— y traduce lo que Meta contesta, que viene en códigos que no le
+ * dicen nada a quien no es técnico.
+ */
+export async function revisarWhatsapp(
+  _prev: RevisionState,
+  formData: FormData,
+): Promise<RevisionState> {
+  const membership = await getCurrentTenant();
+  if (!membership) return { error: "No encontramos tu negocio." };
+  if (!atLeast(membership.role, "admin")) {
+    return { error: "Sólo la dueña o administración pueden revisar esto." };
+  }
+
+  const destino = String(formData.get("destino") ?? "").trim();
+  const r = await pedirleAlEmisor({
+    tenantId: membership.tenantId,
+    destino: destino || undefined,
+  });
+
+  return { ...r, values: { destino } };
+}
+
+/**
+ * Crea las plantillas en Meta, con el nombre y el cuerpo que el emisor espera.
+ *
+ * Es el paso del alta que más se rompe: hay que escribir a mano el nombre
+ * exacto, el cuerpo con los huecos numerados en el orden correcto y los
+ * botones también en orden. Un guión de más y Meta aprueba una plantilla que
+ * el emisor nunca va a encontrar — y eso no falla en el trámite, falla meses
+ * después con un recordatorio que no sale.
+ */
+export async function crearPlantillasEnMeta(): Promise<RevisionState> {
+  const membership = await getCurrentTenant();
+  if (!membership) return { error: "No encontramos tu negocio." };
+  if (!atLeast(membership.role, "admin")) {
+    return { error: "Sólo la dueña o administración pueden hacer esto." };
+  }
+
+  const r = await pedirleAlEmisor({
+    tenantId: membership.tenantId,
+    accion: "crear-plantillas",
+  });
+
+  revalidatePath("/configuracion/whatsapp");
+  return r;
 }

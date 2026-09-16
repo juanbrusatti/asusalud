@@ -1,4 +1,5 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { ETIQUETA_BOTON, paraMeta } from "../_shared/plantillas.ts";
 
 /**
  * Revisar la conexión de WhatsApp.
@@ -98,14 +99,112 @@ async function preguntar(
   }
 }
 
+type Plantilla = {
+  nombre: string;
+  en_meta: string;
+  idioma: string;
+  cuerpo?: string;
+  categoria?: string;
+  quick_replies?: string[];
+};
+
+/** Crea una plantilla en Meta. Si ya existe, lo dice sin tratarlo como error. */
+async function crearPlantilla(
+  waba: string,
+  token: string,
+  p: Plantilla,
+): Promise<Paso> {
+  const { texto, ejemplos } = paraMeta(p.cuerpo ?? "");
+
+  const components: Array<Record<string, unknown>> = [
+    {
+      type: "BODY",
+      text: texto,
+      ...(ejemplos.length > 0
+        ? { example: { body_text: [ejemplos] } }
+        : {}),
+    },
+  ];
+
+  const botones = (p.quick_replies ?? []).map((b) => ({
+    type: "QUICK_REPLY",
+    text: ETIQUETA_BOTON[b] ?? b,
+  }));
+
+  if (botones.length > 0) {
+    components.push({ type: "BUTTONS", buttons: botones });
+  }
+
+  try {
+    const r = await fetch(
+      `https://graph.facebook.com/${GRAPH}/${waba}/message_templates`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          name: p.en_meta,
+          language: p.idioma,
+          category: p.categoria === "MARKETING" ? "MARKETING" : "UTILITY",
+          components,
+        }),
+      },
+    );
+    const datos = (await r.json()) as Record<string, unknown>;
+
+    if (r.ok) {
+      return {
+        clave: `plantilla-${p.en_meta}`,
+        titulo: p.nombre,
+        ok: true,
+        detalle: `Creada en Meta como «${p.en_meta}». Queda esperando aprobación, que suele tardar minutos.`,
+      };
+    }
+
+    const err = datos.error as { code?: number; message?: string } | undefined;
+
+    // Ya existía: no es un problema, es el estado al que queríamos llegar.
+    if (
+      err?.code === 100 &&
+      (err.message ?? "").toLowerCase().includes("already exists")
+    ) {
+      return {
+        clave: `plantilla-${p.en_meta}`,
+        titulo: p.nombre,
+        ok: true,
+        detalle: `Ya existía en Meta con el nombre «${p.en_meta}». No se tocó.`,
+      };
+    }
+
+    return {
+      clave: `plantilla-${p.en_meta}`,
+      titulo: p.nombre,
+      ok: false,
+      detalle: traducir(err?.code, err?.message ?? ""),
+    };
+  } catch (e) {
+    return {
+      clave: `plantilla-${p.en_meta}`,
+      titulo: p.nombre,
+      ok: false,
+      detalle: `No se pudo hablar con Meta: ${
+        e instanceof Error ? e.message : String(e)
+      }`,
+    };
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return new Response("método no permitido", { status: 405 });
   }
 
-  const { tenantId, destino } = (await req.json()) as {
+  const { tenantId, destino, accion } = (await req.json()) as {
     tenantId?: string;
     destino?: string;
+    accion?: "revisar" | "crear-plantillas";
   };
 
   if (!tenantId) {
@@ -120,7 +219,7 @@ Deno.serve(async (req) => {
     phone_number_id?: string;
     waba_id?: string;
     access_token?: string;
-    templates?: Array<{ nombre: string; en_meta: string; idioma: string }>;
+    templates?: Plantilla[];
   } | null;
 
   if (!c?.access_token || !c.phone_number_id) {
@@ -137,6 +236,39 @@ Deno.serve(async (req) => {
   }
 
   const pasos: Paso[] = [];
+
+  // ---------------------------------------------------------------------
+  // Crear las plantillas, si eso es lo que se pidió
+  // ---------------------------------------------------------------------
+  if (accion === "crear-plantillas") {
+    if (!c.waba_id) {
+      return Response.json({
+        pasos: [
+          {
+            clave: "waba",
+            titulo: "Crear las plantillas",
+            ok: false,
+            detalle:
+              "Falta el identificador de la cuenta de WhatsApp (WABA). Cargalo en las credenciales y volvé a intentar.",
+          },
+        ],
+      });
+    }
+
+    for (const p of c.templates ?? []) {
+      const paso = await crearPlantilla(c.waba_id, c.access_token, p);
+      pasos.push(paso);
+      if (paso.ok) {
+        await supabase.rpc("rpc_mark_template_status", {
+          p_tenant: tenantId,
+          p_provider_name: p.en_meta,
+          p_status: "pending",
+        });
+      }
+    }
+
+    return Response.json({ pasos });
+  }
 
   // ---------------------------------------------------------------------
   // 1. ¿El token sirve y el número existe?
