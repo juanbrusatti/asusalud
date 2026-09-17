@@ -22,6 +22,7 @@ const correoPlataforma = "plataforma-cta@dlay.test";
 
 type Mes = {
   periodo: string;
+  link: string | null;
   cantidad: number;
   base_cents: number;
   total_cents: number;
@@ -421,5 +422,192 @@ describe("marcar un mes pagado", () => {
       );
       expect((otra[0].r as { ok: boolean }).ok).toBe(false);
     });
+  });
+});
+
+describe("el aviso de que cerró el mes", () => {
+  /** Sin nadie con notificaciones activadas no se encola ningún aviso. */
+  async function conPush(fn: () => Promise<void>) {
+    await asAdmin((c) =>
+      c.query(
+        `insert into public.push_subscriptions
+           (tenant_id, user_id, endpoint, p256dh, auth)
+         values ($1, $2, 'https://push.test/cta', 'llave', 'auth')
+         on conflict do nothing`,
+        [s.tenantA, s.owner],
+      ),
+    );
+    try {
+      await fn();
+    } finally {
+      await asAdmin((c) =>
+        c.query(`delete from public.push_subscriptions where tenant_id = $1`, [
+          s.tenantA,
+        ]),
+      );
+      await asAdmin((c) =>
+        c.query(`delete from public.team_alerts where tenant_id = $1`, [
+          s.tenantA,
+        ]),
+      );
+    }
+  }
+
+  it("avisa una sola vez, con el mes en castellano", async () => {
+    await conPush(async () => {
+      const uno = await asAdmin(async (c) => {
+        const { rows } = await c.query(`select app.avisar_cuentas(31) as n`);
+        return rows[0].n as number;
+      });
+      expect(uno).toBeGreaterThanOrEqual(1);
+
+      const aviso = await asAdmin(async (c) => {
+        const { rows } = await c.query(
+          `select title, body, url, tag from public.team_alerts
+           where tenant_id = $1 and kind = 'cuenta'`,
+          [s.tenantA],
+        );
+        return rows;
+      });
+
+      expect(aviso).toHaveLength(1);
+      expect(aviso[0].url).toBe("/configuracion/cuenta");
+      // El mes anterior, escrito como lo escribiría una persona.
+      expect(aviso[0].title).toMatch(
+        /^Cerró (Enero|Febrero|Marzo|Abril|Mayo|Junio|Julio|Agosto|Septiembre|Octubre|Noviembre|Diciembre)$/,
+      );
+      expect(aviso[0].body).toMatch(/3 turnos/);
+      expect(aviso[0].tag).toMatch(/^cuenta-\d{4}-\d{2}$/);
+
+      // Correrlo de nuevo no duplica: la etiqueta ya está.
+      await asAdmin((c) => c.query(`select app.avisar_cuentas(31)`));
+      const despues = await asAdmin(async (c) => {
+        const { rows } = await c.query(
+          `select count(*)::int n from public.team_alerts
+           where tenant_id = $1 and kind = 'cuenta'`,
+          [s.tenantA],
+        );
+        return rows[0].n as number;
+      });
+      expect(despues).toBe(1);
+    });
+  });
+
+  it("no avisa un mes que ya está pagado", async () => {
+    await conPush(async () => {
+      await asAdmin((c) =>
+        c.query(
+          `insert into public.billing_payments
+             (tenant_id, period, appointments, base_cents, commission_bps, amount_cents)
+           values ($1,
+                   (date_trunc('month', (now() at time zone $2)) - interval '1 month')::date,
+                   3, 300000, 300, 9000)`,
+          [s.tenantA, tz],
+        ),
+      );
+
+      await asAdmin((c) => c.query(`select app.avisar_cuentas(31)`));
+
+      const n = await asAdmin(async (c) => {
+        const { rows } = await c.query(
+          `select count(*)::int n from public.team_alerts
+           where tenant_id = $1 and kind = 'cuenta'`,
+          [s.tenantA],
+        );
+        return rows[0].n as number;
+      });
+      expect(n).toBe(0);
+
+      await asAdmin((c) =>
+        c.query(`delete from public.billing_payments where tenant_id = $1`, [
+          s.tenantA,
+        ]),
+      );
+    });
+  });
+
+  it("no encola nada si nadie tiene las notificaciones activadas", async () => {
+    await asAdmin((c) =>
+      c.query(`delete from public.team_alerts where tenant_id = $1`, [
+        s.tenantA,
+      ]),
+    );
+
+    await asAdmin((c) => c.query(`select app.avisar_cuentas(31)`));
+
+    const n = await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `select count(*)::int n from public.team_alerts
+         where tenant_id = $1 and kind = 'cuenta'`,
+        [s.tenantA],
+      );
+      return rows[0].n as number;
+    });
+    expect(n).toBe(0);
+  });
+});
+
+describe("el enlace de pago", () => {
+  const MP = "https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=abc";
+
+  it("no deja guardar un enlace que no sea de Mercado Pago", async () => {
+    await expect(
+      asAdmin((c) =>
+        c.query(
+          `insert into public.billing_links (tenant_id, period, preference_id, url)
+           values ($1, date_trunc('month', now())::date - interval '1 month', 'x',
+                   'https://otro-sitio.com/pagar')`,
+          [s.tenantA],
+        ),
+      ),
+    ).rejects.toMatchObject({ code: "23514" });
+  });
+
+  it("no deja cobrar un mes que todavía no cerró", async () => {
+    const r = await asUser(s.owner, async (c) => {
+      const { rows } = await c.query(
+        `select public.billing_link_save(
+           date_trunc('month', (now() at time zone $1))::date, 'pref', $2
+         ) as r`,
+        [tz, MP],
+      );
+      return rows[0].r as { ok: boolean; error?: string };
+    });
+
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/todavía no cerró/i);
+  });
+
+  it("guarda el enlace del mes cerrado y lo devuelve en la cuenta", async () => {
+    await asUser(s.owner, async (c) => {
+      const { rows } = await c.query(
+        `select public.billing_link_save(
+           (date_trunc('month', (now() at time zone $1)) - interval '1 month')::date,
+           'pref-123', $2
+         ) as r`,
+        [tz, MP],
+      );
+      expect((rows[0].r as { ok: boolean }).ok).toBe(true);
+
+      const { rows: cta } = await c.query(
+        `select public.account_summary() as r`,
+      );
+      const cuenta = cta[0].r as Cuenta;
+      expect(cuenta.meses[0].link).toBe(MP);
+    });
+  });
+
+  it("quien atiende no puede guardar enlaces", async () => {
+    const r = await asUser(s.staff, async (c) => {
+      const { rows } = await c.query(
+        `select public.billing_link_save(
+           (date_trunc('month', (now() at time zone $1)) - interval '1 month')::date,
+           'pref', $2
+         ) as r`,
+        [tz, MP],
+      );
+      return rows[0].r as { ok: boolean; error?: string };
+    });
+    expect(r.ok).toBe(false);
   });
 });
