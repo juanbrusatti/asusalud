@@ -375,7 +375,9 @@ export type Database = {
           id: string
           note: string | null
           paid_at: string
+          payment_id: string | null
           period: string
+          source: string
           tenant_id: string
         }
         Insert: {
@@ -387,7 +389,9 @@ export type Database = {
           id?: string
           note?: string | null
           paid_at?: string
+          payment_id?: string | null
           period: string
+          source?: string
           tenant_id: string
         }
         Update: {
@@ -399,7 +403,9 @@ export type Database = {
           id?: string
           note?: string | null
           paid_at?: string
+          payment_id?: string | null
           period?: string
+          source?: string
           tenant_id?: string
         }
         Relationships: [
@@ -2160,6 +2166,10 @@ export type Database = {
       rpc_mark_template_status: {
         Args: { p_provider_name: string; p_status: string; p_tenant: string }
         Returns: undefined
+      }
+      rpc_mercadopago_paid: {
+        Args: { p_external_reference: string; p_payment_id: string }
+        Returns: Json
       }
       rpc_platform_admin_add: { Args: { p_email: string }; Returns: Json }
       rpc_platform_admin_remove: { Args: { p_email: string }; Returns: Json }

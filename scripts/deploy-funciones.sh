@@ -62,10 +62,23 @@ if [ ! -f "$secretos" ]; then
   chmod 600 "$secretos"
 fi
 
+# La clave de Mercado Pago la necesita el webhook para preguntarle a Mercado
+# Pago por cada pago que le avisan. Sin ella los cobros entran igual, pero no
+# se marcan solos: alguien de Dlay tiene que marcarlos desde el panel.
+if ! grep -qE '^MERCADOPAGO_ACCESS_TOKEN=.' "$secretos"; then
+  echo
+  echo "AVISO: falta MERCADOPAGO_ACCESS_TOKEN en ${secretos}." >&2
+  echo "  Sin eso, los pagos de Mercado Pago no se marcan solos." >&2
+  echo "  Se saca de mercadopago.com.ar/developers → tu aplicación →" >&2
+  echo "  Credenciales de producción → Access Token." >&2
+  echo
+fi
+
 npx supabase secrets set --env-file "$secretos"
 npx supabase functions deploy dispatch
 npx supabase functions deploy whatsapp-webhook
 npx supabase functions deploy whatsapp-check
+npx supabase functions deploy mercadopago-webhook
 
 # ---------------------------------------------------------------------------
 # Comprobar que el portero deja pasar
@@ -138,6 +151,20 @@ ajustar() {
     return 1
   fi
 }
+
+# El mismo portero, para el webhook de Mercado Pago: si pide credencial,
+# Mercado Pago se come un 401 y el pago no se marca nunca.
+codigo_mp=$(curl -s -o /dev/null -w '%{http_code}' -m 20 -X POST \
+  "https://${ref}.supabase.co/functions/v1/mercadopago-webhook" \
+  -H "content-type: application/json" -d '{}' || echo 000)
+
+if [ "$codigo_mp" = "200" ]; then
+  echo "El webhook de Mercado Pago responde 200."
+else
+  echo "AVISO: el webhook de Mercado Pago respondió ${codigo_mp}." >&2
+  echo "  Si es 401, falta el bloque [functions.mercadopago-webhook]" >&2
+  echo "  verify_jwt = false de supabase/config.toml." >&2
+fi
 
 echo
 echo "Escribiendo los ajustes de plataforma…"
