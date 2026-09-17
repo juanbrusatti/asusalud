@@ -333,6 +333,38 @@ export type Database = {
           },
         ]
       }
+      billing_links: {
+        Row: {
+          created_at: string
+          period: string
+          preference_id: string
+          tenant_id: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          period: string
+          preference_id: string
+          tenant_id: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          period?: string
+          preference_id?: string
+          tenant_id?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_links_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       billing_payments: {
         Row: {
           amount_cents: number
@@ -1893,6 +1925,10 @@ export type Database = {
       appointment_paid_cents: {
         Args: { p_appointment: string }
         Returns: number
+      }
+      billing_link_save: {
+        Args: { p_period: string; p_preference_id: string; p_url: string }
+        Returns: Json
       }
       book_appointment: {
         Args: {

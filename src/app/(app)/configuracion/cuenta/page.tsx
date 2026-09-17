@@ -6,6 +6,7 @@ import { formatComision, formatMes } from "@/lib/cuenta";
 import { getCuenta } from "@/lib/data/cuenta";
 import { formatPrice } from "@/lib/money";
 import { Volver } from "../_components/volver";
+import { Pagar } from "./pagar";
 
 export const metadata: Metadata = { title: "Tu cuenta" };
 
@@ -116,13 +117,13 @@ export default async function CuentaPage() {
                     </p>
                   </div>
 
-                  <span
-                    className={`rounded-pill px-2.5 py-1 text-[11.5px] font-semibold uppercase tracking-wider ${
-                      m.pagado ? "bg-ok-wash text-ok" : "bg-warn-wash text-warn"
-                    }`}
-                  >
-                    {m.pagado ? "Pagado" : "Pendiente"}
-                  </span>
+                  {m.pagado ? (
+                    <span className="rounded-pill bg-ok-wash px-2.5 py-1 text-[11.5px] font-semibold uppercase tracking-wider text-ok">
+                      Pagado
+                    </span>
+                  ) : (
+                    <Pagar periodo={m.periodo} />
+                  )}
                 </li>
               ))}
             </ul>
