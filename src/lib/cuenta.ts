@@ -29,6 +29,14 @@ export type Cuenta = {
   meses: MesCobrado[];
 };
 
+/** El empujón de Dlay para que el negocio pague un mes. */
+export type Cartel = {
+  periodo: string;
+  veces: number;
+  ultimo: string;
+  total_cents: number;
+};
+
 export type NegocioPlataforma = {
   tenant_id: string;
   nombre: string;

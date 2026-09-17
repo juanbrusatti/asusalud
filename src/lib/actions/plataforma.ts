@@ -17,7 +17,10 @@ export type PlataformaState = { error: string | null; notice?: string | null };
 type Respuesta = { ok: boolean; error?: string };
 
 async function llamar(
-  fn: "platform_mark_paid" | "platform_unmark_paid" | "platform_set_commission",
+  fn: | "platform_mark_paid"
+  | "platform_unmark_paid"
+  | "platform_set_commission"
+  | "platform_nudge",
   args: Record<string, unknown>,
   exito: string,
 ): Promise<PlataformaState> {
@@ -73,5 +76,22 @@ export async function cambiarComision(
     "platform_set_commission",
     { p_tenant: tenantId, p_bps: bps },
     "Porcentaje actualizado.",
+  );
+}
+
+/**
+ * Le recuerda a un negocio que tiene un mes sin pagar.
+ *
+ * Levanta un cartel en su sistema y, si tiene las notificaciones activadas,
+ * le manda además una al teléfono. Se puede apretar más de una vez.
+ */
+export async function recordarCuenta(
+  tenantId: string,
+  periodo: string,
+): Promise<PlataformaState> {
+  return llamar(
+    "platform_nudge",
+    { p_tenant: tenantId, p_period: periodo },
+    "Recordatorio enviado.",
   );
 }
