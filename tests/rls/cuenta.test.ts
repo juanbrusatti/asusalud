@@ -734,3 +734,199 @@ describe("el pago que se marca solo", () => {
     expect(porPanel.base_cents).toBe(porWebhook.base_cents);
   });
 });
+
+describe("el recordatorio que manda Dlay a mano", () => {
+  const MES = `(date_trunc('month', (now() at time zone $1)) - interval '1 month')::date`;
+
+  type Cartel = {
+    periodo: string;
+    veces: number;
+    ultimo: string;
+    total_cents: number;
+  } | null;
+
+  /**
+   * Corre como la plataforma pero COMMITEA.
+   *
+   * `asUser` revierte siempre, y acá hace falta que el recordatorio quede
+   * escrito para poder leer el cartel en otra consulta. Se imita lo que hace
+   * Supabase: se ponen los claims a mano sobre una conexión que no revierte.
+   */
+  async function comoPlataforma<T>(fn: (c: PoolClient) => Promise<T>): Promise<T> {
+    return asAdmin(async (c) => {
+      await c.query("select set_config('request.jwt.claims', $1, false)", [
+        JSON.stringify({ sub: plataforma, role: "authenticated" }),
+      ]);
+      try {
+        return await fn(c);
+      } finally {
+        await c.query("select set_config('request.jwt.claims', '', false)");
+      }
+    });
+  }
+
+  async function recordar() {
+    return comoPlataforma(async (c) => {
+      const { rows } = await c.query(
+        `select public.platform_nudge($2, ${MES}) as r`,
+        [tz, s.tenantA],
+      );
+      return rows[0].r as { ok: boolean; error?: string; veces?: number };
+    });
+  }
+
+  async function cobrar() {
+    return comoPlataforma((c) =>
+      c.query(`select public.platform_mark_paid($2, ${MES})`, [tz, s.tenantA]),
+    );
+  }
+
+  async function cartel(quien: string): Promise<Cartel> {
+    return asUser(quien, async (c) => {
+      const { rows } = await c.query(`select public.billing_nudge() as r`);
+      return rows[0].r as Cartel;
+    });
+  }
+
+  afterEach(async () => {
+    await asAdmin(async (c) => {
+      await c.query(`delete from public.billing_nudges where tenant_id = $1`, [
+        s.tenantA,
+      ]);
+      await c.query(`delete from public.team_alerts where tenant_id = $1`, [
+        s.tenantA,
+      ]);
+      await c.query(`delete from public.billing_payments where tenant_id = $1`, [
+        s.tenantA,
+      ]);
+      await c.query(`delete from public.push_subscriptions where tenant_id = $1`, [
+        s.tenantA,
+      ]);
+    });
+  });
+
+  it("levanta el cartel con el importe del mes", async () => {
+    const r = await recordar();
+    expect(r.ok).toBe(true);
+    expect(r.veces).toBe(1);
+
+    const visto = await cartel(s.owner);
+    expect(visto).not.toBeNull();
+    // Tres turnos de $1.000 al 3%.
+    expect(visto!.total_cents).toBe(9000);
+    expect(visto!.veces).toBe(1);
+  });
+
+  it("se puede recordar más de una vez y se cuenta", async () => {
+    await recordar();
+    const segunda = await recordar();
+    expect(segunda.ok).toBe(true);
+    expect(segunda.veces).toBe(2);
+
+    const visto = await cartel(s.owner);
+    expect(visto!.veces).toBe(2);
+  });
+
+  it("sin notificaciones activadas el cartel va igual", async () => {
+    await recordar();
+
+    const avisos = await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `select count(*)::int n from public.team_alerts where tenant_id = $1`,
+        [s.tenantA],
+      );
+      return rows[0].n as number;
+    });
+
+    // No hay a quién notificar, así que no se encola nada…
+    expect(avisos).toBe(0);
+    // …pero el cartel, que es lo que no se puede perder, está.
+    expect(await cartel(s.owner)).not.toBeNull();
+  });
+
+  it("con notificaciones activadas manda además la notificación", async () => {
+    await asAdmin((c) =>
+      c.query(
+        `insert into public.push_subscriptions
+           (tenant_id, user_id, endpoint, p256dh, auth)
+         values ($1, $2, 'https://push.test/nudge', 'llave', 'auth')`,
+        [s.tenantA, s.owner],
+      ),
+    );
+
+    await recordar();
+
+    const aviso = await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `select title, body, url, tag from public.team_alerts
+         where tenant_id = $1`,
+        [s.tenantA],
+      );
+      return rows;
+    });
+
+    expect(aviso).toHaveLength(1);
+    expect(aviso[0].body).toMatch(/\$ 90\b/);
+    expect(aviso[0].url).toBe("/configuracion/cuenta");
+
+    // Recordar de nuevo reemplaza el que no salió, no lo apila.
+    await recordar();
+    const despues = await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `select count(*)::int n from public.team_alerts where tenant_id = $1`,
+        [s.tenantA],
+      );
+      return rows[0].n as number;
+    });
+    expect(despues).toBe(1);
+  });
+
+  it("no recuerda un mes en curso ni uno ya pagado", async () => {
+    const enCurso = await comoPlataforma(async (c) => {
+      const { rows } = await c.query(
+        `select public.platform_nudge(
+           $2, date_trunc('month', (now() at time zone $1))::date
+         ) as r`,
+        [tz, s.tenantA],
+      );
+      return rows[0].r as { ok: boolean; error?: string };
+    });
+    expect(enCurso.ok).toBe(false);
+    expect(enCurso.error).toMatch(/todavía no cerró/i);
+
+    await cobrar();
+
+    const pagado = await recordar();
+    expect(pagado.ok).toBe(false);
+    expect(pagado.error).toMatch(/ya está pagado/i);
+  });
+
+  it("el cartel se cae solo cuando el mes se paga", async () => {
+    await recordar();
+    expect(await cartel(s.owner)).not.toBeNull();
+
+    await cobrar();
+
+    // Nadie bajó el cartel, pero ya no corresponde mostrarlo.
+    expect(await cartel(s.owner)).toBeNull();
+  });
+
+  it("quien atiende no ve el cartel, y no se entera de que existe", async () => {
+    await recordar();
+    // Null y no un error: la factura no es asunto de quien atiende.
+    expect(await cartel(s.staff)).toBeNull();
+  });
+
+  it("el otro negocio no ve el cartel de este", async () => {
+    await recordar();
+    expect(await cartel(s.intruder)).toBeNull();
+  });
+
+  it("un negocio no puede recordarse la cuenta a sí mismo", async () => {
+    await expect(
+      asUser(s.owner, (c) =>
+        c.query(`select public.platform_nudge($2, ${MES})`, [tz, s.tenantA]),
+      ),
+    ).rejects.toMatchObject({ code: "42501" });
+  });
+});

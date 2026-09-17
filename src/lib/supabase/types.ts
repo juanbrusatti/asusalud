@@ -365,6 +365,38 @@ export type Database = {
           },
         ]
       }
+      billing_nudges: {
+        Row: {
+          dismissed_at: string | null
+          last_at: string
+          period: string
+          tenant_id: string
+          times: number
+        }
+        Insert: {
+          dismissed_at?: string | null
+          last_at?: string
+          period: string
+          tenant_id: string
+          times?: number
+        }
+        Update: {
+          dismissed_at?: string | null
+          last_at?: string
+          period?: string
+          tenant_id?: string
+          times?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_nudges_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       billing_payments: {
         Row: {
           amount_cents: number
@@ -1936,6 +1968,7 @@ export type Database = {
         Args: { p_period: string; p_preference_id: string; p_url: string }
         Returns: Json
       }
+      billing_nudge: { Args: never; Returns: Json }
       book_appointment: {
         Args: {
           p_client: string
@@ -2024,6 +2057,10 @@ export type Database = {
       platform_accounts: { Args: never; Returns: Json }
       platform_mark_paid: {
         Args: { p_note?: string; p_period: string; p_tenant: string }
+        Returns: Json
+      }
+      platform_nudge: {
+        Args: { p_period: string; p_tenant: string }
         Returns: Json
       }
       platform_set_commission: {

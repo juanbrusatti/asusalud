@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import type { Cuenta, NegocioPlataforma } from "@/lib/cuenta";
+import type { Cartel, Cuenta, NegocioPlataforma } from "@/lib/cuenta";
 
 /**
  * Lo que Dlay le cobra a cada negocio.
@@ -30,4 +30,18 @@ export async function getNegocios(): Promise<NegocioPlataforma[] | null> {
   const { data, error } = await supabase.rpc("platform_accounts");
   if (error) return null;
   return (data as unknown as NegocioPlataforma[]) ?? [];
+}
+
+/**
+ * El cartel de «pagá la cuenta», si Dlay lo levantó.
+ *
+ * Devuelve null cuando no hay nada que mostrar, y también cuando quien
+ * pregunta no dirige el negocio: la factura no es asunto de quien atiende, y
+ * tampoco que exista.
+ */
+export async function getCartel(): Promise<Cartel | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("billing_nudge");
+  if (error) return null;
+  return (data as unknown as Cartel | null) ?? null;
 }
