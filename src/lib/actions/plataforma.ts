@@ -17,7 +17,7 @@ export type PlataformaState = { error: string | null; notice?: string | null };
 type Respuesta = { ok: boolean; error?: string };
 
 async function llamar(
-  fn: "platform_mark_paid" | "platform_unmark_paid" | "platform_set_price",
+  fn: "platform_mark_paid" | "platform_unmark_paid" | "platform_set_commission",
   args: Record<string, unknown>,
   exito: string,
 ): Promise<PlataformaState> {
@@ -65,13 +65,13 @@ export async function deshacerPago(
   );
 }
 
-export async function cambiarPrecio(
+export async function cambiarComision(
   tenantId: string,
-  precioCents: number,
+  bps: number,
 ): Promise<PlataformaState> {
   return llamar(
-    "platform_set_price",
-    { p_tenant: tenantId, p_price_cents: precioCents },
-    "Precio actualizado.",
+    "platform_set_commission",
+    { p_tenant: tenantId, p_bps: bps },
+    "Porcentaje actualizado.",
   );
 }

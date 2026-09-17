@@ -91,9 +91,9 @@ export default async function PlataformaPage() {
 
       <p className="px-1 text-[12.5px] leading-relaxed text-faint">
         Un mes se puede marcar como pagado recién cuando termina: mientras está
-        en curso le siguen entrando turnos. Al marcarlo se guarda cuántos
-        turnos fueron y a qué precio, así una suba posterior no reescribe lo ya
-        cobrado.
+        en curso le siguen entrando turnos. Al marcarlo se guarda cuánto
+        facturó el negocio y con qué porcentaje se cobró, así cambiar la
+        comisión después no reescribe lo ya cobrado.
       </p>
     </main>
   );

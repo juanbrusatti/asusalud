@@ -23,23 +23,39 @@ const correoPlataforma = "plataforma-cta@dlay.test";
 type Mes = {
   periodo: string;
   cantidad: number;
+  base_cents: number;
   total_cents: number;
   pagado: boolean;
   pagado_el: string | null;
 };
 
 type Cuenta = {
-  precio_cents: number;
-  mes_actual: { periodo: string; cantidad: number; total_cents: number };
+  comision_bps: number;
+  mes_actual: {
+    periodo: string;
+    cantidad: number;
+    base_cents: number;
+    total_cents: number;
+  };
   meses: Mes[];
 };
 
 type Negocio = {
   tenant_id: string;
   nombre: string;
-  precio_cents: number;
-  mes_actual: { periodo: string; cantidad: number; total_cents: number };
-  pendientes: Array<{ periodo: string; cantidad: number; total_cents: number }>;
+  comision_bps: number;
+  mes_actual: {
+    periodo: string;
+    cantidad: number;
+    base_cents: number;
+    total_cents: number;
+  };
+  pendientes: Array<{
+    periodo: string;
+    cantidad: number;
+    base_cents: number;
+    total_cents: number;
+  }>;
   pendiente_total_cents: number;
   ultimo_pago: { periodo: string; monto_cents: number } | null;
 };
@@ -66,7 +82,7 @@ async function crearTurno(
   const { rows } = await c.query(
     `insert into public.appointments
        (tenant_id, branch_id, client_id, starts_at, ends_at, blocks_until,
-        status, cancelled_at)
+        status, cancelled_at, price_cents)
      values (
        $1, $6, $7,
        (${base}) at time zone $2,
@@ -74,7 +90,11 @@ async function crearTurno(
        (${base} + interval '30 minutes') at time zone $2,
        $8::public.appointment_status,
        -- La tabla exige que cancelado y fecha de cancelación vayan juntos.
-       case when $8 = 'cancelled' then now() end
+       case when $8 = 'cancelled' then now() end,
+       -- El precio del turno es la base del cobro. Al agendar de verdad lo
+       -- pone book_appointment sumando los servicios; acá se insertan turnos
+       -- a mano, así que hay que ponerlo.
+       100000
      )
      returning id`,
     [
@@ -101,12 +121,13 @@ async function crearTurno(
 async function crearTurnoFuturo(c: PoolClient) {
   const { rows } = await c.query(
     `insert into public.appointments
-       (tenant_id, branch_id, client_id, starts_at, ends_at, blocks_until, status)
+       (tenant_id, branch_id, client_id, starts_at, ends_at, blocks_until,
+        status, price_cents)
      values ($1, $2, $3,
              now() + interval '8 days',
              now() + interval '8 days 30 minutes',
              now() + interval '8 days 30 minutes',
-             'confirmed')
+             'confirmed', 100000)
      returning id`,
     [s.tenantA, branchA, cliente],
   );
@@ -207,17 +228,37 @@ describe("qué turnos se cobran", () => {
     expect(cuenta.mes_actual.cantidad).toBe(1);
   });
 
-  it("multiplica por el precio del negocio", async () => {
+  it("cobra el porcentaje de lo facturado, no un fijo por turno", async () => {
     const cuenta = await asUser(s.owner, async (c) => {
       const { rows } = await c.query(`select public.account_summary() as r`);
       return rows[0].r as Cuenta;
     });
 
-    expect(cuenta.precio_cents).toBe(30000);
-    expect(cuenta.mes_actual.total_cents).toBe(
-      cuenta.mes_actual.cantidad * 30000,
-    );
-    expect(cuenta.meses[0].total_cents).toBe(3 * 30000);
+    // 3% por defecto. Cada turno vale $1.000, o sea 100000 centavos.
+    expect(cuenta.comision_bps).toBe(300);
+
+    expect(cuenta.mes_actual.base_cents).toBe(1 * 100000);
+    expect(cuenta.mes_actual.total_cents).toBe(3000);
+
+    expect(cuenta.meses[0].base_cents).toBe(3 * 100000);
+    expect(cuenta.meses[0].total_cents).toBe(9000);
+  });
+
+  it("aplica el porcentaje al total del mes y redondea una sola vez", async () => {
+    // Con un porcentaje que no divide justo, redondear turno por turno y
+    // después sumar daría otro número. Lo que vale es el total.
+    const total = await asUser(plataforma, async (c) => {
+      await c.query(`select public.platform_set_commission($1, 333)`, [
+        s.tenantA,
+      ]);
+      const { rows } = await c.query(`select public.platform_accounts() as r`);
+      const negocios = rows[0].r as Negocio[];
+      return negocios.find((n) => n.tenant_id === s.tenantA)!;
+    });
+
+    // Mes pasado: base 300000, 3,33% = 9990 exactos.
+    const pasado = total.pendientes.find((m) => m.base_cents === 300000)!;
+    expect(pasado.total_cents).toBe(9990);
   });
 
   it("separa los meses", async () => {
@@ -276,9 +317,9 @@ describe("el panel de la plataforma", () => {
     const a = negocios.find((n) => n.tenant_id === s.tenantA)!;
     expect(a).toBeDefined();
     expect(a.mes_actual.cantidad).toBe(1);
-    // Los dos meses cerrados, sin pagar: 3 + 1 turnos.
+    // Los dos meses cerrados, sin pagar: 3 + 1 turnos de $1.000 al 3%.
     expect(a.pendientes).toHaveLength(2);
-    expect(a.pendiente_total_cents).toBe(4 * 30000);
+    expect(a.pendiente_total_cents).toBe(9000 + 3000);
     expect(a.ultimo_pago).toBeNull();
 
     // El negocio B existe y no debe nada.
@@ -315,7 +356,7 @@ describe("marcar un mes pagado", () => {
     expect(r.error).toMatch(/todavía no terminó/i);
   });
 
-  it("congela la cantidad y el precio, y no se deja cobrar dos veces", async () => {
+  it("congela la base y el porcentaje, y no se deja cobrar dos veces", async () => {
     await asUser(plataforma, async (c) => {
       const mesPasado = `(date_trunc('month', (now() at time zone $2)) - interval '1 month')::date`;
 
@@ -323,9 +364,14 @@ describe("marcar un mes pagado", () => {
         `select public.platform_mark_paid($1, ${mesPasado}) as r`,
         [s.tenantA, tz],
       );
-      const primero = uno[0].r as { ok: boolean; total_cents: number };
+      const primero = uno[0].r as {
+        ok: boolean;
+        base_cents: number;
+        total_cents: number;
+      };
       expect(primero.ok).toBe(true);
-      expect(primero.total_cents).toBe(3 * 30000);
+      expect(primero.base_cents).toBe(3 * 100000);
+      expect(primero.total_cents).toBe(9000);
 
       // Repetirlo no cobra de nuevo.
       const { rows: dos } = await c.query(
@@ -334,8 +380,10 @@ describe("marcar un mes pagado", () => {
       );
       expect((dos[0].r as { ok: boolean }).ok).toBe(false);
 
-      // Sube el precio: el mes ya cobrado no se mueve.
-      await c.query(`select public.platform_set_price($1, 50000)`, [s.tenantA]);
+      // Sube el porcentaje: el mes ya cobrado no se mueve.
+      await c.query(`select public.platform_set_commission($1, 1000)`, [
+        s.tenantA,
+      ]);
 
       const { rows: tres } = await c.query(
         `select public.platform_accounts() as r`,
@@ -343,11 +391,12 @@ describe("marcar un mes pagado", () => {
       const negocios = tres[0].r as Negocio[];
       const a = negocios.find((n) => n.tenant_id === s.tenantA)!;
 
-      expect(a.precio_cents).toBe(50000);
-      expect(a.ultimo_pago!.monto_cents).toBe(3 * 30000);
-      // Queda pendiente sólo el mes de dos atrás, ya al precio nuevo.
+      expect(a.comision_bps).toBe(1000);
+      // Lo cobrado quedó al 3%, no al 10% de ahora.
+      expect(a.ultimo_pago!.monto_cents).toBe(9000);
+      // Queda pendiente sólo el mes de dos atrás, ya al porcentaje nuevo.
       expect(a.pendientes).toHaveLength(1);
-      expect(a.pendiente_total_cents).toBe(1 * 50000);
+      expect(a.pendientes[0].total_cents).toBe(10000);
     });
   });
 

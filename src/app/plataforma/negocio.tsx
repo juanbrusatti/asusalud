@@ -5,13 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Field } from "@/components/ui/field";
 import {
-  cambiarPrecio,
+  cambiarComision,
   deshacerPago,
   marcarPagado,
   type PlataformaState,
 } from "@/lib/actions/plataforma";
-import { formatMes, type NegocioPlataforma } from "@/lib/cuenta";
-import { centsToInput, formatPrice, parsePriceToCents } from "@/lib/money";
+import {
+  bpsToInput,
+  formatComision,
+  formatMes,
+  parseComisionToBps,
+  type NegocioPlataforma,
+} from "@/lib/cuenta";
+import { formatPrice } from "@/lib/money";
 
 /**
  * Un negocio en el panel de Dlay.
@@ -26,7 +32,7 @@ export function Negocio({ negocio }: { negocio: NegocioPlataforma }) {
   const [estado, setEstado] = useState<PlataformaState | null>(null);
   const [confirmando, setConfirmando] = useState<string | null>(null);
   const [editandoPrecio, setEditandoPrecio] = useState(false);
-  const [precio, setPrecio] = useState(centsToInput(negocio.precio_cents));
+  const [precio, setPrecio] = useState(bpsToInput(negocio.comision_bps));
 
   const correr = (fn: () => Promise<PlataformaState>) =>
     empezar(async () => {
@@ -56,22 +62,25 @@ export function Negocio({ negocio }: { negocio: NegocioPlataforma }) {
         <dl className="grid gap-1.5 border-t-[1.5px] border-line pt-3 text-[14px]">
           <div className="flex justify-between gap-3">
             <dt className="text-muted">Este mes, hasta hoy</dt>
-            <dd className="tabular-nums">
-              {negocio.mes_actual.cantidad}{" "}
-              {negocio.mes_actual.cantidad === 1 ? "turno" : "turnos"} ·{" "}
+            <dd className="text-right tabular-nums">
               {formatPrice(negocio.mes_actual.total_cents)}
+              <span className="block text-[12px] text-faint">
+                {negocio.mes_actual.cantidad}{" "}
+                {negocio.mes_actual.cantidad === 1 ? "turno" : "turnos"} ·{" "}
+                {formatPrice(negocio.mes_actual.base_cents)} facturados
+              </span>
             </dd>
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <dt className="text-muted">Precio por turno</dt>
+            <dt className="text-muted">Comisión</dt>
             <dd className="flex items-center gap-2">
               {editandoPrecio ? (
                 <>
                   <Field
-                    label="Precio por turno"
-                    className="h-9 w-28 text-[14px]"
-                    inputMode="numeric"
+                    label="Comisión"
+                    className="h-9 w-24 text-[14px]"
+                    inputMode="decimal"
                     value={precio}
                     onChange={(e) => setPrecio(e.target.value)}
                   />
@@ -79,13 +88,15 @@ export function Negocio({ negocio }: { negocio: NegocioPlataforma }) {
                     size="sm"
                     disabled={pendiente}
                     onClick={() => {
-                      const cents = parsePriceToCents(precio);
-                      if (cents === null) {
-                        setEstado({ error: "Ese precio no se entiende." });
+                      const bps = parseComisionToBps(precio);
+                      if (bps === null) {
+                        setEstado({
+                          error: "Poné un porcentaje entre 0 y 100.",
+                        });
                         return;
                       }
                       correr(async () => {
-                        const r = await cambiarPrecio(negocio.tenant_id, cents);
+                        const r = await cambiarComision(negocio.tenant_id, bps);
                         if (!r.error) setEditandoPrecio(false);
                         return r;
                       });
@@ -97,7 +108,7 @@ export function Negocio({ negocio }: { negocio: NegocioPlataforma }) {
                     size="sm"
                     variant="ghost"
                     onClick={() => {
-                      setPrecio(centsToInput(negocio.precio_cents));
+                      setPrecio(bpsToInput(negocio.comision_bps));
                       setEditandoPrecio(false);
                     }}
                   >
@@ -107,7 +118,7 @@ export function Negocio({ negocio }: { negocio: NegocioPlataforma }) {
               ) : (
                 <>
                   <span className="tabular-nums">
-                    {formatPrice(negocio.precio_cents)}
+                    {formatComision(negocio.comision_bps)}
                   </span>
                   <Button
                     size="sm"
@@ -167,6 +178,7 @@ export function Negocio({ negocio }: { negocio: NegocioPlataforma }) {
                     </p>
                     <p className="text-[12.5px] text-muted tabular-nums">
                       {m.cantidad} {m.cantidad === 1 ? "turno" : "turnos"} ·{" "}
+                      {formatPrice(m.base_cents)} facturados →{" "}
                       {formatPrice(m.total_cents)}
                     </p>
                   </div>
