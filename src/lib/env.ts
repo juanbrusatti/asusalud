@@ -24,6 +24,12 @@ const publicSchema = z.object({
 
 const serverSchema = publicSchema.extend({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(20).optional(),
+  /**
+   * La clave de Mercado Pago de Dlay, no la del negocio: los cobros van a
+   * nuestra cuenta. Es opcional porque el sistema funciona entero sin ella;
+   * lo único que no anda es el botón de pagar, y la pantalla lo dice.
+   */
+  MERCADOPAGO_ACCESS_TOKEN: z.string().optional(),
 });
 
 /**
@@ -68,5 +74,6 @@ export function serverEnv() {
   return parse(serverSchema, {
     ...rawPublic,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    MERCADOPAGO_ACCESS_TOKEN: process.env.MERCADOPAGO_ACCESS_TOKEN,
   });
 }

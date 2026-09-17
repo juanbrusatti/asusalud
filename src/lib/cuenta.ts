@@ -19,6 +19,8 @@ export type MesCobrado = MesBase & {
   comision_bps: number;
   pagado: boolean;
   pagado_el: string | null;
+  /** El cobro de Mercado Pago, si ya se generó. */
+  link: string | null;
 };
 
 export type Cuenta = {
