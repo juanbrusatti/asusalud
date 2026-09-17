@@ -8,6 +8,7 @@ import {
   cambiarComision,
   deshacerPago,
   marcarPagado,
+  recordarCuenta,
   type PlataformaState,
 } from "@/lib/actions/plataforma";
 import {
@@ -205,13 +206,30 @@ export function Negocio({ negocio }: { negocio: NegocioPlataforma }) {
                       </Button>
                     </div>
                   ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setConfirmando(m.periodo)}
-                    >
-                      Marcar pagado
-                    </Button>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setConfirmando(m.periodo)}
+                      >
+                        Marcar pagado
+                      </Button>
+                      {/* Recordar no cambia nada de la plata, así que no pide
+                          confirmación: lo peor que puede pasar es mandarlo dos
+                          veces, y eso está permitido a propósito. */}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={pendiente}
+                        onClick={() =>
+                          correr(() =>
+                            recordarCuenta(negocio.tenant_id, m.periodo),
+                          )
+                        }
+                      >
+                        Recordar
+                      </Button>
+                    </div>
                   )}
                 </li>
               ))}

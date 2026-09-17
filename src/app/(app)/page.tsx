@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { CartelCuenta } from "@/app/_components/cartel-cuenta";
 import { CrearNegocio } from "@/app/_components/crear-negocio";
 import { TenelaAMano } from "@/components/pwa/tenela-a-mano";
 import { RegisterServiceWorker } from "@/components/pwa/register-sw";
 import { Card, CardBody, CardFigure, CardTitle } from "@/components/ui/card";
 import { getCurrentTenant, getCurrentUser } from "@/lib/auth/tenant";
+import { getCartel } from "@/lib/data/cuenta";
 import { getPublicLink } from "@/lib/data/reserva";
 import { publicEnv } from "@/lib/env";
 
@@ -17,10 +19,11 @@ const ROLES: Record<string, string> = {
 
 export default async function InicioPage() {
   // El middleware ya garantiza que hay sesión; esto es sólo para el saludo.
-  const [user, membership, link] = await Promise.all([
+  const [user, membership, link, cartel] = await Promise.all([
     getCurrentUser(),
     getCurrentTenant(),
     getPublicLink(),
+    getCartel(),
   ]);
 
   if (!membership) {
@@ -49,6 +52,12 @@ export default async function InicioPage() {
             Acá tenés lo de hoy y los accesos rápidos a todo lo demás.
           </p>
         </div>
+
+        {/*
+          Antes que todo lo demás: si Dlay avisó que hay un mes sin pagar, eso
+          es lo primero que hay que ver al entrar.
+        */}
+        {cartel && <CartelCuenta cartel={cartel} />}
 
         {/*
           Va arriba a propósito: instalar la aplicación y prender los avisos son
