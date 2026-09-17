@@ -337,34 +337,37 @@ export type Database = {
         Row: {
           amount_cents: number
           appointments: number
+          base_cents: number
+          commission_bps: number
           created_by: string | null
           id: string
           note: string | null
           paid_at: string
           period: string
-          price_cents: number
           tenant_id: string
         }
         Insert: {
           amount_cents: number
           appointments: number
+          base_cents?: number
+          commission_bps?: number
           created_by?: string | null
           id?: string
           note?: string | null
           paid_at?: string
           period: string
-          price_cents: number
           tenant_id: string
         }
         Update: {
           amount_cents?: number
           appointments?: number
+          base_cents?: number
+          commission_bps?: number
           created_by?: string | null
           id?: string
           note?: string | null
           paid_at?: string
           period?: string
-          price_cents?: number
           tenant_id?: string
         }
         Relationships: [
@@ -379,17 +382,17 @@ export type Database = {
       }
       billing_settings: {
         Row: {
-          price_cents: number
+          commission_bps: number
           tenant_id: string
           updated_at: string
         }
         Insert: {
-          price_cents?: number
+          commission_bps?: number
           tenant_id: string
           updated_at?: string
         }
         Update: {
-          price_cents?: number
+          commission_bps?: number
           tenant_id?: string
           updated_at?: string
         }
@@ -1981,8 +1984,8 @@ export type Database = {
         Args: { p_note?: string; p_period: string; p_tenant: string }
         Returns: Json
       }
-      platform_set_price: {
-        Args: { p_price_cents: number; p_tenant: string }
+      platform_set_commission: {
+        Args: { p_bps: number; p_tenant: string }
         Returns: Json
       }
       platform_unmark_paid: {
