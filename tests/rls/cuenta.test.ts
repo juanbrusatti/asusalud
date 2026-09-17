@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import type { PoolClient } from "pg";
 import { asAdmin, asUser, createAuthUser, pool } from "./helpers";
 import { setupScenario, teardownScenario, type Scenario } from "./fixtures";
@@ -609,5 +609,128 @@ describe("el enlace de pago", () => {
       return rows[0].r as { ok: boolean; error?: string };
     });
     expect(r.ok).toBe(false);
+  });
+});
+
+describe("el pago que se marca solo", () => {
+  /** El mes cerrado anterior, en la zona del negocio. */
+  const MES_PASADO = `(date_trunc('month', (now() at time zone $1)) - interval '1 month')::date`;
+
+  async function referencia(): Promise<string> {
+    return asAdmin(async (c) => {
+      const { rows } = await c.query(
+        // $1 es la zona, que la usa MES_PASADO; el negocio va en $2.
+        `select $2 || ':' || to_char(${MES_PASADO}, 'YYYY-MM-DD') as r`,
+        [tz, s.tenantA],
+      );
+      return rows[0].r as string;
+    });
+  }
+
+  afterEach(async () => {
+    await asAdmin((c) =>
+      c.query(`delete from public.billing_payments where tenant_id = $1`, [
+        s.tenantA,
+      ]),
+    );
+  });
+
+  it("cobra el mes y deja anotado de dónde vino", async () => {
+    const ref = await referencia();
+
+    const r = await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `select public.rpc_mercadopago_paid($1, $2) as r`,
+        [ref, "mp-1"],
+      );
+      return rows[0].r as { ok: boolean; total_cents: number };
+    });
+
+    expect(r.ok).toBe(true);
+    expect(r.total_cents).toBe(9000);
+
+    const fila = await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `select source, payment_id, amount_cents
+         from public.billing_payments where tenant_id = $1`,
+        [s.tenantA],
+      );
+      return rows[0];
+    });
+
+    expect(fila.source).toBe("mercadopago");
+    expect(fila.payment_id).toBe("mp-1");
+    expect(Number(fila.amount_cents)).toBe(9000);
+  });
+
+  it("un aviso repetido no cobra dos veces", async () => {
+    const ref = await referencia();
+
+    await asAdmin((c) =>
+      c.query(`select public.rpc_mercadopago_paid($1, $2)`, [ref, "mp-2"]),
+    );
+
+    const otra = await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `select public.rpc_mercadopago_paid($1, $2) as r`,
+        [ref, "mp-2"],
+      );
+      return rows[0].r as { ok: boolean; repetido?: boolean };
+    });
+
+    // Reintentar tiene que ser gratis: contesta que sí y no toca nada.
+    expect(otra.ok).toBe(true);
+    expect(otra.repetido).toBe(true);
+
+    const cuantos = await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `select count(*)::int n from public.billing_payments where tenant_id = $1`,
+        [s.tenantA],
+      );
+      return rows[0].n as number;
+    });
+    expect(cuantos).toBe(1);
+  });
+
+  it("no le cree a una referencia que no es de Dlay", async () => {
+    for (const mala of ["cualquier-cosa", "no-es-uuid:2026-08-01", ""]) {
+      const r = await asAdmin(async (c) => {
+        const { rows } = await c.query(
+          `select public.rpc_mercadopago_paid($1, $2) as r`,
+          [mala, "mp-x"],
+        );
+        return rows[0].r as { ok: boolean; error?: string };
+      });
+      expect(r.ok).toBe(false);
+    }
+  });
+
+  it("el panel y el webhook congelan lo mismo", async () => {
+    const ref = await referencia();
+
+    const porWebhook = await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `select public.rpc_mercadopago_paid($1, $2) as r`,
+        [ref, "mp-3"],
+      );
+      return rows[0].r as { total_cents: number; base_cents: number };
+    });
+
+    await asAdmin((c) =>
+      c.query(`delete from public.billing_payments where tenant_id = $1`, [
+        s.tenantA,
+      ]),
+    );
+
+    const porPanel = await asUser(plataforma, async (c) => {
+      const { rows } = await c.query(
+        `select public.platform_mark_paid($2, ${MES_PASADO}) as r`,
+        [tz, s.tenantA],
+      );
+      return rows[0].r as { total_cents: number; base_cents: number };
+    });
+
+    expect(porPanel.total_cents).toBe(porWebhook.total_cents);
+    expect(porPanel.base_cents).toBe(porWebhook.base_cents);
   });
 });

@@ -408,6 +408,12 @@ verify_jwt = false
 [functions.whatsapp-webhook]
 verify_jwt = false
 
+# Mercado Pago no manda ninguna credencial de Supabase: si el portero pide
+# una, el aviso rebota con 401 y el pago nunca se marca. Ya nos pasó con los
+# recordatorios y tardamos en verlo porque falla en silencio.
+[functions.mercadopago-webhook]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327
