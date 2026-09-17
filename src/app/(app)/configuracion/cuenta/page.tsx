@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Card, CardBody, CardFigure, CardTitle } from "@/components/ui/card";
 import { atLeast, getCurrentTenant } from "@/lib/auth/tenant";
-import { formatMes } from "@/lib/cuenta";
+import { formatComision, formatMes } from "@/lib/cuenta";
 import { getCuenta } from "@/lib/data/cuenta";
 import { formatPrice } from "@/lib/money";
 import { Volver } from "../_components/volver";
@@ -12,10 +12,9 @@ export const metadata: Metadata = { title: "Tu cuenta" };
 /**
  * Lo que el negocio lleva gastado en Dlay.
  *
- * Se muestra el detalle y no sólo el total a propósito. El mismo sistema que
- * cuenta los turnos es el que cobra por ellos, así que poder mirar la lista y
- * decir «este no lo atendí» no es un adorno: es lo que hace que el número se
- * pueda creer.
+ * Se muestra la base y no sólo la comisión a propósito. El mismo sistema que
+ * cuenta lo facturado es el que cobra sobre eso, así que poder mirar de dónde
+ * sale el número no es un adorno: es lo que hace que se pueda creer.
  */
 export default async function CuentaPage() {
   const membership = await getCurrentTenant();
@@ -25,6 +24,7 @@ export default async function CuentaPage() {
   const cuenta = await getCuenta();
   if (!cuenta) notFound();
 
+  const porcentaje = formatComision(cuenta.comision_bps);
   const sinPagar = cuenta.meses.filter((m) => !m.pagado);
   const deuda = sinPagar.reduce((t, m) => t + m.total_cents, 0);
 
@@ -36,9 +36,9 @@ export default async function CuentaPage() {
           Tu cuenta
         </h1>
         <p className="mt-1 max-w-prose text-[14.5px] text-muted">
-          Dlay se cobra por turno atendido: {formatPrice(cuenta.precio_cents)}{" "}
-          por cada turno que ocurrió. Los cancelados y los que no vinieron no se
-          cobran.
+          Dlay se cobra el {porcentaje} de lo que facturás. Un turno de $ 1.000
+          paga {porcentaje} de eso y uno de $ 20.000 también: siempre la misma
+          proporción. Los cancelados y los que no vinieron no cuentan.
         </p>
       </div>
 
@@ -51,9 +51,11 @@ export default async function CuentaPage() {
           <p className="text-[14px] opacity-90">
             {cuenta.mes_actual.cantidad === 0
               ? "Todavía no hubo turnos este mes."
-              : `${cuenta.mes_actual.cantidad} ${
+              : `${porcentaje} de ${formatPrice(
+                  cuenta.mes_actual.base_cents,
+                )} facturados en ${cuenta.mes_actual.cantidad} ${
                   cuenta.mes_actual.cantidad === 1 ? "turno" : "turnos"
-                } × ${formatPrice(cuenta.precio_cents)}`}
+                }`}
           </p>
           <p className="border-t-[1.5px] border-white/25 pt-3 text-[13px] leading-relaxed opacity-75">
             El mes todavía no cerró, así que este número va a seguir subiendo.
@@ -93,26 +95,30 @@ export default async function CuentaPage() {
               {cuenta.meses.map((m) => (
                 <li
                   key={m.periodo}
-                  className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b-[1.5px] border-line-soft py-3 last:border-0"
+                  className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b-[1.5px] border-line-soft py-3 last:border-0"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="text-[14.5px] font-medium">
                       {formatMes(m.periodo)}
                     </p>
                     <p className="text-[13px] text-muted">
-                      {m.cantidad} {m.cantidad === 1 ? "turno" : "turnos"}
+                      {m.cantidad} {m.cantidad === 1 ? "turno" : "turnos"} ·{" "}
+                      {formatPrice(m.base_cents)} facturados
                     </p>
                   </div>
 
-                  <p className="text-[14.5px] tabular-nums">
-                    {formatPrice(m.total_cents)}
-                  </p>
+                  <div className="text-right">
+                    <p className="text-[14.5px] tabular-nums">
+                      {formatPrice(m.total_cents)}
+                    </p>
+                    <p className="text-[12px] text-faint tabular-nums">
+                      {formatComision(m.comision_bps)}
+                    </p>
+                  </div>
 
                   <span
                     className={`rounded-pill px-2.5 py-1 text-[11.5px] font-semibold uppercase tracking-wider ${
-                      m.pagado
-                        ? "bg-ok-wash text-ok"
-                        : "bg-warn-wash text-warn"
+                      m.pagado ? "bg-ok-wash text-ok" : "bg-warn-wash text-warn"
                     }`}
                   >
                     {m.pagado ? "Pagado" : "Pendiente"}
@@ -125,9 +131,10 @@ export default async function CuentaPage() {
       </Card>
 
       <p className="px-1 text-[12.5px] leading-relaxed text-faint">
-        Los mensajes de WhatsApp no están incluidos acá: los cobra Meta
-        directamente contra la tarjeta que cargaste en tu cuenta de WhatsApp, y
-        los ves en su propio resumen.
+        Los servicios con precio «a convenir» no suman a lo facturado, porque
+        el sistema no sabe cuánto salieron. Los mensajes de WhatsApp tampoco
+        están acá: los cobra Meta directamente contra la tarjeta que cargaste
+        en tu cuenta de WhatsApp.
       </p>
     </main>
   );
