@@ -333,6 +333,76 @@ export type Database = {
           },
         ]
       }
+      billing_payments: {
+        Row: {
+          amount_cents: number
+          appointments: number
+          created_by: string | null
+          id: string
+          note: string | null
+          paid_at: string
+          period: string
+          price_cents: number
+          tenant_id: string
+        }
+        Insert: {
+          amount_cents: number
+          appointments: number
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          paid_at?: string
+          period: string
+          price_cents: number
+          tenant_id: string
+        }
+        Update: {
+          amount_cents?: number
+          appointments?: number
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          paid_at?: string
+          period?: string
+          price_cents?: number
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_payments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      billing_settings: {
+        Row: {
+          price_cents: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          price_cents?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          price_cents?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_settings: {
         Row: {
           address_note: string | null
@@ -1169,6 +1239,24 @@ export type Database = {
           },
         ]
       }
+      platform_admins: {
+        Row: {
+          created_at: string
+          note: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          note?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          note?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       platform_settings: {
         Row: {
           key: string
@@ -1798,6 +1886,7 @@ export type Database = {
       }
     }
     Functions: {
+      account_summary: { Args: never; Returns: Json }
       appointment_paid_cents: {
         Args: { p_appointment: string }
         Returns: number
@@ -1886,6 +1975,19 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      platform_accounts: { Args: never; Returns: Json }
+      platform_mark_paid: {
+        Args: { p_note?: string; p_period: string; p_tenant: string }
+        Returns: Json
+      }
+      platform_set_price: {
+        Args: { p_price_cents: number; p_tenant: string }
+        Returns: Json
+      }
+      platform_unmark_paid: {
+        Args: { p_period: string; p_tenant: string }
+        Returns: Json
       }
       register_push_subscription: {
         Args: {
@@ -2020,6 +2122,8 @@ export type Database = {
         Args: { p_provider_name: string; p_status: string; p_tenant: string }
         Returns: undefined
       }
+      rpc_platform_admin_add: { Args: { p_email: string }; Returns: Json }
+      rpc_platform_admin_remove: { Args: { p_email: string }; Returns: Json }
       rpc_push_targets: {
         Args: { p_client: string }
         Returns: {

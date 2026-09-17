@@ -38,6 +38,12 @@ const SECCIONES = [
     detalle:
       "En qué franja se mandan los recordatorios y cuántos puede recibir cada persona.",
   },
+  {
+    href: "/configuracion/cuenta",
+    titulo: "Tu cuenta",
+    detalle:
+      "Lo que llevás usado este mes y el detalle de los meses cerrados.",
+  },
 ];
 
 export default async function ConfiguracionPage() {
