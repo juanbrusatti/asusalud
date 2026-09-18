@@ -4,7 +4,13 @@ import { AuthForm } from "./auth-form";
 
 export const metadata: Metadata = { title: "Entrar" };
 
-export default function EntrarPage() {
+export default async function EntrarPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ volver?: string; enlace?: string }>;
+}) {
+  const { volver, enlace } = await searchParams;
+
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-8 px-5 py-12">
       <header className="grid gap-4">
@@ -23,7 +29,7 @@ export default function EntrarPage() {
         </div>
       </header>
 
-      <AuthForm />
+      <AuthForm volver={volver} enlaceVencido={enlace === "vencido"} />
 
       <footer className="flex flex-wrap justify-center gap-x-5 gap-y-1 text-[13px] text-faint">
         <a className="hover:text-muted" href="/legal/privacidad">
