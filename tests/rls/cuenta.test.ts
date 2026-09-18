@@ -586,10 +586,11 @@ describe("el enlace de pago", () => {
 
   it("guarda el enlace del mes cerrado y lo devuelve en la cuenta", async () => {
     await asUser(s.owner, async (c) => {
+      // Se guarda por el importe que corresponde hoy: tres turnos al 3%.
       const { rows } = await c.query(
         `select public.billing_link_save(
            (date_trunc('month', (now() at time zone $1)) - interval '1 month')::date,
-           'pref-123', $2
+           'pref-123', $2, 9000
          ) as r`,
         [tz, MP],
       );
@@ -600,6 +601,26 @@ describe("el enlace de pago", () => {
       );
       const cuenta = cta[0].r as Cuenta;
       expect(cuenta.meses[0].link).toBe(MP);
+    });
+  });
+
+  it("no devuelve un enlace hecho por otro importe", async () => {
+    await asUser(s.owner, async (c) => {
+      // Un cobro viejo, de cuando el mes valía otra cosa.
+      await c.query(
+        `select public.billing_link_save(
+           (date_trunc('month', (now() at time zone $1)) - interval '1 month')::date,
+           'pref-viejo', $2, 24000
+         )`,
+        [tz, MP],
+      );
+
+      const { rows } = await c.query(`select public.account_summary() as r`);
+      const cuenta = rows[0].r as Cuenta;
+
+      // El mes vale 9000, así que ese enlace cobraría de menos: no se usa.
+      expect(cuenta.meses[0].total_cents).toBe(9000);
+      expect(cuenta.meses[0].link).toBeNull();
     });
   });
 
@@ -1144,5 +1165,96 @@ describe("cobrar por un fijo en vez de por porcentaje", () => {
         ]),
       ),
     ).rejects.toMatchObject({ code: "42501" });
+  });
+});
+
+describe("cuando entra un importe distinto del que correspondía", () => {
+  const MES = `(date_trunc('month', (now() at time zone $1)) - interval '1 month')::date`;
+
+  async function referencia(): Promise<string> {
+    return asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `select $2 || ':' || to_char(${MES}, 'YYYY-MM-DD') as r`,
+        [tz, s.tenantA],
+      );
+      return rows[0].r as string;
+    });
+  }
+
+  afterEach(async () => {
+    await asAdmin((c) =>
+      c.query(`delete from public.billing_payments where tenant_id = $1`, [
+        s.tenantA,
+      ]),
+    );
+  });
+
+  it("registra lo que entró, no lo que se esperaba", async () => {
+    const ref = await referencia();
+
+    // Correspondían $90 y alguien pagó un cobro viejo de $24.
+    const r = await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `select public.rpc_mercadopago_paid($1, $2, 2400) as r`,
+        [ref, "mp-viejo"],
+      );
+      return rows[0].r as {
+        ok: boolean;
+        total_cents: number;
+        esperado_cents: number;
+      };
+    });
+
+    expect(r.ok).toBe(true);
+    expect(r.total_cents).toBe(2400);
+    expect(r.esperado_cents).toBe(9000);
+
+    const fila = await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `select amount_cents, note from public.billing_payments
+         where tenant_id = $1`,
+        [s.tenantA],
+      );
+      return rows[0];
+    });
+
+    // Lo que entró, y la diferencia anotada para que se pueda ver.
+    expect(Number(fila.amount_cents)).toBe(2400);
+    expect(fila.note).toMatch(/Correspondían \$ 90 y entraron \$ 24\./);
+  });
+
+  it("si entró lo que correspondía no ensucia la nota", async () => {
+    const ref = await referencia();
+
+    await asAdmin((c) =>
+      c.query(`select public.rpc_mercadopago_paid($1, $2, 9000)`, [
+        ref,
+        "mp-justo",
+      ]),
+    );
+
+    const fila = await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `select amount_cents, note from public.billing_payments
+         where tenant_id = $1`,
+        [s.tenantA],
+      );
+      return rows[0];
+    });
+
+    expect(Number(fila.amount_cents)).toBe(9000);
+    expect(fila.note).toBe("Pagado por Mercado Pago.");
+  });
+
+  it("marcado a mano sigue cobrando lo que corresponde", async () => {
+    await asUser(plataforma, async (c) => {
+      const { rows } = await c.query(
+        `select public.platform_mark_paid($2, ${MES}) as r`,
+        [tz, s.tenantA],
+      );
+      const r = rows[0].r as { ok: boolean; total_cents: number };
+      expect(r.ok).toBe(true);
+      expect(r.total_cents).toBe(9000);
+    });
   });
 });

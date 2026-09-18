@@ -70,6 +70,7 @@ async function procesar(pago: string): Promise<void> {
   const datos = (await r.json()) as {
     status?: string;
     external_reference?: string | null;
+    transaction_amount?: number | null;
   };
 
   if (datos.status !== "approved") {
@@ -77,9 +78,18 @@ async function procesar(pago: string): Promise<void> {
     return;
   }
 
+  // Lo que entró, en centavos. Va aparte de lo que esperábamos cobrar: si
+  // alguien paga un cobro viejo por otro importe, el mes tiene que quedar
+  // registrado por lo que se pagó de verdad, con la diferencia anotada.
+  const entraron =
+    typeof datos.transaction_amount === "number"
+      ? Math.round(datos.transaction_amount * 100)
+      : null;
+
   const { data, error } = await supabase.rpc("rpc_mercadopago_paid", {
     p_external_reference: datos.external_reference ?? null,
     p_payment_id: pago,
+    p_paid_cents: entraron,
   });
 
   if (error) {
