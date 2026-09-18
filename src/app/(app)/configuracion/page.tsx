@@ -39,6 +39,12 @@ const SECCIONES = [
       "En qué franja se mandan los recordatorios y cuántos puede recibir cada persona.",
   },
   {
+    href: "/configuracion/datos",
+    titulo: "Tus datos",
+    detalle:
+      "Descargar tus clientes y tus turnos. Todo lo que cargaste es tuyo.",
+  },
+  {
     href: "/configuracion/equipo",
     titulo: "Tu equipo",
     detalle:
