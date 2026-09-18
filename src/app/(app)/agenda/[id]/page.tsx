@@ -73,6 +73,9 @@ export default async function TurnoPage({
     month: "short",
     hour: "2-digit",
     minute: "2-digit",
+    // Reloj de 24 como en toda la agenda. Con «a. m.» el mismo turno se lee
+    // distinto según la pantalla en la que estés.
+    hour12: false,
   });
 
   return (
@@ -109,7 +112,16 @@ export default async function TurnoPage({
         <Card>
           <CardBody className="grid gap-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <CardTitle>{STATUS_LABELS[appointment.status]}</CardTitle>
+              <div className="flex flex-wrap items-center gap-2">
+                <CardTitle>{STATUS_LABELS[appointment.status]}</CardTitle>
+                {appointment.moved_count > 0 && (
+                  <span className="rounded-pill bg-warn-wash px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-warn">
+                    {appointment.moved_count === 1
+                      ? "Movido"
+                      : `Movido ${appointment.moved_count} veces`}
+                  </span>
+                )}
+              </div>
               <div className="flex gap-2">
                 {wa && (
                   <Button asChild variant="outline" size="sm">
@@ -132,7 +144,19 @@ export default async function TurnoPage({
               </p>
             )}
 
-            <AccionesEstado id={id} status={appointment.status} />
+            {appointment.original_starts_at && (
+              <p className="text-[13.5px] text-muted">
+                Estaba para el{" "}
+                {fechaHora.format(new Date(appointment.original_starts_at))}
+              </p>
+            )}
+
+            <AccionesEstado
+              id={id}
+              status={appointment.status}
+              fecha={dia}
+              hora={timeIn(appointment.starts_at, tz)}
+            />
           </CardBody>
         </Card>
 
