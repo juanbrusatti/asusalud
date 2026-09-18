@@ -52,7 +52,8 @@ export async function generarPago(periodo: string): Promise<PagoState> {
   if (mes.pagado) return { error: "Ese mes ya está pagado." };
   if (mes.total_cents <= 0) return { error: "Ese mes no tiene nada que cobrar." };
 
-  // Ya se había generado: se reusa y no se molesta a Mercado Pago.
+  // Ya se había generado por este mismo importe: se reusa y no se molesta a
+  // Mercado Pago. La base devuelve el enlace en nulo cuando el importe cambió.
   if (mes.link) return conQr(periodo, mes.link);
 
   const token = serverEnv().MERCADOPAGO_ACCESS_TOKEN;
@@ -120,6 +121,9 @@ export async function generarPago(periodo: string): Promise<PagoState> {
     p_period: periodo,
     p_preference_id: preferenceId,
     p_url: url,
+    // Se guarda por cuánto se hizo: si mañana el importe cambia, este cobro
+    // deja de servir y se pide otro en lugar de mandar a pagar de menos.
+    p_amount_cents: mes.total_cents,
   });
 
   if (error) return { error: "No se pudo guardar el cobro." };
