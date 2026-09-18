@@ -107,11 +107,21 @@ export function ListaTurnos({
                     </div>
 
                     <div className="grid shrink-0 justify-items-end gap-1">
-                      <span
-                        className={`rounded-pill px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wider ${STATUS_STYLE[a.status]}`}
-                      >
-                        {STATUS_LABELS[a.status]}
-                      </span>
+                      <div className="flex items-center gap-1">
+                        {a.moved_count > 0 && (
+                          <span
+                            title="Este turno se movió de horario"
+                            className="rounded-pill bg-warn-wash px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wider text-warn"
+                          >
+                            Movido
+                          </span>
+                        )}
+                        <span
+                          className={`rounded-pill px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wider ${STATUS_STYLE[a.status]}`}
+                        >
+                          {STATUS_LABELS[a.status]}
+                        </span>
+                      </div>
                       {a.price_cents > 0 && (
                         <span className="text-[13px] tabular-nums text-muted">
                           {formatPrice(a.price_cents)}
