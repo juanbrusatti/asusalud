@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Field } from "@/components/ui/field";
 import { Select } from "@/components/ui/select";
@@ -9,6 +9,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { saveReservas, type FormState } from "@/lib/actions/configuracion";
 import type { BookingSettings } from "@/lib/configuracion";
 import { Guardar, Resultado } from "../_components/guardar";
+import { useRefrescarAlGuardar } from "../_components/refrescar";
 
 const INITIAL: FormState = { error: null };
 
@@ -20,6 +21,15 @@ export function FormReservas({
   link: string;
 }) {
   const [state, action] = useActionState(saveReservas, INITIAL);
+  useRefrescarAlGuardar(state.notice);
+
+  /**
+   * Un interruptor parece que se guarda solo, y este no: el botón está al pie
+   * de un formulario largo. Sin este aviso, quien lo toca y recarga la página
+   * lo ve volver atrás y concluye —con razón— que está roto.
+   */
+  const [abierta, setAbierta] = useState(settings.enabled);
+  const sinGuardar = abierta !== settings.enabled;
 
   return (
     <form action={action} className="grid gap-4">
@@ -30,7 +40,21 @@ export function FormReservas({
             label="Agenda abierta al público"
             hint="Con esto apagado, el link de reservas no muestra nada. Podés dejar todo configurado y abrirlo cuando quieras."
             defaultChecked={settings.enabled}
+            onChange={setAbierta}
           />
+
+          {sinGuardar && (
+            <p
+              role="status"
+              className="rounded-[14px] bg-warn-wash px-3.5 py-2.5 text-[13px] leading-snug text-ink"
+            >
+              {abierta
+                ? "Vas a abrir tu agenda al público."
+                : "Vas a cerrar tu agenda al público."}{" "}
+              Todavía no está guardado: tocá <strong className="font-semibold">
+              Guardar cambios</strong> al final de la página.
+            </p>
+          )}
 
           <div className="grid gap-1.5">
             <span className="text-[12.5px] font-medium text-muted">

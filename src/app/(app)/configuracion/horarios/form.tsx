@@ -6,6 +6,7 @@ import { Card, CardBody } from "@/components/ui/card";
 import { saveHorarios, type FormState } from "@/lib/actions/configuracion";
 import { WEEKDAYS } from "@/lib/configuracion";
 import { Guardar, Resultado } from "../_components/guardar";
+import { useRefrescarAlGuardar } from "../_components/refrescar";
 
 const INITIAL: FormState = { error: null };
 
@@ -19,6 +20,7 @@ type Franja = { weekday: number; opens: string; closes: string };
  */
 export function FormHorarios({ franjas }: { franjas: Franja[] }) {
   const [state, action] = useActionState(saveHorarios, INITIAL);
+  useRefrescarAlGuardar(state.notice);
   const [filas, setFilas] = useState<Franja[]>(franjas);
 
   const delDia = (weekday: number) =>

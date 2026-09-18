@@ -24,6 +24,25 @@ export function Toggle({
   const id = useId();
   const [checked, setChecked] = useState(defaultChecked);
 
+  /**
+   * Si el valor que manda el servidor cambia, el interruptor lo sigue.
+   *
+   * Sin esto guardaba bien y mentía: al volver la acción, el árbol que ya
+   * estaba en pantalla se vuelve a dibujar, el interruptor se remonta y
+   * recupera el valor que tenía al cargar la página. O sea que apagabas,
+   * guardaba apagado, y la pantalla volvía a mostrarlo encendido. Cualquiera
+   * concluía que no funcionaba y lo tocaba de nuevo, guardando lo contrario.
+   *
+   * El ajuste va en el dibujo y no en un efecto: es el patrón que recomienda
+   * React para un estado que depende de una propiedad, y además el linter de
+   * este proyecto no deja llamar a `setState` dentro de un efecto.
+   */
+  const [ultimoDelServidor, setUltimoDelServidor] = useState(defaultChecked);
+  if (ultimoDelServidor !== defaultChecked) {
+    setUltimoDelServidor(defaultChecked);
+    setChecked(defaultChecked);
+  }
+
   return (
     <div className="flex items-start gap-3">
       <input
