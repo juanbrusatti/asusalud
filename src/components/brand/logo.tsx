@@ -1,8 +1,16 @@
 import { cn } from "@/lib/cn";
 
 /**
- * Marca Dlay: trazo grueso y uniforme, dibujado a mano. Un único elemento va
- * en el índigo de acento y el resto queda en el color de la tinta.
+ * Marca Dlay: una D blanca sobre la teja índigo.
+ *
+ * La anterior era un trazo dibujado a mano, que se leía bien en grande y se
+ * volvía una mancha a 22 píxeles, que es el tamaño al que se ve casi siempre.
+ * Esta es geométrica y va sobre fondo propio, así que se lee igual sobre el
+ * hueso, sobre el negro y sobre la pantalla de inicio de un teléfono, donde
+ * compite con los íconos de todas las demás aplicaciones.
+ *
+ * Los colores van fijos y no por variables: la teja es la marca, y una marca
+ * que cambia de color con el tema deja de ser una marca.
  */
 export function Logo({ className, ...props }: React.ComponentProps<"svg">) {
   return (
@@ -11,20 +19,17 @@ export function Logo({ className, ...props }: React.ComponentProps<"svg">) {
       role="img"
       aria-label="Dlay"
       className={cn("h-9 w-9", className)}
-      fill="none"
-      strokeWidth={2.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
       {...props}
     >
-      {/* La D, con la panza apenas irregular como un trazo de marcador. */}
+      <rect width="40" height="40" rx="10" fill="#3e3fe0" />
       <path
-        d="M11 6.5c0 9 .2 18 0 27 5.6.4 11.4.3 14.8-3.9 3.6-4.4 3.5-14.4-.4-18.6C22.1 6.9 16.4 6.2 11 6.5Z"
-        stroke="var(--draw)"
+        d="M13.3 11v18M13.3 11h4.5a9 9 0 0 1 0 18h-4.5"
+        fill="none"
+        stroke="#ffffff"
+        strokeWidth={3.4}
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
-      <path d="M5.4 20.1c1.9-.2 3.8-.2 5.6 0" stroke="var(--draw)" />
-      {/* El punto: el único elemento en color. */}
-      <path d="M30.6 31.4a3 3 0 1 1 .1 0Z" fill="var(--accent)" stroke="var(--accent)" />
     </svg>
   );
 }
