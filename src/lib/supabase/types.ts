@@ -333,6 +333,38 @@ export type Database = {
           },
         ]
       }
+      billing_amounts: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          note: string | null
+          period: string
+          tenant_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          note?: string | null
+          period: string
+          tenant_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          note?: string | null
+          period?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_amounts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       billing_links: {
         Row: {
           created_at: string
@@ -405,6 +437,7 @@ export type Database = {
           commission_bps: number
           created_by: string | null
           id: string
+          mode: string
           note: string | null
           paid_at: string
           payment_id: string | null
@@ -419,6 +452,7 @@ export type Database = {
           commission_bps?: number
           created_by?: string | null
           id?: string
+          mode?: string
           note?: string | null
           paid_at?: string
           payment_id?: string | null
@@ -433,6 +467,7 @@ export type Database = {
           commission_bps?: number
           created_by?: string | null
           id?: string
+          mode?: string
           note?: string | null
           paid_at?: string
           payment_id?: string | null
@@ -453,16 +488,22 @@ export type Database = {
       billing_settings: {
         Row: {
           commission_bps: number
+          fixed_cents: number
+          mode: string
           tenant_id: string
           updated_at: string
         }
         Insert: {
           commission_bps?: number
+          fixed_cents?: number
+          mode?: string
           tenant_id: string
           updated_at?: string
         }
         Update: {
           commission_bps?: number
+          fixed_cents?: number
+          mode?: string
           tenant_id?: string
           updated_at?: string
         }
@@ -2063,8 +2104,22 @@ export type Database = {
         Args: { p_period: string; p_tenant: string }
         Returns: Json
       }
-      platform_set_commission: {
-        Args: { p_bps: number; p_tenant: string }
+      platform_set_billing: {
+        Args: {
+          p_bps: number
+          p_fixed_cents: number
+          p_mode: string
+          p_tenant: string
+        }
+        Returns: Json
+      }
+      platform_set_month_amount: {
+        Args: {
+          p_amount_cents: number
+          p_note?: string
+          p_period: string
+          p_tenant: string
+        }
         Returns: Json
       }
       platform_unmark_paid: {
