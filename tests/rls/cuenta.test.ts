@@ -31,7 +31,9 @@ type Mes = {
 };
 
 type Cuenta = {
+  modo: string;
   comision_bps: number;
+  fijo_cents: number;
   mes_actual: {
     periodo: string;
     cantidad: number;
@@ -44,7 +46,9 @@ type Cuenta = {
 type Negocio = {
   tenant_id: string;
   nombre: string;
+  modo: string;
   comision_bps: number;
+  fijo_cents: number;
   mes_actual: {
     periodo: string;
     cantidad: number;
@@ -249,9 +253,10 @@ describe("qué turnos se cobran", () => {
     // Con un porcentaje que no divide justo, redondear turno por turno y
     // después sumar daría otro número. Lo que vale es el total.
     const total = await asUser(plataforma, async (c) => {
-      await c.query(`select public.platform_set_commission($1, 333)`, [
-        s.tenantA,
-      ]);
+      await c.query(
+        `select public.platform_set_billing($1, 'percent', 333, 0)`,
+        [s.tenantA],
+      );
       const { rows } = await c.query(`select public.platform_accounts() as r`);
       const negocios = rows[0].r as Negocio[];
       return negocios.find((n) => n.tenant_id === s.tenantA)!;
@@ -382,9 +387,10 @@ describe("marcar un mes pagado", () => {
       expect((dos[0].r as { ok: boolean }).ok).toBe(false);
 
       // Sube el porcentaje: el mes ya cobrado no se mueve.
-      await c.query(`select public.platform_set_commission($1, 1000)`, [
-        s.tenantA,
-      ]);
+      await c.query(
+        `select public.platform_set_billing($1, 'percent', 1000, 0)`,
+        [s.tenantA],
+      );
 
       const { rows: tres } = await c.query(
         `select public.platform_accounts() as r`,
@@ -926,6 +932,216 @@ describe("el recordatorio que manda Dlay a mano", () => {
     await expect(
       asUser(s.owner, (c) =>
         c.query(`select public.platform_nudge($2, ${MES})`, [tz, s.tenantA]),
+      ),
+    ).rejects.toMatchObject({ code: "42501" });
+  });
+});
+
+describe("cobrar por un fijo en vez de por porcentaje", () => {
+  const MES = `(date_trunc('month', (now() at time zone $1)) - interval '1 month')::date`;
+
+  async function comoPlataforma<T>(fn: (c: PoolClient) => Promise<T>): Promise<T> {
+    return asAdmin(async (c) => {
+      await c.query("select set_config('request.jwt.claims', $1, false)", [
+        JSON.stringify({ sub: plataforma, role: "authenticated" }),
+      ]);
+      try {
+        return await fn(c);
+      } finally {
+        await c.query("select set_config('request.jwt.claims', '', false)");
+      }
+    });
+  }
+
+  async function cuenta(): Promise<Cuenta> {
+    return asUser(s.owner, async (c) => {
+      const { rows } = await c.query(`select public.account_summary() as r`);
+      return rows[0].r as Cuenta;
+    });
+  }
+
+  afterEach(async () => {
+    await asAdmin(async (c) => {
+      // Se vuelve al porcentaje de fábrica para no ensuciar al resto.
+      await c.query(`delete from public.billing_settings where tenant_id = $1`, [
+        s.tenantA,
+      ]);
+      await c.query(`delete from public.billing_amounts where tenant_id = $1`, [
+        s.tenantA,
+      ]);
+      await c.query(`delete from public.billing_payments where tenant_id = $1`, [
+        s.tenantA,
+      ]);
+    });
+  });
+
+  it("de fábrica cobra por porcentaje", async () => {
+    const c = await cuenta();
+    expect(c.modo).toBe("percent");
+    // Tres turnos de $1.000 al 3%.
+    expect(c.meses[0].total_cents).toBe(9000);
+  });
+
+  it("en fijo cobra lo mismo sin importar cuánto facturó", async () => {
+    await comoPlataforma((c) =>
+      c.query(`select public.platform_set_billing($1, 'fixed', 300, 5000000)`, [
+        s.tenantA,
+      ]),
+    );
+
+    const c = await cuenta();
+    expect(c.modo).toBe("fixed");
+    expect(c.fijo_cents).toBe(5000000);
+
+    // $50.000 para todos los meses, tengan tres turnos o uno.
+    expect(c.meses[0].total_cents).toBe(5000000);
+    expect(c.meses[1].total_cents).toBe(5000000);
+    // La base sigue estando, para poder mostrarla.
+    expect(c.meses[0].base_cents).toBe(300000);
+  });
+
+  it("no deja poner un fijo de cero, que no cobraría nada", async () => {
+    const r = await comoPlataforma(async (c) => {
+      const { rows } = await c.query(
+        `select public.platform_set_billing($1, 'fixed', 300, 0) as r`,
+        [s.tenantA],
+      );
+      return rows[0].r as { ok: boolean; error?: string };
+    });
+
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/cero/i);
+  });
+
+  it("el importe puesto a mano gana sobre las dos formas", async () => {
+    // Sobre el porcentaje.
+    await comoPlataforma((c) =>
+      c.query(`select public.platform_set_month_amount($2, ${MES}, 123400)`, [
+        tz,
+        s.tenantA,
+      ]),
+    );
+    expect((await cuenta()).meses[0].total_cents).toBe(123400);
+
+    // Y también sobre el fijo.
+    await comoPlataforma((c) =>
+      c.query(`select public.platform_set_billing($1, 'fixed', 300, 5000000)`, [
+        s.tenantA,
+      ]),
+    );
+    expect((await cuenta()).meses[0].total_cents).toBe(123400);
+  });
+
+  it("borrar el importe a mano devuelve el mes a lo pactado", async () => {
+    await comoPlataforma((c) =>
+      c.query(`select public.platform_set_month_amount($2, ${MES}, 123400)`, [
+        tz,
+        s.tenantA,
+      ]),
+    );
+    expect((await cuenta()).meses[0].total_cents).toBe(123400);
+
+    await comoPlataforma((c) =>
+      c.query(`select public.platform_set_month_amount($2, ${MES}, null)`, [
+        tz,
+        s.tenantA,
+      ]),
+    );
+    expect((await cuenta()).meses[0].total_cents).toBe(9000);
+  });
+
+  it("un mes ya cobrado no cambia de importe", async () => {
+    await comoPlataforma((c) =>
+      c.query(`select public.platform_mark_paid($2, ${MES})`, [tz, s.tenantA]),
+    );
+
+    const r = await comoPlataforma(async (c) => {
+      const { rows } = await c.query(
+        `select public.platform_set_month_amount($2, ${MES}, 999900) as r`,
+        [tz, s.tenantA],
+      );
+      return rows[0].r as { ok: boolean; error?: string };
+    });
+
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/ya está cobrado/i);
+
+    // Y pasar a fijo tampoco lo mueve.
+    await comoPlataforma((c) =>
+      c.query(`select public.platform_set_billing($1, 'fixed', 300, 5000000)`, [
+        s.tenantA,
+      ]),
+    );
+    expect((await cuenta()).meses[0].total_cents).toBe(9000);
+  });
+
+  it("el cobro guarda con qué forma se cobró", async () => {
+    await comoPlataforma((c) =>
+      c.query(`select public.platform_set_billing($1, 'fixed', 300, 4000000)`, [
+        s.tenantA,
+      ]),
+    );
+    await comoPlataforma((c) =>
+      c.query(`select public.platform_mark_paid($2, ${MES})`, [tz, s.tenantA]),
+    );
+
+    const fila = await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `select mode, amount_cents, base_cents
+         from public.billing_payments where tenant_id = $1`,
+        [s.tenantA],
+      );
+      return rows[0];
+    });
+
+    expect(fila.mode).toBe("fixed");
+    expect(Number(fila.amount_cents)).toBe(4000000);
+    // La base se guarda igual, aunque no se haya usado para el importe.
+    expect(Number(fila.base_cents)).toBe(300000);
+  });
+
+  it("el recordatorio usa el mismo importe que la cuenta", async () => {
+    await comoPlataforma((c) =>
+      c.query(`select public.platform_set_billing($1, 'fixed', 300, 7500000)`, [
+        s.tenantA,
+      ]),
+    );
+
+    const r = await comoPlataforma(async (c) => {
+      const { rows } = await c.query(
+        `select public.platform_nudge($2, ${MES}) as r`,
+        [tz, s.tenantA],
+      );
+      return rows[0].r as { ok: boolean; total_cents: number };
+    });
+
+    expect(r.ok).toBe(true);
+    expect(r.total_cents).toBe(7500000);
+    expect((await cuenta()).meses[0].total_cents).toBe(7500000);
+
+    await asAdmin((c) =>
+      c.query(`delete from public.billing_nudges where tenant_id = $1`, [
+        s.tenantA,
+      ]),
+    );
+  });
+
+  it("un negocio no puede cambiarse su propia forma de cobro", async () => {
+    await expect(
+      asUser(s.owner, (c) =>
+        c.query(
+          `select public.platform_set_billing($1, 'fixed', 300, 100)`,
+          [s.tenantA],
+        ),
+      ),
+    ).rejects.toMatchObject({ code: "42501" });
+
+    await expect(
+      asUser(s.owner, (c) =>
+        c.query(`select public.platform_set_month_amount($2, ${MES}, 100)`, [
+          tz,
+          s.tenantA,
+        ]),
       ),
     ).rejects.toMatchObject({ code: "42501" });
   });

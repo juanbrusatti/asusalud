@@ -5,26 +5,37 @@
  * Lo que consulta la base está en `data/cuenta.ts`, que sí es sólo servidor.
  */
 
+/** Cómo se le cobra a un negocio. */
+export type Modo = "percent" | "fixed";
+
 /** Lo facturado y lo que sale de ahí, para un mes. */
 export type MesBase = {
   periodo: string;
   cantidad: number;
   /** Lo que facturó el negocio ese mes. */
   base_cents: number;
-  /** La comisión de Dlay sobre esa base. */
+  /** Lo que Dlay le cobra por ese mes. */
   total_cents: number;
 };
 
 export type MesCobrado = MesBase & {
   comision_bps: number;
+  modo: Modo;
   pagado: boolean;
   pagado_el: string | null;
   /** El cobro de Mercado Pago, si ya se generó. */
   link: string | null;
 };
 
+export type MesPendiente = MesBase & {
+  /** El importe de este mes se puso a mano, no sale de lo pactado. */
+  a_mano: boolean;
+};
+
 export type Cuenta = {
+  modo: Modo;
   comision_bps: number;
+  fijo_cents: number;
   mes_actual: MesBase;
   meses: MesCobrado[];
 };
@@ -43,9 +54,11 @@ export type NegocioPlataforma = {
   slug: string;
   estado: string;
   creado: string;
+  modo: Modo;
   comision_bps: number;
+  fijo_cents: number;
   mes_actual: MesBase;
-  pendientes: MesBase[];
+  pendientes: MesPendiente[];
   pendiente_total_cents: number;
   ultimo_pago: { periodo: string; monto_cents: number; fecha: string } | null;
 };

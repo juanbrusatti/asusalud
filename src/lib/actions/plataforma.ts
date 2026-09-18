@@ -19,7 +19,8 @@ type Respuesta = { ok: boolean; error?: string };
 async function llamar(
   fn: | "platform_mark_paid"
   | "platform_unmark_paid"
-  | "platform_set_commission"
+  | "platform_set_billing"
+  | "platform_set_month_amount"
   | "platform_nudge",
   args: Record<string, unknown>,
   exito: string,
@@ -68,14 +69,46 @@ export async function deshacerPago(
   );
 }
 
-export async function cambiarComision(
+/**
+ * Cambia cómo se le cobra a un negocio.
+ *
+ * Se mandan los dos valores siempre, no sólo el de la forma elegida: así,
+ * quien vuelve del fijo al porcentaje encuentra el porcentaje que tenía y no
+ * un cero.
+ */
+export async function cambiarCobro(
   tenantId: string,
+  modo: "percent" | "fixed",
   bps: number,
+  fijoCents: number,
 ): Promise<PlataformaState> {
   return llamar(
-    "platform_set_commission",
-    { p_tenant: tenantId, p_bps: bps },
-    "Porcentaje actualizado.",
+    "platform_set_billing",
+    {
+      p_tenant: tenantId,
+      p_mode: modo,
+      p_bps: bps,
+      p_fixed_cents: fijoCents,
+    },
+    modo === "fixed" ? "Pasó a abono fijo." : "Pasó a porcentaje.",
+  );
+}
+
+/**
+ * Pone a mano el importe de un mes, o lo borra para volver a lo pactado.
+ *
+ * Es para apartarse de lo acordado sin cambiar el acuerdo: un mes flojo que se
+ * perdona, un arreglo puntual.
+ */
+export async function cambiarImporteMes(
+  tenantId: string,
+  periodo: string,
+  cents: number | null,
+): Promise<PlataformaState> {
+  return llamar(
+    "platform_set_month_amount",
+    { p_tenant: tenantId, p_period: periodo, p_amount_cents: cents },
+    cents === null ? "Volvió a lo pactado." : "Importe actualizado.",
   );
 }
 
