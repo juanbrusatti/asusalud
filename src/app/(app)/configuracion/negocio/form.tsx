@@ -7,6 +7,7 @@ import { Select } from "@/components/ui/select";
 import { saveEstetica, type FormState } from "@/lib/actions/configuracion";
 import { TIMEZONES, type Branch, type Tenant } from "@/lib/configuracion";
 import { Guardar, Resultado } from "../_components/guardar";
+import { useRefrescarAlGuardar } from "../_components/refrescar";
 
 const INITIAL: FormState = { error: null };
 
@@ -18,6 +19,7 @@ export function FormEstetica({
   branch: Branch | null;
 }) {
   const [state, action] = useActionState(saveEstetica, INITIAL);
+  useRefrescarAlGuardar(state.notice);
 
   return (
     <form action={action} className="grid gap-4">

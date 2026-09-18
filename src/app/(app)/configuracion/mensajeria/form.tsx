@@ -8,6 +8,7 @@ import { formatPrice } from "@/lib/money";
 import { saveMensajeria, type FormState } from "@/lib/actions/configuracion";
 import type { MessagingSettings } from "@/lib/configuracion";
 import { Guardar, Resultado } from "../_components/guardar";
+import { useRefrescarAlGuardar } from "../_components/refrescar";
 
 const INITIAL: FormState = { error: null };
 
@@ -23,6 +24,7 @@ export function FormMensajeria({
   gastadoCents: number;
 }) {
   const [state, action] = useActionState(saveMensajeria, INITIAL);
+  useRefrescarAlGuardar(state.notice);
 
   return (
     <form action={action} className="grid gap-4">
