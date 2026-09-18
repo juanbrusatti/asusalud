@@ -263,12 +263,15 @@ Se apaga por regla, en «Avisar igual si el turno se carga tarde».
 
 ## Lo que todavía no está
 
-- **El emisor.** La cola se llena y se puede mirar, pero nadie entrega los
-  mensajes todavía. Falta el canal de WhatsApp (bloqueado por la verificación
-  de empresa ante Meta), el correo por Brevo y las push de la PWA.
-- **El despachador no está agendado** por lo mismo: sacar filas de la cola sin
-  emisor sólo las marcaría como enviadas sin que nadie reciba nada.
-- **Webhooks de estado**: entregado, leído, fallido. Llegan con el canal de
-  WhatsApp.
-- **Corte automático por calidad**: cuando haya métricas reales de entrega.
-- **Presupuesto mensual**: el campo existe, falta que el despachador lo mire.
+- **Corte automático por calidad**: cuando Meta marca el número en rojo, el
+  panel lo muestra pero nadie frena los envíos solo.
+- **El correo**: el canal está modelado y apagado. El primer cliente decidió
+  que sólo usa WhatsApp, así que no se terminó.
+- **Campañas**: esto manda recordatorios de turnos, no promociones.
+
+### Lo que sí está, y antes decía acá que faltaba
+
+El **emisor entrega de verdad**: el 16/09 llegaron los primeros mensajes a un
+teléfono real, a la hora que correspondía. El **despachador está agendado** en
+`pg_cron`, cada minuto. Los **webhooks de estado** llegan desde el 12/09. El
+**presupuesto mensual** lo mira el despachador antes de cada envío.

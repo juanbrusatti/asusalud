@@ -197,10 +197,11 @@ ser una alerta.
 
 - **Vista de semana y de calendario**: hoy se ve un día por vez, con la tira
   semanal para saltar. La vista de líneas de tiempo llega si hace falta.
-- **Horarios de atención**: no hay tabla de horarios porque todavía nadie la
-  consume. Se agrega con la reserva online, que sí necesita calcular huecos
-  disponibles.
 - **Varias profesionales**: el turno ya tiene `staff_id`, pero la interfaz no
   lo usa mientras haya una sola.
-- **Arrastrar para mover un turno**: por ahora se reprograma con fecha y hora.
+- **Arrastrar para mover un turno**: hay botón de mover —con fecha y hora— y
+  el turno queda marcado como movido, pero no se arrastra en la grilla.
+
+Los **horarios de atención** ya tienen su tabla (`business_hours`) y su
+pantalla: los consume la reserva online para calcular huecos.
 - **Señas online**: cobrar la seña desde el sistema, no sólo registrarla.

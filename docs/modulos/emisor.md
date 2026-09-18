@@ -163,11 +163,15 @@ Devuelve `{"tomados":N,"enviados":N,"fallados":N}`.
 
 ## Lo que todavía no está
 
-- **Webhooks de Meta**: entregado, leído, fallido, y las respuestas de la
-  cliente. Sin esto no hay tasa de lectura ni corte automático por calidad.
-- **Notificaciones push**: el canal más barato de los tres y el único que
-  falta.
 - **Corte automático por calidad**: el panel ya avisa si Meta marca la cuenta
-  en rojo, pero nadie actualiza ese dato todavía.
-- **Tope de gasto mensual**: el campo existe, falta que el emisor lo mire.
-- **Token en Vault**.
+  en rojo, pero nadie corta los envíos solo.
+- **Token en Vault**: hoy vive cifrado en su tabla, sin permisos para nadie.
+- **Reintento con espera creciente**: hoy son tres intentos parejos.
+
+### Lo que sí está, y antes decía acá que faltaba
+
+Los tres canales entregan. Las **notificaciones push** salen desde el 16/09.
+Los **webhooks de Meta** —entregado, leído, fallido y las respuestas de los
+botones— están desde el 12/09 y son los que hacen que apretar «Confirmar» en
+el recordatorio ponga el turno en verde. El **tope de gasto mensual** lo mira
+el emisor antes de cada envío, con prueba propia en `tope-de-gasto.test.ts`.

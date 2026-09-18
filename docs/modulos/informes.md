@@ -137,4 +137,6 @@ algo está roto.
 - **Clientes**: cuántas nuevas, cuántas volvieron, cuáles hace meses que no
   vienen. Es la base para las campañas segmentadas de la fase 4.
 - **Por profesional**: cuando la agenda se reparta por persona.
-- **Exportar a Excel**, para la contadora.
+
+Para la contadora ya hay salida: *Ajustes → Tus datos* baja los turnos de un
+período en un archivo que Excel abre bien.

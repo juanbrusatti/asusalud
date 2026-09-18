@@ -140,9 +140,10 @@ una con teléfono ilegible **se carga igual** con el texto crudo.
 
 ## Lo que todavía no está
 
-- Último turno, próximo turno y total facturado **propios**: llegan con la
-  agenda. Por ahora sólo se ve lo importado.
-- Fusionar dos fichas duplicadas en una.
-- Exportar la lista.
-- `client_channels` con estado de entrega y aperturas: llega en la fase 2, con
-  el motor de envíos.
+- **Fusionar dos fichas duplicadas** en una. Con 6.500 fichas importadas, va
+  a hacer falta.
+- **Historial completo en la ficha**: hoy se ve el próximo turno; falta la
+  lista de los anteriores con lo que se hizo en cada uno.
+- **`client_channels`** con estado de entrega y aperturas por persona.
+
+La lista **ya se puede exportar**, desde *Ajustes → Tus datos*.

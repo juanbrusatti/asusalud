@@ -95,3 +95,5 @@ negocio B. Si devuelve una sola fila, la función no está lista.
 - [Conectar WhatsApp](docs/modulos/whatsapp.md)
 - [Caja](docs/modulos/caja.md)
 - [Informes](docs/modulos/informes.md)
+- [Tu equipo](docs/modulos/equipo.md)
+- [La cuenta de Dlay](docs/modulos/cuenta.md)
