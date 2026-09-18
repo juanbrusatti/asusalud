@@ -367,6 +367,7 @@ export type Database = {
       }
       billing_links: {
         Row: {
+          amount_cents: number
           created_at: string
           period: string
           preference_id: string
@@ -374,6 +375,7 @@ export type Database = {
           url: string
         }
         Insert: {
+          amount_cents?: number
           created_at?: string
           period: string
           preference_id: string
@@ -381,6 +383,7 @@ export type Database = {
           url: string
         }
         Update: {
+          amount_cents?: number
           created_at?: string
           period?: string
           preference_id?: string
@@ -2006,7 +2009,12 @@ export type Database = {
         Returns: number
       }
       billing_link_save: {
-        Args: { p_period: string; p_preference_id: string; p_url: string }
+        Args: {
+          p_amount_cents?: number
+          p_period: string
+          p_preference_id: string
+          p_url: string
+        }
         Returns: Json
       }
       billing_nudge: { Args: never; Returns: Json }
@@ -2260,7 +2268,11 @@ export type Database = {
         Returns: undefined
       }
       rpc_mercadopago_paid: {
-        Args: { p_external_reference: string; p_payment_id: string }
+        Args: {
+          p_external_reference: string
+          p_paid_cents?: number
+          p_payment_id: string
+        }
         Returns: Json
       }
       rpc_platform_admin_add: { Args: { p_email: string }; Returns: Json }
