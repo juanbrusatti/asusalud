@@ -73,7 +73,7 @@ export function Calculadora() {
           etiqueta="Turnos por semana"
           valor={turnos}
           min={5}
-          max={150}
+          max={500}
           paso={5}
           onChange={setTurnos}
           formato={(v) => String(v)}
