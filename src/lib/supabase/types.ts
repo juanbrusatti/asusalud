@@ -537,6 +537,7 @@ export type Database = {
           created_at: string
           enabled: boolean
           max_days_ahead: number
+          max_new_clients_per_hour: number
           max_open_per_client: number
           max_reschedules: number
           min_advance_hours: number
@@ -554,6 +555,7 @@ export type Database = {
           created_at?: string
           enabled?: boolean
           max_days_ahead?: number
+          max_new_clients_per_hour?: number
           max_open_per_client?: number
           max_reschedules?: number
           min_advance_hours?: number
@@ -571,6 +573,7 @@ export type Database = {
           created_at?: string
           enabled?: boolean
           max_days_ahead?: number
+          max_new_clients_per_hour?: number
           max_open_per_client?: number
           max_reschedules?: number
           min_advance_hours?: number
@@ -1049,6 +1052,53 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "clients_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invitations: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          label: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          tenant_id: string
+          token: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          label?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          tenant_id: string
+          token?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          label?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          tenant_id?: string
+          token?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -2327,6 +2377,7 @@ export type Database = {
           p256dh: string
         }[]
       }
+      rpc_tenant_owner: { Args: { p_tenant: string }; Returns: Json }
       rpc_webhook_secrets: {
         Args: { p_phone_number_id: string }
         Returns: {
@@ -2357,6 +2408,16 @@ export type Database = {
           recipients: number
         }[]
       }
+      team_invite: {
+        Args: {
+          p_label?: string
+          p_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: Json
+      }
+      team_join: { Args: { p_token: string }; Returns: Json }
+      team_members: { Args: never; Returns: Json }
+      team_remove: { Args: { p_user: string }; Returns: Json }
       unregister_push_subscription: {
         Args: { p_endpoint: string }
         Returns: undefined

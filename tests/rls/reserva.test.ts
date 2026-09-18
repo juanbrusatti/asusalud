@@ -1,4 +1,12 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+} from "vitest";
 import type { PoolClient } from "pg";
 import { asAdmin, asUser, expectRejected, pool } from "./helpers";
 import { setupScenario, teardownScenario, type Scenario } from "./fixtures";
@@ -529,5 +537,106 @@ describe("reservar", () => {
       const { rows } = await c.query(`select public.booking_page('no-existe') as p`);
       expect(rows[0].p).toBeNull();
     });
+  });
+});
+
+describe("el freno contra el que cambia de teléfono", () => {
+  /**
+   * El tope de turnos abiertos es por ficha, y la ficha se busca por teléfono.
+   * Con un número nuevo en cada reserva, ese tope no frena nada: por eso hay
+   * un segundo freno sobre cuántas fichas nuevas se pueden crear por hora.
+   */
+  beforeEach(async () => {
+    // Las fichas que ya existen cuentan para la ventana de una hora, así que
+    // se las manda al pasado: la prueba tiene que medir sólo lo que crea.
+    await asAdmin((c) =>
+      c.query(
+        `update public.clients set created_at = now() - interval '2 hours'
+         where tenant_id = $1`,
+        [s.tenantA],
+      ),
+    );
+  });
+
+  afterEach(async () => {
+    await asAdmin(async (c) => {
+      // Los turnos primero: la ficha no se borra si tiene alguno colgando, y
+      // esa restricción está puesta a propósito.
+      await c.query(
+        `delete from public.appointments a
+         using public.clients c
+         where a.client_id = c.id
+           and c.tenant_id = $1 and c.phone_e164 like '+54977%'`,
+        [s.tenantA],
+      );
+      await c.query(
+        `delete from public.clients
+         where tenant_id = $1 and phone_e164 like '+54977%'`,
+        [s.tenantA],
+      );
+      await c.query(
+        `update public.booking_settings set max_new_clients_per_hour = 6
+         where tenant_id = $1`,
+        [s.tenantA],
+      );
+    });
+  });
+
+  async function reservar(telefono: string, hora: string) {
+    return comoVisitante(async (c) => {
+      const { rows } = await c.query(
+        `select public.booking_create($1, $2::uuid[], ($3 || $4)::timestamptz,
+                                      'Bot', 'Uno', $5) as r`,
+        [slug, [masaje], LUNES, hora, telefono],
+      );
+      await c.query("commit");
+      return rows[0].r as { ok: boolean; error?: string };
+    });
+  }
+
+  it("corta cuando se crean demasiadas fichas nuevas seguidas", async () => {
+    await asAdmin((c) =>
+      c.query(
+        `update public.booking_settings set max_new_clients_per_hour = 2
+         where tenant_id = $1`,
+        [s.tenantA],
+      ),
+    );
+
+    expect((await reservar("+5497700001", "T13:00:00Z")).ok).toBe(true);
+    expect((await reservar("+5497700002", "T14:00:00Z")).ok).toBe(true);
+
+    const tercera = await reservar("+5497700003", "T15:00:00Z");
+    expect(tercera.ok).toBe(false);
+    expect(tercera.error).toMatch(/muchas reservas juntas/i);
+  });
+
+  it("a quien ya es cliente no lo frena nunca", async () => {
+    await asAdmin((c) =>
+      c.query(
+        `update public.booking_settings set max_new_clients_per_hour = 1
+         where tenant_id = $1`,
+        [s.tenantA],
+      ),
+    );
+
+    // Su ficha ya existe desde antes, así que el tope de fichas nuevas no
+    // tiene nada que ver con ella.
+    await asAdmin((c) =>
+      c.query(
+        `insert into public.clients
+           (tenant_id, first_name, phone_e164, phone_raw, created_at)
+         values ($1, 'Vieja', '+5497700099', '+5497700099',
+                 now() - interval '2 hours')`,
+        [s.tenantA],
+      ),
+    );
+
+    // Se llena el cupo de fichas nuevas con otra persona.
+    expect((await reservar("+5497700010", "T16:00:00Z")).ok).toBe(true);
+
+    // Y la clienta de siempre reserva igual.
+    const suya = await reservar("+5497700099", "T17:00:00Z");
+    expect(suya.ok).toBe(true);
   });
 });
