@@ -4,12 +4,15 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Field } from "@/components/ui/field";
+import { Copiable } from "@/components/ui/copiable";
 import {
   cambiarCobro,
   cambiarImporteMes,
   deshacerPago,
+  generarEnlaceClave,
   marcarPagado,
   recordarCuenta,
+  type EnlaceClave,
   type PlataformaState,
 } from "@/lib/actions/plataforma";
 import {
@@ -47,6 +50,9 @@ export function Negocio({ negocio }: { negocio: NegocioPlataforma }) {
   // El importe de un mes puntual.
   const [editandoMes, setEditandoMes] = useState<string | null>(null);
   const [importeMes, setImporteMes] = useState("");
+
+  // El enlace para que pongan una contraseña nueva.
+  const [enlace, setEnlace] = useState<EnlaceClave | null>(null);
 
   const correr = (fn: () => Promise<PlataformaState>) =>
     empezar(async () => {
@@ -132,6 +138,46 @@ export function Negocio({ negocio }: { negocio: NegocioPlataforma }) {
             </div>
           )}
         </dl>
+
+        <div className="grid gap-2 border-t-[1.5px] border-line pt-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-[13.5px] text-muted">
+              ¿Se olvidaron la contraseña?
+            </p>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={pendiente}
+              onClick={() =>
+                empezar(async () => {
+                  setEnlace(await generarEnlaceClave(negocio.tenant_id));
+                })
+              }
+            >
+              {enlace?.url ? "Generar otro" : "Generar enlace"}
+            </Button>
+          </div>
+
+          {enlace?.error && (
+            <p role="alert" className="text-[12.5px] text-danger">
+              {enlace.error}
+            </p>
+          )}
+
+          {enlace?.url && (
+            <div className="grid gap-2 rounded-[14px] bg-surface-2 p-3.5">
+              <Copiable
+                label={`Enlace para ${enlace.correo}`}
+                valor={enlace.url}
+                hint="Mandáselo por WhatsApp. Sirve una sola vez y vence en una hora."
+              />
+              <p className="text-[12px] leading-relaxed text-faint">
+                Quien lo abra entra a la cuenta y elige su contraseña. Tratalo
+                como una llave: no lo pegues en ningún grupo.
+              </p>
+            </div>
+          )}
+        </div>
 
         {editandoCobro && (
           <div className="grid gap-3 rounded-card border-[1.5px] border-line bg-surface-2 p-4">

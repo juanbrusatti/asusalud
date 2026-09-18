@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { publicEnv } from "@/lib/env";
 
 /**
  * El panel de Dlay.
@@ -127,4 +129,63 @@ export async function recordarCuenta(
     { p_tenant: tenantId, p_period: periodo },
     "Recordatorio enviado.",
   );
+}
+
+export type EnlaceClave = {
+  error: string | null;
+  url?: string;
+  correo?: string;
+};
+
+/**
+ * Un enlace de un solo uso para que un negocio ponga una contraseña nueva.
+ *
+ * La contraseña no se puede mostrar y no es un capricho: lo que guarda
+ * Supabase es un hash de una vía, el texto original no existe en ningún lado.
+ * Guardar una copia legible para poder dictarla sería construir a propósito el
+ * agujero: si este panel se filtra, se filtran las contraseñas de todos los
+ * negocios, y como la gente repite contraseña, con eso se les entra a otras
+ * cosas.
+ *
+ * Esto resuelve lo mismo sin ese precio: se genera el enlace, se copia y se
+ * manda por donde sea. Quien lo recibe elige su contraseña y Dlay nunca la ve.
+ */
+export async function generarEnlaceClave(
+  tenantId: string,
+): Promise<EnlaceClave> {
+  const supabase = await createClient();
+
+  // La puerta es la de siempre: si quien pregunta no es de la plataforma, la
+  // base lo rechaza y no se genera nada.
+  const { error: puerta } = await supabase.rpc("platform_accounts");
+  if (puerta) return { error: "Esto es del panel de Dlay." };
+
+  const admin = createAdminClient();
+
+  const { data: duenio, error: errorDuenio } = await admin.rpc(
+    "rpc_tenant_owner",
+    { p_tenant: tenantId },
+  );
+
+  if (errorDuenio) return { error: "No se pudo buscar al titular." };
+
+  const titular = duenio as unknown as { correo?: string } | null;
+  if (!titular?.correo) {
+    return { error: "Ese negocio no tiene a nadie con cuenta." };
+  }
+
+  const { data, error } = await admin.auth.admin.generateLink({
+    type: "recovery",
+    email: titular.correo,
+  });
+
+  if (error || !data?.properties?.hashed_token) {
+    return { error: "No se pudo generar el enlace." };
+  }
+
+  const url = new URL("/auth/confirmar", publicEnv.NEXT_PUBLIC_SITE_URL);
+  url.searchParams.set("token_hash", data.properties.hashed_token);
+  url.searchParams.set("type", "recovery");
+
+  return { error: null, url: url.toString(), correo: titular.correo };
 }

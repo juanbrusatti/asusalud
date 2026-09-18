@@ -99,6 +99,17 @@ export function FormReservas({
             className="w-32"
             hint="El freno contra quien reserva media agenda y después no viene."
           />
+
+          <Field
+            label="Clientes nuevos por hora"
+            name="maxNewClientsPerHour"
+            type="number"
+            min={1}
+            max={200}
+            defaultValue={settings.max_new_clients_per_hour}
+            className="w-32"
+            hint="El tope de arriba es por persona, y con un teléfono nuevo vuelve a cero. Este frena a quien cambia de número en cada reserva. A quien ya es cliente tuyo no lo afecta nunca. Subilo si hacés una promoción."
+          />
         </CardBody>
       </Card>
 
