@@ -207,6 +207,9 @@ lo único que queda por buscar en Meta.
   aprobada como Tech Provider.
 - **Leer la salud desde Meta**: hoy el estado se actualiza cuando Meta avisa por
   webhook. Una consulta periódica daría el dato aunque no haya novedades.
-- **Crear las plantillas desde el panel.** Hoy se cargan en el panel de Meta y
-  se copia el nombre. Es además uno de los videos que pide el App Review.
-- **El token en Vault**, que sigue pendiente de la fase 2.
+- **El token en Vault**, que sigue pendiente.
+- **Consultar la salud del número** sin esperar a que Meta avise.
+
+Las **plantillas ya se crean desde el panel**, con el nombre y el cuerpo
+exactos que el emisor espera. Era el paso del alta que más se rompía: un guión
+de más y Meta aprueba una plantilla que después no encuentra nadie.

@@ -105,4 +105,7 @@ teléfono escribir cuando ya es tarde. Los detalles están en
 - **Más de una sucursal**: las pantallas asumen la principal.
 - **Horarios por profesional**, distintos de los del local.
 - **Feriados**: por ahora se resuelven bloqueando la agenda desde la agenda.
-- **Conexión de WhatsApp**, que se hace al final y con acompañamiento.
+
+Las pantallas son ocho: negocio, horarios, reserva online, WhatsApp, envío de
+mensajes, **tus datos** (exportar), **tu equipo** (invitar) y **tu cuenta** (lo
+que se le paga a Dlay). Las tres últimas son de septiembre.

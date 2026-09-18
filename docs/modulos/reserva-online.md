@@ -131,6 +131,16 @@ agenda.
 
 ## Lo que todavía no está
 
-- **Señas por Mercado Pago**, para bajar el ausentismo. Fase 3.
-- **Límite por IP**: hoy el freno es por teléfono, que alcanza para el uso real
-  pero no para alguien decidido a molestar.
+- **Señas por Mercado Pago**, para bajar el ausentismo.
+- **Límite por IP**: los dos frenos de abajo son por datos del negocio, no por
+  origen. Alcanzan para lo que pasa de verdad; contra alguien decidido y con
+  muchas IP, no.
+
+### Los dos frenos
+
+- **Turnos abiertos por persona** (`max_open_per_client`, tres por defecto).
+  Para al caso común: alguien que reserva media agenda y no viene.
+- **Fichas nuevas por hora** (`max_new_clients_per_hour`, seis por defecto).
+  Para al que cambia de teléfono en cada reserva, que es como se esquiva el
+  freno anterior: con un número nuevo, la ficha es nueva y la cuenta arranca
+  de cero. A quien ya es cliente no lo toca nunca.

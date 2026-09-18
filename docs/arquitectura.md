@@ -99,6 +99,9 @@ ser quien peor conexión tiene.
 
 ## Lo que todavía no está
 
-El scheduler, las Edge Functions y los canales de envío llegan en la fase 2.
-La arquitectura ya los contempla; el código, no. No hay `pg_cron` habilitado
-todavía a propósito: se activa cuando haya algo que despachar.
+- **Varias sucursales.** El modelo las contempla —`branches` existe y todo
+  cuelga de ahí— pero las pantallas asumen la principal.
+- **Monitoreo.** Si el emisor se traba a las tres de la mañana, nadie se
+  entera hasta que falta un mensaje. Ya pasó una vez y se descubrió tarde.
+  Existe `rpc_avisos_diagnostico`, pero hay que ir a preguntarle.
+- **Respaldos propios.** Hoy son los del plan de Supabase.
