@@ -25,6 +25,7 @@ export default async function CuentaPage() {
   const cuenta = await getCuenta();
   if (!cuenta) notFound();
 
+  const esFijo = cuenta.modo === "fixed";
   const porcentaje = formatComision(cuenta.comision_bps);
   const sinPagar = cuenta.meses.filter((m) => !m.pagado);
   const deuda = sinPagar.reduce((t, m) => t + m.total_cents, 0);
@@ -37,9 +38,20 @@ export default async function CuentaPage() {
           Tu cuenta
         </h1>
         <p className="mt-1 max-w-prose text-[14.5px] text-muted">
-          Dlay se cobra el {porcentaje} de lo que facturás. Un turno de $ 1.000
-          paga {porcentaje} de eso y uno de $ 20.000 también: siempre la misma
-          proporción. Los cancelados y los que no vinieron no cuentan.
+          {esFijo ? (
+            <>
+              Tenés un abono fijo de {formatPrice(cuenta.fijo_cents)} por mes,
+              sin importar cuánto factures. Abajo ves igual lo que facturaste,
+              para que puedas comparar.
+            </>
+          ) : (
+            <>
+              Dlay se cobra el {porcentaje} de lo que facturás. Un turno de $
+              1.000 paga {porcentaje} de eso y uno de $ 20.000 también: siempre
+              la misma proporción. Los cancelados y los que no vinieron no
+              cuentan.
+            </>
+          )}
         </p>
       </div>
 
@@ -52,15 +64,20 @@ export default async function CuentaPage() {
           <p className="text-[14px] opacity-90">
             {cuenta.mes_actual.cantidad === 0
               ? "Todavía no hubo turnos este mes."
-              : `${porcentaje} de ${formatPrice(
-                  cuenta.mes_actual.base_cents,
-                )} facturados en ${cuenta.mes_actual.cantidad} ${
-                  cuenta.mes_actual.cantidad === 1 ? "turno" : "turnos"
-                }`}
+              : esFijo
+                ? `Llevás ${formatPrice(cuenta.mes_actual.base_cents)} facturados en ${
+                    cuenta.mes_actual.cantidad
+                  } ${cuenta.mes_actual.cantidad === 1 ? "turno" : "turnos"}`
+                : `${porcentaje} de ${formatPrice(
+                    cuenta.mes_actual.base_cents,
+                  )} facturados en ${cuenta.mes_actual.cantidad} ${
+                    cuenta.mes_actual.cantidad === 1 ? "turno" : "turnos"
+                  }`}
           </p>
           <p className="border-t-[1.5px] border-white/25 pt-3 text-[13px] leading-relaxed opacity-75">
-            El mes todavía no cerró, así que este número va a seguir subiendo.
-            Se cobra cuando termina.
+            {esFijo
+              ? "Es el mismo todos los meses. Se cobra cuando el mes termina."
+              : "El mes todavía no cerró, así que este número va a seguir subiendo. Se cobra cuando termina."}
           </p>
         </CardBody>
       </Card>
@@ -113,7 +130,9 @@ export default async function CuentaPage() {
                       {formatPrice(m.total_cents)}
                     </p>
                     <p className="text-[12px] text-faint tabular-nums">
-                      {formatComision(m.comision_bps)}
+                      {m.modo === "fixed"
+                        ? "abono"
+                        : formatComision(m.comision_bps)}
                     </p>
                   </div>
 
@@ -132,10 +151,14 @@ export default async function CuentaPage() {
       </Card>
 
       <p className="px-1 text-[12.5px] leading-relaxed text-faint">
-        Los servicios con precio «a convenir» no suman a lo facturado, porque
-        el sistema no sabe cuánto salieron. Los mensajes de WhatsApp tampoco
-        están acá: los cobra Meta directamente contra la tarjeta que cargaste
-        en tu cuenta de WhatsApp.
+        {!esFijo && (
+          <>
+            Los servicios con precio «a convenir» no suman a lo facturado,
+            porque el sistema no sabe cuánto salieron.{" "}
+          </>
+        )}
+        Los mensajes de WhatsApp no están acá: los cobra Meta directamente
+        contra la tarjeta que cargaste en tu cuenta de WhatsApp.
       </p>
     </main>
   );
