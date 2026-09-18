@@ -209,10 +209,11 @@ y hay que contarla al pedir el permiso, no después.
 
 - **Preferencias por tipo de aviso**: hoy es todo o nada. Quien quiere
   enterarse de las cancelaciones pero no de cada reserva no tiene cómo.
-- **Probado de punta a punta**: el runtime de Edge Functions no levanta en el
-  entorno local de este proyecto, así que el envío real —el paso que va de la
-  cola al teléfono— todavía no se ejecutó nunca. Lo que sí está probado es todo
-  lo que pasa en la base.
+- **Probado en local**: el runtime de Edge Functions no levanta en el entorno
+  local de este proyecto, así que el tramo que va de la cola al teléfono sólo
+  se puede probar en un proyecto de verdad. En producción funciona desde el
+  16/09; lo que estaba trabado era `verify_jwt`, que devolvía 401 sin que
+  apareciera un error en ningún lado.
 - **Un resumen en pantalla** de los avisos, para quien no los tenía activados
   cuando pasaron.
 - **Ofrecerle el horario liberado** a otro cliente cuando entra una
