@@ -4,9 +4,25 @@
     {
       "name": "dlay",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 3000,
       "autoPort": true
+    },
+    {
+      "name": "dlay-produccion",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "start",
+        "--",
+        "--port",
+        "3200"
+      ],
+      "port": 3200,
+      "autoPort": false
     }
   ]
 }
