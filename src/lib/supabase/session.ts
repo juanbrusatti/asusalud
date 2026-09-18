@@ -4,6 +4,10 @@ import { publicEnv } from "@/lib/env";
 
 /** Rutas que se pueden ver sin sesión. Todo lo demás pide entrar. */
 const PUBLIC_PREFIXES = [
+  // La portada. Es la única entrada de la lista que no lleva nada debajo: el
+  // `isPublic` de abajo compara igualdad exacta o prefijo con barra, así que
+  // "/" abre la portada y no el resto del sistema.
+  "/",
   "/entrar",
   "/auth",
   "/manifest.webmanifest",
