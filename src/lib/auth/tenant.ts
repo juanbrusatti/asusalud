@@ -20,6 +20,14 @@ export type Membership = {
  * únicamente sus membresías.
  */
 export const getMemberships = cache(async (): Promise<Membership[]> => {
+  // Sin sesión no hay nada que preguntar, y preguntar igual rompe: la tabla no
+  // tiene ningún permiso para `anon` —bien que no lo tenga— así que la
+  // consulta vuelve con un error en vez de con una lista vacía. Desde que la
+  // portada vive en la misma dirección que el inicio, por acá pasa también
+  // gente sin cuenta.
+  const user = await getCurrentUser();
+  if (!user) return [];
+
   const supabase = await createClient();
 
   const { data, error } = await supabase
