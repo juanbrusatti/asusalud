@@ -199,7 +199,10 @@ export type Database = {
           ends_at: string
           id: string
           manage_token: string
+          moved_at: string | null
+          moved_count: number
           notes: string | null
+          original_starts_at: string | null
           price_cents: number
           rescheduled_count: number
           source: Database["public"]["Enums"]["appointment_source"]
@@ -220,7 +223,10 @@ export type Database = {
           ends_at: string
           id?: string
           manage_token?: string
+          moved_at?: string | null
+          moved_count?: number
           notes?: string | null
+          original_starts_at?: string | null
           price_cents?: number
           rescheduled_count?: number
           source?: Database["public"]["Enums"]["appointment_source"]
@@ -241,7 +247,10 @@ export type Database = {
           ends_at?: string
           id?: string
           manage_token?: string
+          moved_at?: string | null
+          moved_count?: number
           notes?: string | null
+          original_starts_at?: string | null
           price_cents?: number
           rescheduled_count?: number
           source?: Database["public"]["Enums"]["appointment_source"]
