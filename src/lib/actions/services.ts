@@ -29,7 +29,7 @@ const schema = z
   .object({
     name: z.string().trim().min(2, "Poné el nombre del servicio."),
     description: z.string().trim().max(500).optional(),
-    preparationNote: z.string().trim().max(300).optional(),
+    preparationNote: z.string().trim().max(600).optional(),
     categoryId: z.string().uuid().nullable(),
     durationMinutes: z
       .number()
