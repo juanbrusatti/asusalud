@@ -551,3 +551,36 @@ describe("aislamiento", () => {
     });
   });
 });
+
+describe("la agenda escuchando en vivo", () => {
+  it("la tabla de cambios de estado está publicada en Realtime", async () => {
+    // De acá se entera la agenda, sin recargar, de que una clienta confirmó o
+    // canceló desde WhatsApp. Si alguien la saca de la publicación no falla
+    // nada: simplemente deja de pasar, que es la peor forma de romperse.
+    const publicadas = await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `select tablename from pg_publication_tables
+         where pubname = 'supabase_realtime'`,
+      );
+      return rows.map((r) => r.tablename as string);
+    });
+
+    expect(publicadas).toContain("appointment_status_history");
+  });
+
+  it("authenticated sólo puede leerla, nunca escribirla", async () => {
+    // El navegador se suscribe con la clave pública. Si además pudiera
+    // insertar, cualquiera con la consola abierta se inventaría el historial
+    // de su propio turno.
+    const permisos = await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `select privilege_type from information_schema.role_table_grants
+         where table_name = 'appointment_status_history'
+           and table_schema = 'public' and grantee = 'authenticated'`,
+      );
+      return rows.map((r) => r.privilege_type as string);
+    });
+
+    expect(permisos).toEqual(["SELECT"]);
+  });
+});
