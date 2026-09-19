@@ -3,7 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { leerGuardado, escribirGuardado, useHidratado } from "@/lib/navegador";
-import { sonarCancelado, sonarConfirmado } from "@/lib/sonidos";
+import {
+  LLAVE_SONIDOS,
+  sonarCancelado,
+  sonarConfirmado,
+} from "@/lib/sonidos";
 import { createClient } from "@/lib/supabase/client";
 
 /**
@@ -23,8 +27,6 @@ import { createClient } from "@/lib/supabase/client";
  * está mirando, y Realtime la respeta.
  */
 
-const LLAVE = "dlay:sonidos";
-
 type Cambio = { to_status: string; by_client: boolean };
 
 export function EnVivo({ tenantId }: { tenantId: string }) {
@@ -36,7 +38,7 @@ export function EnVivo({ tenantId }: { tenantId: string }) {
   // lee lo guardado. Encender es la opción de fábrica.
   const [elegido, setElegido] = useState<boolean | null>(null);
   const guardado = hidratado
-    ? leerGuardado<{ activo: boolean }>(LLAVE).activo !== false
+    ? leerGuardado<{ activo: boolean }>(LLAVE_SONIDOS).activo !== false
     : false;
   const activo = elegido ?? guardado;
 
@@ -82,7 +84,7 @@ export function EnVivo({ tenantId }: { tenantId: string }) {
       onClick={() => {
         const nuevo = !activo;
         setElegido(nuevo);
-        escribirGuardado(LLAVE, { activo: nuevo });
+        escribirGuardado(LLAVE_SONIDOS, { activo: nuevo });
         // Que se escuche lo que se acaba de encender, y de paso el navegador
         // despierta el audio con este mismo toque.
         if (nuevo) sonarConfirmado();

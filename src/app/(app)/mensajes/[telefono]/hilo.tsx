@@ -6,7 +6,11 @@ import { useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { responder, type FormState } from "@/lib/actions/mensajes";
+import {
+  marcarVisto,
+  responder,
+  type FormState,
+} from "@/lib/actions/mensajes";
 import type { Mensaje } from "@/lib/data/mensajes";
 import { createClient } from "@/lib/supabase/client";
 
@@ -54,6 +58,16 @@ export function Hilo({
   useEffect(() => {
     if (state.notice) caja.current?.reset();
   }, [state.notice]);
+
+  // Abrirla es haberla visto. Una sola vez por conversación: el contador de
+  // la barra se recalcula del lado del servidor y volver a marcarla en cada
+  // dibujo encadenaría refrescos.
+  const marcada = useRef<string | null>(null);
+  useEffect(() => {
+    if (marcada.current === telefono) return;
+    marcada.current = telefono;
+    void marcarVisto(telefono);
+  }, [telefono]);
 
   // Si contesta mientras la pantalla está abierta, aparece sin recargar.
   useEffect(() => {
