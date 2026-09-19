@@ -74,9 +74,12 @@ sesión.
 
 ### Por dónde le avisamos
 
-`auto` deja decidir a la cascada de canales: push, después correo (gratis) y
-sólo al final WhatsApp (con costo). Las otras tres son decisiones humanas que el
-sistema respeta y no pisa.
+`auto` deja decidir a la cascada de canales. El motor la sostiene entera —push,
+después correo, al final WhatsApp— pero una cuenta nueva nace con WhatsApp como
+único canal: las push piden que la clienta acepte notificaciones en el navegador
+y el correo pide tener correo cargado, así que la cascada terminaba bajando a
+WhatsApp igual. Volver a encender los otros es agregarlos a la regla. Las otras
+tres son decisiones humanas que el sistema respeta y no pisa.
 
 Quién la tomó y cuándo queda registrado. Volver a `auto` borra ese rastro.
 

@@ -18,12 +18,17 @@ const ANTES = [
   {
     titulo: "Un número nuevo, sólo para esto",
     detalle:
-      "El número que conectes deja de funcionar en la aplicación de WhatsApp del teléfono. Si usás ese mismo número para hablar con tus clientes, vas a perder esa conversación. Conseguí uno aparte: un chip nuevo alcanza.",
+      "El número que conectes deja de funcionar en la aplicación de WhatsApp del teléfono: los mensajes dejan de aparecer ahí y pasan a este sistema. Por eso va un chip aparte, y tu número de siempre sigue siendo el que tus clientas usan para escribirte.",
+  },
+  {
+    titulo: "Las respuestas llegan acá, no a tu teléfono",
+    detalle:
+      "Los botones de confirmar y cancelar se resuelven solos y te actualizan la agenda. Si además te escriben algo, el mensaje queda guardado en el sistema, pero todavía no hay una pantalla para leerlo y contestarlo a mano. Hasta que la haya, las charlas seguilas por tu número de siempre.",
   },
   {
     titulo: "Una tarjeta",
     detalle:
-      "Meta cobra por mensaje enviado. El sistema manda primero por notificación y por correo, que son gratis, y deja WhatsApp para quien no tiene otra vía. Aun así, hace falta una tarjeta cargada para que Meta habilite el envío.",
+      "Meta cobra cada mensaje que sale: hoy son $37,68 por recordatorio. Sin una tarjeta cargada no habilita el envío, así que este paso no se puede saltear.",
   },
   {
     titulo: "Un rato tranquilo",
