@@ -21,6 +21,8 @@ const EJEMPLO: Record<string, string> = {
   hora: "09:00",
   cuando: "lunes 14 de septiembre a las 09:00",
   servicio: "depilación definitiva",
+  mensaje: "No te depiles con cera ni pinza 15 días antes.",
+  // El nombre viejo del mismo hueco, por si alguien lo escribe a mano.
   preparacion: "No te depiles con cera ni pinza 15 días antes.",
   link: "https://dlay.app/t/a1b2c3",
 };

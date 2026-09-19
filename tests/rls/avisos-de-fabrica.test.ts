@@ -80,7 +80,7 @@ describe("una cuenta recién creada", () => {
     expect(franja.send_window_end).not.toBeNull();
   });
 
-  it("cada regla tiene plantilla para los tres canales", async () => {
+  it("cada regla nace con su plantilla de WhatsApp y con ninguna otra", async () => {
     const sueltas = await asAdmin(async (c) => {
       const { rows } = await c.query(
         `select r.name, array_agg(rt.channel::text order by rt.channel::text) as canales
@@ -95,8 +95,14 @@ describe("una cuenta recién creada", () => {
 
     expect(sueltas.length).toBeGreaterThan(0);
     for (const regla of sueltas) {
-      // Sin las tres, la cascada se queda sin salida justo en el canal gratis.
-      expect(regla.canales.sort()).toEqual(["email", "push", "whatsapp"]);
+      // Las clientas de una estética se manejan por WhatsApp: una push pide
+      // que acepten notificaciones en el navegador y el correo pide tener
+      // correo cargado, así que la cascada terminaba bajando a WhatsApp de
+      // todos modos, con cuatro plantillas de más para mantener.
+      //
+      // El motor de canales sigue entero: volver a encender correo es agregar
+      // el canal a la regla. Lo que cambió es con qué nace una cuenta.
+      expect(regla.canales, regla.name).toEqual(["whatsapp"]);
     }
   });
 

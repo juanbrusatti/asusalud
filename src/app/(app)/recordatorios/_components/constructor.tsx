@@ -74,7 +74,7 @@ export function Constructor({
   );
   const [offset, setOffset] = useState(Math.abs(rule?.offset_minutes ?? 1440));
   const [channels, setChannels] = useState<Channel[]>(
-    (rule?.channel_order as Channel[]) ?? ["push", "email", "whatsapp"],
+    (rule?.channel_order as Channel[]) ?? ["whatsapp"],
   );
   const [serviceIds, setServiceIds] = useState<string[]>(
     rule?.service_ids ?? [],

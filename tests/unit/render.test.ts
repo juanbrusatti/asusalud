@@ -158,3 +158,61 @@ describe("fecha y hora en un solo hueco", () => {
     expect(texto).not.toContain("{{");
   });
 });
+
+describe("el mensaje que escribe cada servicio", () => {
+  it("puede usar los huecos del turno adentro", () => {
+    // Es la razón de ser del cambio: la dueña escribe el mensaje entero en la
+    // pantalla del servicio, sin pasar por Recordatorios.
+    const texto = render("Che, {{mensaje}}", {
+      ...CTX,
+      preparation: "{{cliente}}, te esperamos el {{cuando}} para {{servicio}}.",
+    });
+
+    expect(texto).toBe(
+      "Che, Mirián, te esperamos el lunes, 14 de septiembre a las 09:00 " +
+        "para Depilación Definitiva.",
+    );
+  });
+
+  it("no se expande a sí mismo", () => {
+    // Dos pasadas y no tres: sin esto, un {{mensaje}} adentro del mensaje
+    // sería una recursión que cuelga al emisor.
+    const texto = render("{{mensaje}}", {
+      ...CTX,
+      preparation: "Antes de {{mensaje}} venir",
+    });
+    expect(texto).toBe("Antes de venir");
+  });
+
+  it("sigue respondiendo al nombre viejo del hueco", () => {
+    // Hay plantillas aprobadas en Meta que dicen {{preparacion}}. Cambiarles
+    // el nombre a mano las manda de vuelta a la cola de aprobación.
+    const ctx = { ...CTX, preparation: "Vení sin cremas." };
+    expect(render("{{preparacion}}", ctx)).toBe(render("{{mensaje}}", ctx));
+  });
+
+  it("aplana los renglones antes de mandárselos a Meta", () => {
+    // Un parámetro con saltos de línea, tabulaciones o cuatro espacios
+    // seguidos hace que Meta rechace el envío entero. Quien escribe el
+    // mensaje en un cuadro de tres renglones va a apretar Enter tarde o
+    // temprano, y ese Enter no puede costar el recordatorio.
+    const [parametro] = templateParameters("Hola. {{mensaje}}", {
+      ...CTX,
+      preparation: "Traé toalla.\n\nY vení sin cremas.\tGracias.",
+    });
+
+    expect(parametro).toBe("Traé toalla. Y vení sin cremas. Gracias.");
+    expect(parametro).not.toMatch(/[\n\r\t]/);
+    expect(parametro).not.toMatch(/ {4,}/);
+  });
+
+  it("no rompe el texto de los canales que sí admiten renglones", () => {
+    // El aplanado es sólo para los parámetros de Meta. Si mañana vuelve el
+    // correo, sus saltos de línea tienen que seguir llegando.
+    const texto = render("{{mensaje}}", {
+      ...CTX,
+      preparation: "Traé toalla.\nY vení sin cremas.",
+    });
+    expect(texto).toBe("Traé toalla.\nY vení sin cremas.");
+  });
+});
