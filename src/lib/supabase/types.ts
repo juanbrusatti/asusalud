@@ -2008,8 +2008,80 @@ export type Database = {
           },
         ]
       }
+      whatsapp_outbound: {
+        Row: {
+          body: string
+          client_id: string | null
+          error: string | null
+          id: string
+          sent_at: string
+          sent_by: string | null
+          tenant_id: string
+          to_phone: string
+          wa_message_id: string | null
+        }
+        Insert: {
+          body: string
+          client_id?: string | null
+          error?: string | null
+          id?: string
+          sent_at?: string
+          sent_by?: string | null
+          tenant_id: string
+          to_phone: string
+          wa_message_id?: string | null
+        }
+        Update: {
+          body?: string
+          client_id?: string | null
+          error?: string | null
+          id?: string
+          sent_at?: string
+          sent_by?: string | null
+          tenant_id?: string
+          to_phone?: string
+          wa_message_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_outbound_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_outbound_sent_by_fkey"
+            columns: ["sent_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_outbound_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
+      whatsapp_mensajes: {
+        Row: {
+          body: string | null
+          client_id: string | null
+          cuando: string | null
+          entrante: boolean | null
+          kind: string | null
+          payload: string | null
+          sent_by: string | null
+          telefono: string | null
+          tenant_id: string | null
+        }
+        Relationships: []
+      }
       whatsapp_status: {
         Row: {
           display_phone: string | null
@@ -2357,6 +2429,17 @@ export type Database = {
         Args: { p_error?: string; p_provider_id: string; p_status: string }
         Returns: undefined
       }
+      rpc_record_outbound: {
+        Args: {
+          p_body: string
+          p_error?: string
+          p_sent_by?: string
+          p_tenant: string
+          p_to_phone: string
+          p_wa_message_id?: string
+        }
+        Returns: string
+      }
       rpc_set_platform_setting: {
         Args: { p_key: string; p_value: string }
         Returns: Json
@@ -2433,6 +2516,29 @@ export type Database = {
           p_waba_id?: string
         }
         Returns: Json
+      }
+      whatsapp_conversacion: {
+        Args: { p_telefono: string; p_tenant: string }
+        Returns: {
+          body: string
+          cuando: string
+          entrante: boolean
+          payload: string
+          sent_by: string
+        }[]
+      }
+      whatsapp_conversaciones: {
+        Args: { p_tenant: string }
+        Returns: {
+          client_id: string
+          nombre: string
+          sin_responder: boolean
+          telefono: string
+          ultimo_at: string
+          ultimo_entrante: boolean
+          ultimo_texto: string
+          ventana_hasta: string
+        }[]
       }
       whatsapp_disconnect: { Args: never; Returns: Json }
     }

@@ -92,8 +92,11 @@ type Respuesta = {
 async function contestar(r: Respuesta | undefined): Promise<void> {
   if (!r?.texto || !r.access_token) return;
 
+  let id: string | null = null;
+  let error: string | null = null;
+
   try {
-    await fetch(
+    const res = await fetch(
       `https://graph.facebook.com/${GRAPH_VERSION}/${r.phone_number_id}/messages`,
       {
         method: "POST",
@@ -109,8 +112,27 @@ async function contestar(r: Respuesta | undefined): Promise<void> {
         }),
       },
     );
+
+    const cuerpo = await res.json().catch(() => null);
+    id = cuerpo?.messages?.[0]?.id ?? null;
+    if (!res.ok) error = cuerpo?.error?.message ?? `HTTP ${res.status}`;
+  } catch (e) {
+    error = e instanceof Error ? e.message : "No se pudo contestar.";
+  }
+
+  // Queda anotado salga o no salga. Una bandeja armada sólo con lo que entra
+  // muestra las preguntas sin las respuestas, y quien la lee no sabe si
+  // alguien contestó. Cuando falla, el error se ve en la conversación.
+  try {
+    await supabase.rpc("rpc_record_reply", {
+      p_phone_number_id: r.phone_number_id,
+      p_to_phone: r.a,
+      p_body: r.texto,
+      p_wa_message_id: id,
+      p_error: error,
+    });
   } catch {
-    // Que no se pueda contestar no invalida lo que ya se hizo.
+    // Anotar es lo accesorio: la acción de fondo ya quedó hecha.
   }
 }
 

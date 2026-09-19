@@ -44,6 +44,7 @@ export async function Barra({ tenantName }: { tenantName: string }) {
           {veLaPlata && <NavLink href="/caja">Caja</NavLink>}
           {veElNegocio && <NavLink href="/informes">Informes</NavLink>}
           <NavLink href="/servicios">Servicios</NavLink>
+          <NavLink href="/mensajes">Mensajes</NavLink>
           <NavLink href="/recordatorios">Avisos</NavLink>
           <NavLink href="/configuracion">Ajustes</NavLink>
         </nav>
