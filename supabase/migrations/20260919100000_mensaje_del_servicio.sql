@@ -73,22 +73,27 @@ set status = 'skipped',
 where status = 'pending'
   and channel in ('push', 'email');
 
--- Las de fábrica que ya no se usan. Sólo esas: si la dueña escribió una
--- plantilla de correo propia, no es nuestra para borrar.
+-- Se desenganchan de las reglas y se apagan, pero NO se borran.
+--
+-- Borrarlas sería más prolijo y es lo que se pidió, con un problema: cuatro de
+-- las doce que hay en producción tienen fecha de modificación posterior a la
+-- de creación. Puede haber sido una de nuestras migraciones —varias les
+-- tocaron el cuerpo— o puede haber sido alguien escribiendo su propio texto de
+-- correo. Desde acá no se distingue, y la diferencia entre las dos es que una
+-- se recupera de git y la otra no existe en ningún otro lado.
+--
+-- Apagadas no se envían, no entran en ninguna cascada y no se pueden elegir en
+-- una regla. Lo único que queda es la fila. Si confirmamos que nadie las tocó
+-- a mano, borrarlas después es una línea.
 delete from public.rule_templates rt
 using public.message_templates t
 where rt.template_id = t.id
-  and t.channel in ('push', 'email')
-  and (t.name like 'Recordatorio del día anterior · %'
-    or t.name like 'Aviso una semana antes · %');
+  and t.channel in ('push', 'email');
 
-delete from public.message_templates t
-where t.channel in ('push', 'email')
-  and (t.name like 'Recordatorio del día anterior · %'
-    or t.name like 'Aviso una semana antes · %')
-  and not exists (
-    select 1 from public.rule_templates rt where rt.template_id = t.id
-  );
+update public.message_templates
+set is_active = false
+where channel in ('push', 'email')
+  and is_active;
 
 -- ---------------------------------------------------------------------------
 -- Y las cuentas nuevas nacen así
