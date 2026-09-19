@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { getCurrentTenant } from "@/lib/auth/tenant";
 import { getDay, getWeekCounts } from "@/lib/data/agenda";
 import { todayIn, weekOf } from "@/lib/tz";
+import { EnVivo } from "./_components/en-vivo";
 import { ListaTurnos } from "./_components/lista-turnos";
 import { TiraSemana } from "./_components/tira-semana";
 
@@ -46,6 +47,9 @@ export default async function AgendaPage({
                 : `${activos.length} ${activos.length === 1 ? "turno" : "turnos"}`}
               {cancelados > 0 && ` · ${cancelados} cancelado${cancelados === 1 ? "" : "s"}`}
             </p>
+            <div className="mt-2">
+              <EnVivo tenantId={membership.tenant.id} />
+            </div>
           </div>
 
           <div className="flex gap-2">
