@@ -12,6 +12,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { centsToInput } from "@/lib/money";
 import type { FormState } from "@/lib/actions/services";
 import type { Service, ServiceCategory } from "@/lib/data/services";
+import { MensajeDelServicio } from "./mensaje-del-servicio";
 
 const INITIAL: FormState = { error: null };
 
@@ -93,17 +94,11 @@ export function ServiceForm({
             hint="Se muestra en la reserva online. Opcional."
           />
 
-          <Textarea
-            label="Cómo prepararse"
-            name="preparationNote"
-            maxLength={300}
-            rows={3}
+          <MensajeDelServicio
             defaultValue={text(
               "preparationNote",
               service?.preparation_note ?? "",
             )}
-            placeholder="No te depiles con cera ni pinza 15 días antes, y vení sin cremas."
-            hint="Va dentro del recordatorio de este servicio. Escribilo como se lo dirías al cliente, que lo va a leer tal cual."
           />
         </CardBody>
       </Card>

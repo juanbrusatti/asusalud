@@ -22,10 +22,7 @@ const VARIABLES = [
   ["{{servicio}}", "qué se le hace"],
   ["{{estetica}}", "el nombre de tu negocio"],
   ["{{link}}", "el enlace donde puede mover o cancelar el turno"],
-  [
-    "{{preparacion}}",
-    "las indicaciones del servicio: qué traer, cómo prepararse",
-  ],
+  ["{{mensaje}}", "el mensaje propio de cada servicio"],
 ] as const;
 
 function Submit({ label }: { label: string }) {
@@ -63,7 +60,7 @@ export function FormPlantilla({
     .replaceAll("{{estetica}}", "Estética Asusalud")
     .replaceAll("{{link}}", "dlay.app/t/a1b2c3…")
     .replaceAll(
-      "{{preparacion}}",
+      "{{mensaje}}",
       "No te depiles con cera ni pinza 15 días antes.",
     );
 
