@@ -53,7 +53,7 @@ export function MensajeDelServicio({ defaultValue }: { defaultValue: string }) {
       <Textarea
         label="Mensaje de este servicio"
         name="preparationNote"
-        maxLength={300}
+        maxLength={600}
         rows={3}
         value={texto}
         onChange={(e) => setTexto(e.target.value)}

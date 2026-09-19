@@ -216,3 +216,50 @@ describe("el mensaje que escribe cada servicio", () => {
     expect(texto).toBe("Traé toalla.\nY vení sin cremas.");
   });
 });
+
+describe("el recordatorio completo que sale a Meta", () => {
+  // El cuerpo tal como queda en la plantilla de fábrica.
+  const PLANTILLA =
+    "Hola {{cliente}}! Te escribimos de {{estetica}} para recordarte tu " +
+    "turno de mañana {{cuando}}, para {{servicio}}. {{mensaje}} " +
+    "Con los botones de acá abajo podés confirmar el turno o avisarnos " +
+    "que no vas a venir. ¡Te esperamos!";
+
+  // El más largo de los que la estética venía mandando.
+  const CUTIS =
+    "Tu turno es reservado especialmente para vos 💕 Si no asistís o " +
+    "cancelás el mismo día, el turno se abona igual, porque ese espacio " +
+    "queda reservado para vos. No pedimos seña previa. De lo contrario, en " +
+    "la próxima sesión se abona el turno no asistido más el nuevo, sin " +
+    "excepción. ALIAS: asusalud25 — Morlhiere Jesica Jorgelina — Naranja X. " +
+    "Gracias por valorar nuestro tiempo y organización 🌿";
+
+  it("entra en el tope de 1024 caracteres de Meta", () => {
+    // Con el peor caso real: el mensaje más largo y un turno de dos
+    // servicios de nombre largo. Pasado ese tope Meta corta el mensaje.
+    const texto = render(PLANTILLA, {
+      ...CTX,
+      serviceNames:
+        "Limpieza de Cutis c/ extracción o aparatología + Depilación Definitiva",
+      preparation: CUTIS,
+    });
+
+    expect(texto.length).toBeLessThanOrEqual(1024);
+    expect(texto).not.toContain("{{");
+  });
+
+  it("ni empieza ni termina en un hueco", () => {
+    // Las dos formas en que Meta rechaza una plantilla por su forma.
+    expect(PLANTILLA.trim()).not.toMatch(/^\{\{/);
+    expect(PLANTILLA.trim()).not.toMatch(/\}\}$/);
+  });
+
+  it("manda cinco parámetros, todos con algo adentro", () => {
+    const p = templateParameters(PLANTILLA, { ...CTX, preparation: CUTIS });
+    expect(p).toHaveLength(5);
+    for (const v of p) {
+      expect(v.trim().length).toBeGreaterThan(0);
+      expect(v).not.toMatch(/[\n\r\t]/);
+    }
+  });
+});
