@@ -3,6 +3,8 @@ import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/lib/actions/auth";
 import { atLeast, getCurrentTenant } from "@/lib/auth/tenant";
+import { getSinVer } from "@/lib/data/mensajes";
+import { AvisoMensajes } from "./aviso-mensajes";
 import { NavLink } from "./nav-link";
 
 /**
@@ -19,6 +21,7 @@ export async function Barra({ tenantName }: { tenantName: string }) {
   const role = membership?.role ?? "staff";
   const veLaPlata = atLeast(role, "reception");
   const veElNegocio = atLeast(role, "admin");
+  const sinVer = membership ? await getSinVer(membership.tenant.id) : 0;
 
   return (
     <header className="sticky top-3 z-20 mx-auto w-full max-w-4xl px-4">
@@ -44,7 +47,9 @@ export async function Barra({ tenantName }: { tenantName: string }) {
           {veLaPlata && <NavLink href="/caja">Caja</NavLink>}
           {veElNegocio && <NavLink href="/informes">Informes</NavLink>}
           <NavLink href="/servicios">Servicios</NavLink>
-          <NavLink href="/mensajes">Mensajes</NavLink>
+          {membership && (
+            <AvisoMensajes tenantId={membership.tenant.id} sinVer={sinVer} />
+          )}
           <NavLink href="/recordatorios">Avisos</NavLink>
           <NavLink href="/configuracion">Ajustes</NavLink>
         </nav>

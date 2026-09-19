@@ -63,3 +63,12 @@ export function ventanaEnPalabras(hasta: string | null): string {
   const horas = Math.floor(minutos / 60);
   return `Te quedan ${horas} h para contestarle`;
 }
+
+/** Cuántos mensajes escritos no abrió todavía quien está mirando. */
+export async function getSinVer(tenantId: string): Promise<number> {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("whatsapp_sin_ver", {
+    p_tenant: tenantId,
+  });
+  return data ?? 0;
+}

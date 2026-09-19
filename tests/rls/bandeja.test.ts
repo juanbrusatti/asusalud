@@ -45,6 +45,10 @@ afterAll(async () => {
       [s.tenantA, s.tenantB],
     );
     await c.query(
+      `delete from public.whatsapp_reads where tenant_id in ($1, $2)`,
+      [s.tenantA, s.tenantB],
+    );
+    await c.query(
       `delete from public.whatsapp_inbound where tenant_id in ($1, $2)`,
       [s.tenantA, s.tenantB],
     );
@@ -181,5 +185,121 @@ describe("la bandeja", () => {
 
     expect(publicadas).toContain("whatsapp_inbound");
     expect(publicadas).toContain("whatsapp_outbound");
+  });
+});
+
+describe("el contador de la barra", () => {
+  it("cuenta lo que escribieron y todavía nadie abrió", async () => {
+    const n = await asUser(s.owner, async (c) => {
+      const { rows } = await c.query(
+        `select public.whatsapp_sin_ver($1) as n`,
+        [s.tenantA],
+      );
+      return rows[0].n as number;
+    });
+
+    // Los dos mensajes escritos del negocio A.
+    expect(n).toBe(2);
+  });
+
+  it("no cuenta los botones", async () => {
+    await asAdmin(async (c) => {
+      await c.query(
+        `insert into public.whatsapp_inbound
+           (tenant_id, wa_message_id, from_phone, kind, body, payload)
+         values ($1, 'wamid.bdj.boton', $2, 'button', 'Confirmar',
+                 'confirmar:00000000-0000-0000-0000-000000000000')`,
+        [s.tenantA, TELEFONO_A],
+      );
+    });
+
+    const n = await asUser(s.owner, async (c) => {
+      const { rows } = await c.query(
+        `select public.whatsapp_sin_ver($1) as n`,
+        [s.tenantA],
+      );
+      return rows[0].n as number;
+    });
+
+    // Sigue en dos: apretar un botón ya lo resolvió el sistema, y un contador
+    // que pide atención por eso se vuelve parte del fondo.
+    expect(n).toBe(2);
+  });
+
+  it("abrir una conversación baja el número", async () => {
+    // Todo dentro de la misma transacción: el helper revierte al salir.
+    const [antes, despues] = await asUser(s.owner, async (c) => {
+      const a = await c.query(`select public.whatsapp_sin_ver($1) as n`, [
+        s.tenantA,
+      ]);
+      await c.query(`select public.whatsapp_marcar_visto($1, $2)`, [
+        s.tenantA,
+        TELEFONO_A,
+      ]);
+      const d = await c.query(`select public.whatsapp_sin_ver($1) as n`, [
+        s.tenantA,
+      ]);
+      return [a.rows[0].n as number, d.rows[0].n as number];
+    });
+
+    expect(antes).toBe(2);
+    expect(despues).toBe(1);
+  });
+
+  it("lo que ve una persona no apaga el contador de otra", async () => {
+    // Si Jesica abre la conversación, el número tiene que bajarle a ella y no
+    // a quien esté atendiendo en el otro turno.
+    await asAdmin(async (c) => {
+      await c.query(
+        `insert into public.whatsapp_reads (tenant_id, user_id, telefono)
+         values ($1, $2, $3)`,
+        [s.tenantA, s.admin, TELEFONO_A],
+      );
+    });
+
+    const deAdmin = await asUser(s.admin, async (c) => {
+      const { rows } = await c.query(
+        `select public.whatsapp_sin_ver($1) as n`,
+        [s.tenantA],
+      );
+      return rows[0].n as number;
+    });
+
+    const deOwner = await asUser(s.owner, async (c) => {
+      const { rows } = await c.query(
+        `select public.whatsapp_sin_ver($1) as n`,
+        [s.tenantA],
+      );
+      return rows[0].n as number;
+    });
+
+    expect(deAdmin).toBe(1);
+    expect(deOwner).toBe(2);
+  });
+
+  it("nadie puede tocar la marca de otro", async () => {
+    const code = await asUser(s.owner, (c) =>
+      expectRejected(() =>
+        c.query(
+          `insert into public.whatsapp_reads (tenant_id, user_id, telefono)
+           values ($1, $2, '5493584999999')`,
+          [s.tenantA, s.admin],
+        ),
+      ),
+    );
+
+    expect(code).toBe("42501");
+  });
+
+  it("el contador de otro negocio da cero", async () => {
+    const n = await asUser(s.owner, async (c) => {
+      const { rows } = await c.query(
+        `select public.whatsapp_sin_ver($1) as n`,
+        [s.tenantB],
+      );
+      return rows[0].n as number;
+    });
+
+    expect(n).toBe(0);
   });
 });

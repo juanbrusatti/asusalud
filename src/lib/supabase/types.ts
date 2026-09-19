@@ -2066,6 +2066,42 @@ export type Database = {
           },
         ]
       }
+      whatsapp_reads: {
+        Row: {
+          last_read_at: string
+          telefono: string
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          last_read_at?: string
+          telefono: string
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          last_read_at?: string
+          telefono?: string
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_reads_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_reads_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       whatsapp_mensajes: {
@@ -2440,6 +2476,16 @@ export type Database = {
         }
         Returns: string
       }
+      rpc_record_reply: {
+        Args: {
+          p_body: string
+          p_error?: string
+          p_phone_number_id: string
+          p_to_phone: string
+          p_wa_message_id?: string
+        }
+        Returns: string
+      }
       rpc_set_platform_setting: {
         Args: { p_key: string; p_value: string }
         Returns: Json
@@ -2541,6 +2587,11 @@ export type Database = {
         }[]
       }
       whatsapp_disconnect: { Args: never; Returns: Json }
+      whatsapp_marcar_visto: {
+        Args: { p_telefono: string; p_tenant: string }
+        Returns: undefined
+      }
+      whatsapp_sin_ver: { Args: { p_tenant: string }; Returns: number }
     }
     Enums: {
       app_role: "owner" | "admin" | "staff" | "reception"

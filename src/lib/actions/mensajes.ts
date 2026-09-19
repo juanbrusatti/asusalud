@@ -139,3 +139,23 @@ export async function responder(
   }
   return { error: null, notice: "Enviado." };
 }
+
+/**
+ * Deja constancia de que esta persona ya vio esta conversación.
+ *
+ * Se llama al abrirla. No devuelve nada ni corta si falla: que el contador
+ * quede en un número de más es molesto, perder el mensaje no.
+ */
+export async function marcarVisto(telefono: string): Promise<void> {
+  const membership = await getCurrentTenant();
+  if (!membership) return;
+
+  const supabase = await createClient();
+  await supabase.rpc("whatsapp_marcar_visto", {
+    p_tenant: membership.tenant.id,
+    p_telefono: telefono,
+  });
+
+  // La barra vive en el marco, así que el contador se refresca desde la raíz.
+  revalidatePath("/", "layout");
+}

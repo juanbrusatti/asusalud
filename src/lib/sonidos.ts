@@ -12,6 +12,9 @@
  * pantalla, que es todo el punto.
  */
 
+/** La misma preferencia para todos los sonidos del sistema. */
+export const LLAVE_SONIDOS = "dlay:sonidos";
+
 let contexto: AudioContext | null = null;
 
 function obtenerContexto(): AudioContext | null {
@@ -75,5 +78,19 @@ export function sonarCancelado() {
   tocar([
     [493.88, 0], // si
     [329.63, 0.1], // mi, una octava abajo
+  ]);
+}
+
+/**
+ * Llegó un mensaje escrito. Dos golpecitos iguales.
+ *
+ * No se distingue por altura sino por ritmo: dos notas iguales y rápidas no
+ * se confunden con las dos que suben ni con las dos que bajan, y eso importa
+ * más que el tono cuando alguien está de espaldas a la pantalla.
+ */
+export function sonarMensaje() {
+  tocar([
+    [783.99, 0], // sol
+    [783.99, 0.13],
   ]);
 }
