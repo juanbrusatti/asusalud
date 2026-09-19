@@ -63,10 +63,14 @@ La columna `onboarding` distingue cómo se conectó cada cuenta:
 Antes de los pasos, tres avisos que conviene dar **antes** y no después:
 
 - **Un número nuevo, sólo para esto.** El número que se conecta deja de
-  funcionar en la aplicación de WhatsApp del teléfono. Quien conecta el número
-  con el que viene hablando con sus clientes pierde esa conversación.
-- **Una tarjeta.** Meta cobra por mensaje. El sistema manda primero por
-  notificación y por correo, que son gratis, pero Meta igual exige la tarjeta.
+  funcionar en la aplicación de WhatsApp del teléfono: los mensajes pasan a
+  llegar al sistema. Quien conecta el número con el que viene hablando con sus
+  clientes pierde esa conversación.
+- **Las respuestas llegan al sistema, no al teléfono.** Los botones se
+  resuelven solos. Lo que escriban aparte queda en `whatsapp_inbound`, pero
+  todavía no hay pantalla para leerlo ni contestarlo a mano.
+- **Una tarjeta.** Meta cobra cada mensaje que sale —hoy $37,68 el de
+  utilidad— y sin tarjeta no habilita el envío.
 - **No hace falta verificar la empresa para arrancar.** Es la duda que más
   frena, y la respuesta es que no.
 
