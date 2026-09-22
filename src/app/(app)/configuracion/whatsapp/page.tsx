@@ -23,7 +23,7 @@ const ANTES = [
   {
     titulo: "Las respuestas llegan acá, no a tu teléfono",
     detalle:
-      "Los botones de confirmar y cancelar se resuelven solos y te actualizan la agenda. Si además te escriben algo, el mensaje queda guardado en el sistema, pero todavía no hay una pantalla para leerlo y contestarlo a mano. Hasta que la haya, las charlas seguilas por tu número de siempre.",
+      "Los botones de confirmar y cancelar se resuelven solos y te actualizan la agenda. Si además te escriben algo, el mensaje queda guardado en el sistema, y en la sección de mensajes podés leerlo y contestarlo a mano. cuando un cliente te manda un nuevo mensaje se abre una ventana de 24hs para que respondas a ese mensaje, luego de ese tiempo ya no puedes escribirle al clientes a menos que este te vuelva a mandar un mensaje, en ese caso se vuelve a abrir una ventana de 24hs.",
   },
   {
     titulo: "Una tarjeta",
