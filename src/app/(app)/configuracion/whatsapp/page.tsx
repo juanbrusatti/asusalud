@@ -20,12 +20,12 @@ const ANTES = [
   {
     titulo: "Dos números: uno para el sistema y otro para hablar",
     detalle:
-      "El número que conectes deja de funcionar en la aplicación de WhatsApp del teléfono: sus mensajes dejan de aparecer ahí y pasan a este sistema. Por eso va un número para los mensajes automáticos —un chip nuevo alcanza— y seguís usando el de siempre para hablar con tus clientas como hasta hoy.",
+      "El número que conectes deja de funcionar en la aplicación de WhatsApp del teléfono: sus mensajes dejan de aparecer ahí y pasan a este sistema. Por eso va un número para los mensajes automáticos —un chip nuevo alcanza— y seguís usando el de siempre para hablar con tus clientes como hasta hoy.",
   },
   {
     titulo: "Para contestar a mano tenés 24 horas",
     detalle:
-      "Los botones de confirmar y cancelar se resuelven solos y te actualizan la agenda. Si además te escriben algo, lo leés y lo contestás desde Mensajes. Cuando una clienta te escribe se abre una ventana de 24 horas para responderle; pasado ese tiempo WhatsApp ya no deja escribirle, salvo con los recordatorios aprobados. Si te vuelve a escribir —o toca Confirmar o Cancelar— la ventana se abre de nuevo.",
+      "Los botones de confirmar y cancelar se resuelven solos y te actualizan la agenda. Si además te escriben algo, lo leés y lo contestás desde Mensajes. Cuando un cliente te escribe se abre una ventana de 24 horas para responderle; pasado ese tiempo WhatsApp ya no deja escribirle, salvo con los recordatorios aprobados. Si te vuelve a escribir —o toca Confirmar o Cancelar— la ventana se abre de nuevo.",
   },
   {
     titulo: "Una tarjeta, para Meta",

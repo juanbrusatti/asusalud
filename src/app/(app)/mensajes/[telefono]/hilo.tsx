@@ -145,12 +145,12 @@ export function Hilo({
           placeholder={
             abierta
               ? "Escribile…"
-              : "WhatsApp no deja escribirle hasta que ella vuelva a escribir."
+              : "WhatsApp no deja escribirle hasta que vuelva a escribirte."
           }
           hint={
             abierta
               ? undefined
-              : "Meta sólo permite texto libre dentro de las 24 horas posteriores al último mensaje de la clienta."
+              : "Meta sólo permite texto libre dentro de las 24 horas posteriores al último mensaje del cliente."
           }
         />
 

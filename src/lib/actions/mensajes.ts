@@ -76,7 +76,7 @@ export async function responder(
     return {
       error:
         "Pasaron más de 24 horas desde su último mensaje, así que WhatsApp ya " +
-        "no deja escribirle texto libre. Va a poder contestarle cuando ella " +
+        "no deja escribirle texto libre. Vas a poder contestarle cuando " +
         "vuelva a escribir.",
     };
   }

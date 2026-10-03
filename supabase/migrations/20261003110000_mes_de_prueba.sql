@@ -405,7 +405,7 @@ as $$
 begin
   if not app.has_role(p_tenant, 'owner', 'admin') then
     return jsonb_build_object('ok', false,
-      'error', 'Sólo la dueña o administración pueden pagar la cuenta.');
+      'error', 'Sólo titulares y administración pueden pagar la cuenta.');
   end if;
 
   update public.billing_settings

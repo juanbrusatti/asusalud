@@ -43,7 +43,7 @@ export async function generarPago(periodo: string): Promise<PagoState> {
   const membership = await getCurrentTenant();
   if (!membership) return { error: "No encontramos tu negocio." };
   if (!atLeast(membership.role, "admin")) {
-    return { error: "Sólo la dueña o administración pueden pagar la cuenta." };
+    return { error: "Sólo titulares y administración pueden pagar la cuenta." };
   }
 
   const cuenta = await getCuenta();
@@ -153,7 +153,7 @@ export async function generarPagoSuscripcion(): Promise<PagoState> {
   const membership = await getCurrentTenant();
   if (!membership) return { error: "No encontramos tu negocio." };
   if (!atLeast(membership.role, "admin")) {
-    return { error: "Sólo la dueña o administración pueden pagar la cuenta." };
+    return { error: "Sólo titulares y administración pueden pagar la cuenta." };
   }
 
   const tenantId = membership.tenant.id;

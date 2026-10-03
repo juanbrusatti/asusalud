@@ -41,7 +41,7 @@ export default async function MensajesPage() {
 
       {conversaciones.length === 0 ? (
         <EmptyState eyebrow="Sin mensajes" title="Todavía no te escribió nadie">
-          Acá van a aparecer las respuestas de tus clientas. Los botones de
+          Acá van a aparecer las respuestas de tus clientes. Los botones de
           confirmar y cancelar se contestan solos y también se ven.
         </EmptyState>
       ) : (

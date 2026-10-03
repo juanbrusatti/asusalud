@@ -54,7 +54,7 @@ export default async function RecordatoriosPage() {
             </h1>
             <p className="mt-1 max-w-prose text-[14.5px] text-muted">
               Las reglas que avisan solas. Cada una dice cuándo y a quiénes, y
-              el aviso le llega a cada clienta por WhatsApp.
+              el aviso le llega a cada cliente por WhatsApp.
             </p>
           </div>
 
