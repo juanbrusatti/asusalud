@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { formatPrice, formatPriceExacto } from "@/lib/money";
-import { ABONO_MENSUAL_CENTS, COSTO_MENSAJE_META_CENTS } from "@/lib/precio";
+import {
+  ABONO_MENSUAL_CENTS,
+  COSTO_MENSAJE_META_CENTS,
+  DIAS_PARA_PAGAR,
+} from "@/lib/precio";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { Calculadora } from "./calculadora";
@@ -80,7 +84,7 @@ export function Portada() {
               <Link href="/entrar">Crear mi cuenta</Link>
             </Button>
             <span className="text-[13.5px] text-faint">
-              Gratis hasta que atiendas. No pedimos tarjeta.
+              El primer mes es gratis. No pedimos tarjeta.
             </span>
           </div>
 
@@ -110,18 +114,18 @@ export function Portada() {
 
         {/* ── El precio ──────────────────────────────────────────────── */}
         <Seccion
-          titulo="$ 10.000 por mes. Sin porcentajes."
-          bajada="Un abono fijo, tengas diez turnos o quinientos. Lo único aparte son los mensajes de WhatsApp, y esos los cobra Meta, no nosotros."
+          titulo={`Un mes gratis. Después, ${formatPrice(ABONO_MENSUAL_CENTS)} por mes.`}
+          bajada="Un abono fijo, tengas diez turnos o quinientos, sin porcentajes. Lo único aparte son los mensajes de WhatsApp, y esos los cobra Meta, no nosotros."
         >
           <div className="grid gap-3 sm:grid-cols-3">
             {[
               [
-                "Un precio fijo",
-                `${formatPrice(ABONO_MENSUAL_CENTS)} por mes. El mes en que no atendiste a nadie no se cobra.`,
+                "30 días gratis",
+                `Desde que creás la cuenta, con todo funcionando. Después son ${formatPrice(ABONO_MENSUAL_CENTS)} cada 30 días.`,
               ],
               [
                 "Los mensajes, aparte",
-                `Meta cobra cada recordatorio que sale por WhatsApp —hoy ${formatPriceExacto(COSTO_MENSAJE_META_CENTS)}— contra tu propia tarjeta. No pasa por nosotros.`,
+                `Meta cobra cada recordatorio que sale por WhatsApp —hoy ${formatPriceExacto(COSTO_MENSAJE_META_CENTS)}—, también durante la prueba, contra tu propia tarjeta. No pasa por nosotros.`,
               ],
               [
                 "Sin permanencia",
@@ -139,6 +143,12 @@ export function Portada() {
               </div>
             ))}
           </div>
+
+          <p className="max-w-prose text-[13.5px] leading-relaxed text-muted">
+            Cuando vence, tenés {DIAS_PARA_PAGAR} días para pagar. Si pasan sin
+            pago, la cuenta se pausa: se frenan los recordatorios y la reserva
+            online, pero no se borra nada. Pagás y vuelve tal como estaba.
+          </p>
         </Seccion>
 
         {/* ── WhatsApp, antes de conectar ───────────────────────────── */}

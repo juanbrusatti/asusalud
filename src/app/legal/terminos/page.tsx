@@ -108,9 +108,12 @@ export default function TerminosPage() {
 
       <Seccion titulo="El abono">
         <Parrafo>
-          El abono de fábrica es de $10.000 por mes, y se cobra cada mes en el
-          que atendiste al menos un turno; puede haber otro precio si así se
-          acuerda al contratar. Si
+          Los primeros 30 días desde que creás la cuenta son gratis. Después,
+          el abono es de $10.000 cada 30 días, por adelantado. Cuando vence
+          tenés 5 días para pagarlo; si pasan sin pago, la cuenta se suspende:
+          se frenan los recordatorios, la reserva online y la autogestión, pero
+          no se borra ningún dato, y al pagar vuelve a funcionar. Puede haber
+          otro precio si así se acuerda al contratar. Si
           un pago queda impago, avisamos antes de suspender la cuenta. Podés dar
           de baja cuando quieras: el servicio sigue hasta el final del período ya
           pago y no se devuelve la parte no usada.

@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Card, CardBody, CardFigure } from "@/components/ui/card";
-import { getNegocios } from "@/lib/data/cuenta";
+import { getNegocios, getSuscripciones } from "@/lib/data/cuenta";
 import { formatPrice } from "@/lib/money";
 import { Negocio } from "./negocio";
+import { SuscripcionFila } from "./suscripcion";
 
 export const metadata: Metadata = { title: "Plataforma" };
 
@@ -20,8 +21,16 @@ export const metadata: Metadata = { title: "Plataforma" };
  * sepa que la pantalla existe.
  */
 export default async function PlataformaPage() {
-  const negocios = await getNegocios();
-  if (!negocios) notFound();
+  const [todos, suscripciones] = await Promise.all([
+    getNegocios(),
+    getSuscripciones(),
+  ]);
+  if (!todos) notFound();
+
+  // Las cuentas en abono mensual se cobran por su carril y tienen su propia
+  // lista: en la de meses vencidos figurarían siempre en cero.
+  const enSuscripcion = new Set((suscripciones ?? []).map((x) => x.tenant_id));
+  const negocios = todos.filter((n) => !enSuscripcion.has(n.tenant_id));
 
   const enCurso = negocios.reduce((t, n) => t + n.mes_actual.total_cents, 0);
   const pendiente = negocios.reduce((t, n) => t + n.pendiente_total_cents, 0);
@@ -72,6 +81,27 @@ export default async function PlataformaPage() {
           </CardBody>
         </Card>
       </div>
+
+      {(suscripciones?.length ?? 0) > 0 && (
+        <section className="grid gap-3">
+          <h2 className="px-1 text-[18px] font-bold tracking-[-0.02em]">
+            Abono mensual
+          </h2>
+          <p className="px-1 text-[13.5px] text-muted">
+            Las cuentas nuevas: 30 días gratis y después pagan por adelantado.
+            Vencidas tienen 5 días; pasados, se suspenden solas.
+          </p>
+          {suscripciones!.map((x) => (
+            <SuscripcionFila key={x.tenant_id} s={x} />
+          ))}
+        </section>
+      )}
+
+      {negocios.length > 0 && (suscripciones?.length ?? 0) > 0 && (
+        <h2 className="px-1 pt-2 text-[18px] font-bold tracking-[-0.02em]">
+          Con acuerdo
+        </h2>
+      )}
 
       {negocios.length === 0 ? (
         <Card>

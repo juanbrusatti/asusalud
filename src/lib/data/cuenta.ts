@@ -2,6 +2,7 @@ import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
 import type { Cartel, Cuenta, NegocioPlataforma } from "@/lib/cuenta";
+import type { Suscripcion } from "@/lib/suscripcion";
 
 /**
  * Lo que Dlay le cobra a cada negocio.
@@ -44,4 +45,19 @@ export async function getCartel(): Promise<Cartel | null> {
   const { data, error } = await supabase.rpc("billing_nudge");
   if (error) return null;
   return (data as unknown as Cartel | null) ?? null;
+}
+
+
+/** Las cuentas en abono mensual, para el panel. Null si no es de la plataforma. */
+export async function getSuscripciones(): Promise<
+  Array<Suscripcion & {
+    tenant_id: string;
+    nombre: string;
+    creado: string;
+    ultimo_pago: { fecha: string; pagado_cents: number } | null;
+  }> | null
+> {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("platform_suscripciones");
+  return (data as never) ?? null;
 }

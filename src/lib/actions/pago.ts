@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { atLeast, getCurrentTenant } from "@/lib/auth/tenant";
 import { formatMes } from "@/lib/cuenta";
 import { getCuenta } from "@/lib/data/cuenta";
+import { getSuscripcion } from "@/lib/data/suscripcion";
 import { publicEnv, serverEnv } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 
@@ -135,4 +136,106 @@ export async function generarPago(periodo: string): Promise<PagoState> {
 
   revalidatePath("/configuracion/cuenta");
   return conQr(periodo, url);
+}
+
+/**
+ * El cobro del abono por Mercado Pago, para los 30 días que siguen.
+ *
+ * Mismas reglas que el cobro de un mes: el importe se lee de la base y no
+ * llega desde la pantalla, y se genera una sola vez por ciclo. El ciclo es la
+ * fecha hasta la que la cuenta está cubierta: cuando entra un pago, esa fecha
+ * cambia y el próximo cobro es otro.
+ *
+ * La referencia empieza con «sus:» para que el aviso de Mercado Pago sepa que
+ * es una suscripción y no un mes vencido.
+ */
+export async function generarPagoSuscripcion(): Promise<PagoState> {
+  const membership = await getCurrentTenant();
+  if (!membership) return { error: "No encontramos tu negocio." };
+  if (!atLeast(membership.role, "admin")) {
+    return { error: "Sólo la dueña o administración pueden pagar la cuenta." };
+  }
+
+  const tenantId = membership.tenant.id;
+  const s = await getSuscripcion(tenantId);
+  if (!s || s.plan !== "suscripcion" || !s.pagado_hasta || !s.abono_cents) {
+    return { error: "Tu cuenta no está en el abono mensual." };
+  }
+
+  const ciclo = new Date(s.pagado_hasta).toISOString().slice(0, 10);
+  if (s.link) return conQr(ciclo, s.link);
+
+  const token = serverEnv().MERCADOPAGO_ACCESS_TOKEN;
+  if (!token) {
+    return {
+      error:
+        "Todavía no está configurado el cobro por Mercado Pago. " +
+        "Escribinos y lo arreglamos.",
+    };
+  }
+
+  let url: string;
+  let preferenceId: string;
+
+  try {
+    const r = await fetch("https://api.mercadopago.com/checkout/preferences", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        items: [
+          {
+            title: "Dlay · abono de 30 días",
+            description: membership.tenant.name,
+            quantity: 1,
+            currency_id: "ARS",
+            unit_price: s.abono_cents / 100,
+          },
+        ],
+        external_reference: `sus:${tenantId}:${ciclo}`,
+        back_urls: {
+          success: `${publicEnv.NEXT_PUBLIC_SITE_URL}/configuracion/cuenta`,
+          pending: `${publicEnv.NEXT_PUBLIC_SITE_URL}/configuracion/cuenta`,
+          failure: `${publicEnv.NEXT_PUBLIC_SITE_URL}/configuracion/cuenta`,
+        },
+      }),
+    });
+
+    const datos = (await r.json()) as {
+      id?: string;
+      init_point?: string;
+      message?: string;
+      error?: string;
+    };
+
+    if (!r.ok || !datos.init_point || !datos.id) {
+      const suyo = datos.message ?? datos.error ?? `HTTP ${r.status}`;
+      return { error: `Mercado Pago no pudo generar el cobro: ${suyo}` };
+    }
+
+    url = datos.init_point;
+    preferenceId = datos.id;
+  } catch {
+    return { error: "No se pudo hablar con Mercado Pago. Probá de nuevo." };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("suscripcion_link_save", {
+    p_tenant: tenantId,
+    p_cycle: ciclo,
+    p_preference_id: preferenceId,
+    p_url: url,
+    p_amount_cents: s.abono_cents,
+  });
+
+  if (error) return { error: "No se pudo guardar el cobro." };
+  const guardado = data as unknown as { ok: boolean; error?: string };
+  if (!guardado?.ok) {
+    return { error: guardado?.error ?? "No se pudo guardar el cobro." };
+  }
+
+  revalidatePath("/configuracion/cuenta");
+  return conQr(ciclo, url);
 }

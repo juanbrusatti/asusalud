@@ -97,9 +97,23 @@ notificaciones, le manda una al teléfono.
 
 ## El precio desde octubre de 2026
 
-Una cuenta nueva paga un **abono fijo de $10.000 por mes**, más lo que Meta
-cobre por cada mensaje de WhatsApp (hoy $37,68), que sale contra la tarjeta
-del negocio y no pasa por Dlay. El mes sin turnos atendidos no se cobra.
+Una cuenta nueva tiene **30 días gratis** desde que se crea. Después paga
+**$10.000 cada 30 días, por adelantado**, más lo que Meta cobre por cada
+mensaje de WhatsApp (hoy $37,68; también durante la prueba), que sale contra
+la tarjeta del negocio y no pasa por Dlay.
+
+Cuando vence hay **5 días para pagar**. Pasados, la cuenta se suspende sola
+(`app.aplicar_suspensiones`, cada hora): `tenants.status` pasa a
+`suspended`, que el planificador, la reserva online y la autogestión ya
+respetan, y se saltean los avisos en cola. No se borra nada. Al pagar
+—Mercado Pago con referencia `sus:<negocio>:<ciclo>`, o a mano desde el
+panel— se reactiva en el acto. Pagar en la gracia no regala días: el ciclo
+nuevo arranca donde terminaba el viejo. Pagar suspendida arranca hoy: no se
+cobran los días sin servicio.
+
+Hay dos carriles (`billing_settings.plan`): `suscripcion`, el de toda cuenta
+nueva, y `acuerdo`, el de las que existían antes, que se siguen cobrando por
+mes vencido y nunca se suspenden solas.
 
 El número vive en dos lugares y en ninguno más: `src/lib/precio.ts` para lo
 que se muestra y `billing_settings.fixed_cents` para lo que se cobra.

@@ -4,9 +4,11 @@ import { Card, CardBody, CardFigure, CardTitle } from "@/components/ui/card";
 import { atLeast, getCurrentTenant } from "@/lib/auth/tenant";
 import { formatComision, formatMes } from "@/lib/cuenta";
 import { getCuenta } from "@/lib/data/cuenta";
+import { getSuscripcion } from "@/lib/data/suscripcion";
 import { formatPrice } from "@/lib/money";
 import { Volver } from "../_components/volver";
 import { Pagar } from "./pagar";
+import { CuentaSuscripcion } from "./suscripcion";
 
 export const metadata: Metadata = { title: "Tu cuenta" };
 
@@ -21,6 +23,23 @@ export default async function CuentaPage() {
   const membership = await getCurrentTenant();
   if (!membership) return null;
   if (!atLeast(membership.role, "admin")) notFound();
+
+  // Las cuentas en abono mensual se ven de otra forma: pagan por adelantado
+  // los 30 días que siguen, no el mes que terminó.
+  const suscripcion = await getSuscripcion(membership.tenant.id);
+  if (suscripcion?.plan === "suscripcion") {
+    return (
+      <main className="mx-auto grid max-w-2xl gap-5 px-4 py-8">
+        <div>
+          <Volver />
+          <h1 className="mt-1 text-[28px] font-bold leading-tight tracking-[-0.03em]">
+            Tu cuenta
+          </h1>
+        </div>
+        <CuentaSuscripcion s={suscripcion} />
+      </main>
+    );
+  }
 
   const cuenta = await getCuenta();
   if (!cuenta) notFound();

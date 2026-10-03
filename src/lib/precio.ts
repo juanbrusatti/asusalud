@@ -17,3 +17,9 @@ export const ABONO_MENSUAL_CENTS = 1_000_000;
  * `messaging_settings.whatsapp_utility_cents`.
  */
 export const COSTO_MENSAJE_META_CENTS = 3_768;
+
+/** Los días gratis desde que se crea la cuenta. */
+export const DIAS_DE_PRUEBA = 30;
+
+/** Los días para pagar una vez vencido, antes de que se suspenda. */
+export const DIAS_PARA_PAGAR = 5;

@@ -17,8 +17,8 @@
 -- migración sería decidir por Dlay un acuerdo comercial. Si alguno tiene que
 -- pasar al abono nuevo, se cambia desde el panel, que es donde se acuerda.
 --
--- Un mes sin turnos atendidos sigue sin cobrarse, también con abono fijo:
--- `app.billable_periods` sólo cuenta meses con turnos que ya ocurrieron.
+-- La migración siguiente (`mes_de_prueba`) suma el mes gratis y el cobro por
+-- adelantado para las cuentas nuevas.
 -- ============================================================================
 
 alter table public.billing_settings
