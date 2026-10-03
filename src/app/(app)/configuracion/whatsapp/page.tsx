@@ -18,6 +18,11 @@ export const metadata: Metadata = { title: "WhatsApp" };
 /** Lo que hay que tener a mano antes de empezar. Se dice antes, no después. */
 const ANTES = [
   {
+    titulo: "Los recordatorios no salen desde el primer día",
+    detalle:
+      "La agenda, la reserva online, la caja y los clientes ya funcionan. Los recordatorios por WhatsApp arrancan cuando termines estos pasos y Meta apruebe las plantillas, que puede tardar de unos minutos a un par de días. Además empiezan en modo de prueba: hasta que lo apagues en Recordatorios no le llega nada a ningún cliente ni se cobra ningún mensaje.",
+  },
+  {
     titulo: "Dos números: uno para el sistema y otro para hablar",
     detalle:
       "El número que conectes deja de funcionar en la aplicación de WhatsApp del teléfono: sus mensajes dejan de aparecer ahí y pasan a este sistema. Por eso va un número para los mensajes automáticos —un chip nuevo alcanza— y seguís usando el de siempre para hablar con tus clientes como hasta hoy.",
@@ -67,9 +72,9 @@ export default async function WhatsappPage() {
           WhatsApp
         </h1>
         <p className="mt-1 max-w-prose text-[14.5px] text-muted">
-          Conectar tu número deja que los recordatorios salgan por WhatsApp
-          cuando la persona no tiene correo o no lo mira. Es el canal más caro
-          de los tres, así que el sistema lo usa último.
+          Conectar un número deja que los recordatorios salgan solos por
+          WhatsApp y que tus clientes confirmen o cancelen el turno con un
+          botón.
         </p>
       </div>
 

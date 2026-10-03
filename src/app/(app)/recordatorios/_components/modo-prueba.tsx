@@ -7,7 +7,7 @@ import { setTestMode } from "@/lib/actions/recordatorios";
 /**
  * El modo de prueba.
  *
- * Toda negocio arranca acá: el sistema hace todo el recorrido —arma el
+ * Todo negocio arranca acá: el sistema hace todo el recorrido —arma el
  * mensaje, elige el canal, lo anota— pero no sale nada hacia afuera. Sirve
  * para mirar una semana entera de recordatorios antes de que llegue uno solo a
  * un cliente de verdad.
@@ -53,7 +53,7 @@ export function ModoPrueba({
       <p className="mt-2 max-w-prose text-[14.5px] leading-relaxed opacity-90">
         Todo funciona como si fuera de verdad —se arma cada mensaje, se elige el
         canal, se anota en la bitácora— pero <strong>no sale nada</strong>.
-        Ninguna cliente recibe ni un aviso.
+        Ningún cliente recibe ni un aviso.
       </p>
       <p className="mt-2 max-w-prose text-[13px] leading-relaxed opacity-80">
         Dejalo así unos días y mirá qué se habría enviado. Cuando los mensajes
