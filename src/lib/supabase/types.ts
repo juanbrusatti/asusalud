@@ -502,21 +502,45 @@ export type Database = {
           commission_bps: number
           fixed_cents: number
           mode: string
+          paid_until: string | null
+          plan: string
+          sus_link_amount: number | null
+          sus_link_cycle: string | null
+          sus_link_preference: string | null
+          sus_link_url: string | null
+          suspendida_por_pago: boolean
           tenant_id: string
+          trial_ends_at: string | null
           updated_at: string
         }
         Insert: {
           commission_bps?: number
           fixed_cents?: number
           mode?: string
+          paid_until?: string | null
+          plan?: string
+          sus_link_amount?: number | null
+          sus_link_cycle?: string | null
+          sus_link_preference?: string | null
+          sus_link_url?: string | null
+          suspendida_por_pago?: boolean
           tenant_id: string
+          trial_ends_at?: string | null
           updated_at?: string
         }
         Update: {
           commission_bps?: number
           fixed_cents?: number
           mode?: string
+          paid_until?: string | null
+          plan?: string
+          sus_link_amount?: number | null
+          sus_link_cycle?: string | null
+          sus_link_preference?: string | null
+          sus_link_url?: string | null
+          suspendida_por_pago?: boolean
           tenant_id?: string
+          trial_ends_at?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1796,6 +1820,63 @@ export type Database = {
           },
         ]
       }
+      subscription_payments: {
+        Row: {
+          covers_from: string
+          covers_until: string
+          created_at: string
+          created_by: string | null
+          expected_cents: number
+          id: string
+          note: string | null
+          paid_cents: number
+          payment_id: string | null
+          source: string
+          tenant_id: string
+        }
+        Insert: {
+          covers_from: string
+          covers_until: string
+          created_at?: string
+          created_by?: string | null
+          expected_cents: number
+          id?: string
+          note?: string | null
+          paid_cents: number
+          payment_id?: string | null
+          source: string
+          tenant_id: string
+        }
+        Update: {
+          covers_from?: string
+          covers_until?: string
+          created_at?: string
+          created_by?: string | null
+          expected_cents?: number
+          id?: string
+          note?: string | null
+          paid_cents?: number
+          payment_id?: string | null
+          source?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_payments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_payments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_alerts: {
         Row: {
           appointment_id: string | null
@@ -2279,6 +2360,10 @@ export type Database = {
         Args: { p_period: string; p_tenant: string }
         Returns: Json
       }
+      platform_pago_suscripcion: {
+        Args: { p_monto_cents: number; p_nota?: string; p_tenant: string }
+        Returns: Json
+      }
       platform_set_billing: {
         Args: {
           p_bps: number
@@ -2297,6 +2382,7 @@ export type Database = {
         }
         Returns: Json
       }
+      platform_suscripciones: { Args: never; Returns: Json }
       platform_unmark_paid: {
         Args: { p_period: string; p_tenant: string }
         Returns: Json
@@ -2442,6 +2528,14 @@ export type Database = {
         }
         Returns: Json
       }
+      rpc_mercadopago_suscripcion: {
+        Args: {
+          p_external_reference: string
+          p_paid_cents: number
+          p_payment_id: string
+        }
+        Returns: Json
+      }
       rpc_platform_admin_add: { Args: { p_email: string }; Returns: Json }
       rpc_platform_admin_remove: { Args: { p_email: string }; Returns: Json }
       rpc_push_targets: {
@@ -2536,6 +2630,17 @@ export type Database = {
           cost_cents: number
           recipients: number
         }[]
+      }
+      suscripcion_estado: { Args: { p_tenant: string }; Returns: Json }
+      suscripcion_link_save: {
+        Args: {
+          p_amount_cents: number
+          p_cycle: string
+          p_preference_id: string
+          p_tenant: string
+          p_url: string
+        }
+        Returns: Json
       }
       team_invite: {
         Args: {

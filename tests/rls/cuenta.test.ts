@@ -148,6 +148,17 @@ beforeAll(async () => {
   s = await setupScenario("cta");
 
   await asAdmin(async (c) => {
+    // Estas pruebas recorren la mecánica del porcentaje, que sigue existiendo
+    // para los negocios anteriores al abono fijo y para quien lo elija en el
+    // panel. Un negocio nuevo nace con su fila de cobro en abono fijo; se le
+    // borra para que quede como los negocios viejos sin fila, que caen en el
+    // 3% de respaldo de las funciones. El abono de fábrica tiene su propia
+    // prueba al final.
+    await c.query(
+      `delete from public.billing_settings where tenant_id in ($1, $2)`,
+      [s.tenantA, s.tenantB],
+    );
+
     const { rows: b } = await c.query(
       `select b.id, t.timezone from public.branches b
        join public.tenants t on t.id = b.tenant_id
@@ -983,7 +994,7 @@ describe("cobrar por un fijo en vez de por porcentaje", () => {
 
   afterEach(async () => {
     await asAdmin(async (c) => {
-      // Se vuelve al porcentaje de fábrica para no ensuciar al resto.
+      // Se vuelve a «sin fila de cobro» para no ensuciar al resto.
       await c.query(`delete from public.billing_settings where tenant_id = $1`, [
         s.tenantA,
       ]);
@@ -996,7 +1007,9 @@ describe("cobrar por un fijo en vez de por porcentaje", () => {
     });
   });
 
-  it("de fábrica cobra por porcentaje", async () => {
+  it("un negocio sin fila de cobro cae en el 3% de respaldo", async () => {
+    // Es el caso de los negocios anteriores al abono fijo que nunca tuvieron
+    // un precio cargado en el panel.
     const c = await cuenta();
     expect(c.modo).toBe("percent");
     // Tres turnos de $1.000 al 3%.
@@ -1256,5 +1269,28 @@ describe("cuando entra un importe distinto del que correspondía", () => {
       expect(r.ok).toBe(true);
       expect(r.total_cents).toBe(9000);
     });
+  });
+});
+
+describe("el precio de fábrica", () => {
+  it("un negocio nuevo nace con el abono fijo de $10.000", async () => {
+    // Las funciones viejas todavía dicen 3% como respaldo para el negocio sin
+    // fila de cobro. Que todo negocio nazca con la suya es lo que hace que
+    // ese respaldo no se use nunca.
+    const fila = await asAdmin(async (c) => {
+      const { rows } = await c.query(
+        `insert into public.tenants (name, slug) values ('Precio Nuevo', 'precio-nuevo-' || substr(md5(random()::text), 1, 8))
+         returning id`,
+      );
+      const id = rows[0].id as string;
+      const { rows: b } = await c.query(
+        `select mode, fixed_cents::int as fijo from public.billing_settings where tenant_id = $1`,
+        [id],
+      );
+      await c.query(`delete from public.tenants where id = $1`, [id]);
+      return b[0];
+    });
+
+    expect(fila).toEqual({ mode: "fixed", fijo: 1_000_000 });
   });
 });

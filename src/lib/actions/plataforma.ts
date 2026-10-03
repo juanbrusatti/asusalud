@@ -23,7 +23,8 @@ async function llamar(
   | "platform_unmark_paid"
   | "platform_set_billing"
   | "platform_set_month_amount"
-  | "platform_nudge",
+  | "platform_nudge"
+  | "platform_pago_suscripcion",
   args: Record<string, unknown>,
   exito: string,
 ): Promise<PlataformaState> {
@@ -188,4 +189,28 @@ export async function generarEnlaceClave(
   url.searchParams.set("type", "recovery");
 
   return { error: null, url: url.toString(), correo: titular.correo };
+}
+
+
+/**
+ * Un pago del abono cargado a mano: una transferencia, efectivo, o un mes
+ * regalado si el importe es cero. Cada uno cubre 30 días.
+ */
+export async function registrarPagoSuscripcion(
+  tenantId: string,
+  _prev: PlataformaState,
+  formData: FormData,
+): Promise<PlataformaState> {
+  const crudo = String(formData.get("monto") ?? "").replace(/[^\d]/g, "");
+  if (crudo === "") return { error: "Poné el importe. Cero es un mes regalado." };
+
+  return llamar(
+    "platform_pago_suscripcion",
+    {
+      p_tenant: tenantId,
+      p_monto_cents: Number(crudo) * 100,
+      p_nota: String(formData.get("nota") ?? "").trim() || null,
+    },
+    "Pago registrado: la cuenta quedó cubierta 30 días más.",
+  );
 }

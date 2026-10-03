@@ -1,4 +1,10 @@
 import Link from "next/link";
+import { formatPrice, formatPriceExacto } from "@/lib/money";
+import {
+  ABONO_MENSUAL_CENTS,
+  COSTO_MENSAJE_META_CENTS,
+  DIAS_PARA_PAGAR,
+} from "@/lib/precio";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { Calculadora } from "./calculadora";
@@ -78,7 +84,7 @@ export function Portada() {
               <Link href="/entrar">Crear mi cuenta</Link>
             </Button>
             <span className="text-[13.5px] text-faint">
-              Gratis hasta que atiendas. No pedimos tarjeta.
+              El primer mes es gratis. No pedimos tarjeta.
             </span>
           </div>
 
@@ -108,22 +114,22 @@ export function Portada() {
 
         {/* ── El precio ──────────────────────────────────────────────── */}
         <Seccion
-          titulo="Si no atendés, no pagás."
-          bajada="Dlay se lleva el 3% de lo que facturás. Un turno de $ 1.000 paga el 3% de eso y uno de $ 20.000 también: siempre la misma proporción."
+          titulo={`Un mes gratis. Después, ${formatPrice(ABONO_MENSUAL_CENTS)} por mes.`}
+          bajada="Un abono fijo, tengas diez turnos o quinientos, sin porcentajes. Lo único aparte son los mensajes de WhatsApp, y esos los cobra Meta, no nosotros."
         >
           <div className="grid gap-3 sm:grid-cols-3">
             {[
               [
-                "Sin abono",
-                "No hay cuota fija. Un mes flojo sale barato porque se cobra sobre lo que entró.",
+                "30 días gratis",
+                `Desde que creás la cuenta, con todo funcionando. Después son ${formatPrice(ABONO_MENSUAL_CENTS)} cada 30 días.`,
+              ],
+              [
+                "Los mensajes, aparte",
+                `Meta cobra cada recordatorio que sale por WhatsApp —hoy ${formatPriceExacto(COSTO_MENSAJE_META_CENTS)}—, también durante la prueba, contra tu propia tarjeta. No pasa por nosotros.`,
               ],
               [
                 "Sin permanencia",
                 "Te vas cuando quieras y te llevás tus clientes y tus turnos en un archivo.",
-              ],
-              [
-                "Sin letra chica",
-                "Los mensajes de WhatsApp los cobra Meta contra tu propia tarjeta, no nosotros. Te lo decimos antes, no después.",
               ],
             ].map(([titulo, texto]) => (
               <div
@@ -139,9 +145,39 @@ export function Portada() {
           </div>
 
           <p className="max-w-prose text-[13.5px] leading-relaxed text-muted">
-            ¿Preferís un abono fijo y saber todos los meses lo mismo? También se
-            puede. Se conversa.
+            Cuando vence, tenés {DIAS_PARA_PAGAR} días para pagar. Si pasan sin
+            pago, la cuenta se pausa: se frenan los recordatorios y la reserva
+            online, pero no se borra nada. Pagás y vuelve tal como estaba.
           </p>
+        </Seccion>
+
+        {/* ── WhatsApp, antes de conectar ───────────────────────────── */}
+        <Seccion
+          titulo="Antes de conectar WhatsApp, dos cosas."
+          bajada="Son reglas de WhatsApp, no nuestras. Conviene saberlas antes de arrancar y no después."
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
+            {[
+              [
+                "Vas a necesitar dos números",
+                "El número que conectás a Dlay deja de funcionar en la aplicación de WhatsApp del teléfono: sus mensajes pasan a llegar al sistema. Por eso va uno para los mensajes automáticos —un chip nuevo alcanza— y seguís usando el de siempre para hablar con tus clientes como hasta hoy.",
+              ],
+              [
+                "Para escribirle a un cliente, 24 horas",
+                "Desde el sistema podés contestarle a un cliente durante las 24 horas siguientes a su último mensaje. Después, WhatsApp sólo deja mandarle mensajes aprobados, como los recordatorios. Cuando vuelve a escribir —o toca Confirmar o Cancelar— la ventana se abre de nuevo.",
+              ],
+            ].map(([titulo, texto]) => (
+              <div
+                key={titulo}
+                className="rounded-card border-[1.5px] border-line bg-surface p-5"
+              >
+                <p className="text-[15px] font-semibold">{titulo}</p>
+                <p className="mt-1.5 text-[13.5px] leading-relaxed text-muted">
+                  {texto}
+                </p>
+              </div>
+            ))}
+          </div>
         </Seccion>
 
         {/* ── El cierre ──────────────────────────────────────────────── */}

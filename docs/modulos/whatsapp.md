@@ -66,9 +66,14 @@ Antes de los pasos, tres avisos que conviene dar **antes** y no después:
   funcionar en la aplicación de WhatsApp del teléfono: los mensajes pasan a
   llegar al sistema. Quien conecta el número con el que viene hablando con sus
   clientes pierde esa conversación.
+- **Dos números.** El conectado sólo sirve para el sistema; para hablar
+  normalmente con las clientas hace falta otro, el de siempre.
 - **Las respuestas llegan al sistema, no al teléfono.** Los botones se
-  resuelven solos. Lo que escriban aparte queda en `whatsapp_inbound`, pero
-  todavía no hay pantalla para leerlo ni contestarlo a mano.
+  resuelven solos y lo que escriban aparte se lee y se contesta en Mensajes.
+  Se puede escribir texto libre sólo durante las 24 horas siguientes al
+  último mensaje de la clienta (error 131047 de Meta fuera de esa ventana);
+  apretar un botón cuenta como mensaje y la reabre. Las pantallas de
+  Mensajes y Avisos lo recuerdan con `ReglasWhatsapp`.
 - **Una tarjeta.** Meta cobra cada mensaje que sale —hoy $37,68 el de
   utilidad— y sin tarjeta no habilita el envío.
 - **No hace falta verificar la empresa para arrancar.** Es la duda que más

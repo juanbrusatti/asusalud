@@ -86,8 +86,16 @@ async function procesar(pago: string): Promise<void> {
       ? Math.round(datos.transaction_amount * 100)
       : null;
 
-  const { data, error } = await supabase.rpc("rpc_mercadopago_paid", {
-    p_external_reference: datos.external_reference ?? null,
+  // El abono mensual lleva una referencia propia («sus:negocio:ciclo») y va
+  // por su carril: extiende los 30 días que siguen en lugar de marcar pagado
+  // un mes que terminó.
+  const referencia = datos.external_reference ?? null;
+  const funcion = referencia?.startsWith("sus:")
+    ? "rpc_mercadopago_suscripcion"
+    : "rpc_mercadopago_paid";
+
+  const { data, error } = await supabase.rpc(funcion, {
+    p_external_reference: referencia,
     p_payment_id: pago,
     p_paid_cents: entraron,
   });

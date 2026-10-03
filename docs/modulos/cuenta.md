@@ -47,8 +47,8 @@ De la más general a la más puntual. La de abajo siempre gana:
 
 | Forma | Dónde vive | Para qué |
 |---|---|---|
-| Porcentaje de lo facturado | `billing_settings.commission_bps` | La de fábrica: 3%. Se ajusta sola con la inflación. |
-| Abono fijo por mes | `billing_settings.fixed_cents` | Para el cliente que no quiere trabajar por porcentaje. |
+| Porcentaje de lo facturado | `billing_settings.commission_bps` | Para quien prefiera pagar en proporción a lo que factura. Ya no es el de fábrica. |
+| Abono fijo por mes | `billing_settings.fixed_cents` | **El de fábrica: $10.000.** Todo negocio nuevo nace así (trigger `tenants_cobro_de_fabrica`). |
 | Importe de un mes puesto a mano | `billing_amounts` | Para apartarse de lo pactado sin cambiar el acuerdo. |
 
 El porcentaje se guarda en **puntos básicos y entero** —3% es 300— por la
@@ -93,3 +93,31 @@ notificaciones, le manda una al teléfono.
 - **Factura.** El cobro por Mercado Pago no reemplaza emitirla.
 - **Los servicios «a convenir»** no tienen precio, así que no suman a lo
   facturado. La pantalla lo aclara.
+
+
+## El precio desde octubre de 2026
+
+Una cuenta nueva tiene **30 días gratis** desde que se crea. Después paga
+**$10.000 cada 30 días, por adelantado**, más lo que Meta cobre por cada
+mensaje de WhatsApp (hoy $37,68; también durante la prueba), que sale contra
+la tarjeta del negocio y no pasa por Dlay.
+
+Cuando vence hay **5 días para pagar**. Pasados, la cuenta se suspende sola
+(`app.aplicar_suspensiones`, cada hora): `tenants.status` pasa a
+`suspended`, que el planificador, la reserva online y la autogestión ya
+respetan, y se saltean los avisos en cola. No se borra nada. Al pagar
+—Mercado Pago con referencia `sus:<negocio>:<ciclo>`, o a mano desde el
+panel— se reactiva en el acto. Pagar en la gracia no regala días: el ciclo
+nuevo arranca donde terminaba el viejo. Pagar suspendida arranca hoy: no se
+cobran los días sin servicio.
+
+Hay dos carriles (`billing_settings.plan`): `suscripcion`, el de toda cuenta
+nueva, y `acuerdo`, el de las que existían antes, que se siguen cobrando por
+mes vencido y nunca se suspenden solas.
+
+El número vive en dos lugares y en ninguno más: `src/lib/precio.ts` para lo
+que se muestra y `billing_settings.fixed_cents` para lo que se cobra.
+
+Los negocios creados antes conservan lo que tienen configurado en el panel.
+Las funciones viejas todavía dicen 3% como valor de respaldo; no se usa
+porque todo negocio nace con su fila de cobro.

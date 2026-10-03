@@ -1,5 +1,9 @@
 import { Barra } from "@/app/_components/barra";
-import { getCurrentTenant } from "@/lib/auth/tenant";
+import { AvisoSuscripcion } from "@/app/_components/suscripcion/aviso";
+import { MuroSuspension } from "@/app/_components/suscripcion/muro";
+import { atLeast, getCurrentTenant } from "@/lib/auth/tenant";
+import { getSuscripcion } from "@/lib/data/suscripcion";
+import { formatFecha } from "@/lib/suscripcion";
 
 /**
  * El marco de las pantallas con sesión.
@@ -19,11 +23,22 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const membership = await getCurrentTenant();
+  const suscripcion = membership
+    ? await getSuscripcion(membership.tenant.id)
+    : null;
+  const paga = membership ? atLeast(membership.role, "admin") : false;
 
   return (
     <>
       {membership && <Barra tenantName={membership.tenant.name} />}
-      {children}
+      {suscripcion && paga && <AvisoSuscripcion s={suscripcion} />}
+      <MuroSuspension
+        activo={suscripcion?.estado === "suspendida"}
+        puedePagar={paga}
+        hasta={formatFecha(suscripcion?.pagado_hasta)}
+      >
+        {children}
+      </MuroSuspension>
     </>
   );
 }

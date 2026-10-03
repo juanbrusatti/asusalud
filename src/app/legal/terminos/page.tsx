@@ -73,6 +73,16 @@ export default function TerminosPage() {
               de pago que cargues en tu cuenta de WhatsApp. Ese costo es tuyo y
               no está incluido en el abono de Dlay.
             </>,
+            <>
+              El número que conectes deja de funcionar en la aplicación de
+              WhatsApp del teléfono mientras esté conectado a Dlay. Para hablar
+              con tus clientes por fuera del sistema necesitás otro número.
+            </>,
+            <>
+              WhatsApp sólo deja escribirle libremente a un cliente durante las
+              24 horas siguientes a su último mensaje. Fuera de esa ventana sólo
+              salen mensajes aprobados por Meta, como los recordatorios.
+            </>,
           ]}
         />
         <Parrafo>
@@ -98,7 +108,12 @@ export default function TerminosPage() {
 
       <Seccion titulo="El abono">
         <Parrafo>
-          El precio y la forma de pago son los que se acuerden al contratar. Si
+          Los primeros 30 días desde que creás la cuenta son gratis. Después,
+          el abono es de $10.000 cada 30 días, por adelantado. Cuando vence
+          tenés 5 días para pagarlo; si pasan sin pago, la cuenta se suspende:
+          se frenan los recordatorios, la reserva online y la autogestión, pero
+          no se borra ningún dato, y al pagar vuelve a funcionar. Puede haber
+          otro precio si así se acuerda al contratar. Si
           un pago queda impago, avisamos antes de suspender la cuenta. Podés dar
           de baja cuando quieras: el servicio sigue hasta el final del período ya
           pago y no se devuelve la parte no usada.

@@ -3,7 +3,11 @@
 /* eslint-disable @next/next/no-img-element */
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { generarPago, type PagoState } from "@/lib/actions/pago";
+import {
+  generarPago,
+  generarPagoSuscripcion,
+  type PagoState,
+} from "@/lib/actions/pago";
 
 /**
  * Pagar un mes desde adentro del sistema.
@@ -15,7 +19,17 @@ import { generarPago, type PagoState } from "@/lib/actions/pago";
  * La imagen es un `img` con una imagen embebida, no un `next/image`: el QR se
  * arma en el momento y no hay nada que optimizar ni que cachear.
  */
-export function Pagar({ periodo }: { periodo: string }) {
+export function Pagar({
+  periodo,
+  abono = false,
+  etiqueta = "Pagar",
+}: {
+  /** El mes vencido a pagar. Sin uso cuando es el abono. */
+  periodo?: string;
+  /** Paga el abono de los 30 días que siguen en lugar de un mes vencido. */
+  abono?: boolean;
+  etiqueta?: string;
+}) {
   const [pendiente, empezar] = useTransition();
   const [estado, setEstado] = useState<PagoState | null>(null);
 
@@ -65,11 +79,15 @@ export function Pagar({ periodo }: { periodo: string }) {
         disabled={pendiente}
         onClick={() =>
           empezar(async () => {
-            setEstado(await generarPago(periodo));
+            setEstado(
+              abono
+                ? await generarPagoSuscripcion()
+                : await generarPago(periodo ?? ""),
+            );
           })
         }
       >
-        {pendiente ? "Preparando…" : "Pagar"}
+        {pendiente ? "Preparando…" : etiqueta}
       </Button>
 
       {estado?.error && (
