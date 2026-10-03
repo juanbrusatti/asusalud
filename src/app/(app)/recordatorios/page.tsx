@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardFigure } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ReglasWhatsapp } from "@/components/whatsapp/reglas";
 import { atLeast, getCurrentTenant } from "@/lib/auth/tenant";
 import { formatPrice } from "@/lib/money";
 import {
@@ -52,15 +53,15 @@ export default async function RecordatoriosPage() {
               Recordatorios
             </h1>
             <p className="mt-1 max-w-prose text-[14.5px] text-muted">
-              Las reglas que avisan solas. Cada una dice cuándo, a quiénes y por
-              qué canal, y siempre elige el más barato que la persona tenga.
+              Las reglas que avisan solas. Cada una dice cuándo y a quiénes, y
+              el aviso le llega a cada clienta por WhatsApp.
             </p>
           </div>
 
           {puedeEditar && (
             <div className="flex gap-2">
               <Button asChild variant="outline">
-                <Link href="/recordatorios/plantillas">Mensajes</Link>
+                <Link href="/recordatorios/plantillas">Plantillas</Link>
               </Button>
               <Button asChild>
                 <Link href="/recordatorios/nuevo">Nueva regla</Link>
@@ -68,6 +69,8 @@ export default async function RecordatoriosPage() {
             </div>
           )}
         </header>
+
+        <ReglasWhatsapp costo />
 
         {settings && !settings.sending_enabled && (
           <Freno enabled={false} reason={settings.paused_reason} />

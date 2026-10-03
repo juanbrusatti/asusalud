@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Card, CardBody } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ReglasWhatsapp } from "@/components/whatsapp/reglas";
 import { getCurrentTenant } from "@/lib/auth/tenant";
 import { getConversaciones, ventanaEnPalabras } from "@/lib/data/mensajes";
 
@@ -35,6 +36,8 @@ export default async function MensajesPage() {
             : "Lo que te escriben por WhatsApp. Los botones de confirmar y cancelar se contestan solos."}
         </p>
       </header>
+
+      <ReglasWhatsapp />
 
       {conversaciones.length === 0 ? (
         <EmptyState eyebrow="Sin mensajes" title="Todavía no te escribió nadie">

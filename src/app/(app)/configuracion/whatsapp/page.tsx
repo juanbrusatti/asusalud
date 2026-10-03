@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { atLeast, getCurrentTenant } from "@/lib/auth/tenant";
 import { getWhatsappStatus } from "@/lib/data/whatsapp";
+import { formatPriceExacto } from "@/lib/money";
+import { COSTO_MENSAJE_META_CENTS } from "@/lib/precio";
 import { CALIDAD, ESTADOS } from "@/lib/whatsapp";
 import { Volver } from "../_components/volver";
 import { publicEnv } from "@/lib/env";
@@ -16,19 +18,18 @@ export const metadata: Metadata = { title: "WhatsApp" };
 /** Lo que hay que tener a mano antes de empezar. Se dice antes, no después. */
 const ANTES = [
   {
-    titulo: "Un número nuevo, sólo para esto",
+    titulo: "Dos números: uno para el sistema y otro para hablar",
     detalle:
-      "El número que conectes deja de funcionar en la aplicación de WhatsApp del teléfono: los mensajes dejan de aparecer ahí y pasan a este sistema. Por eso va un chip aparte, y tu número de siempre sigue siendo el que tus clientas usan para escribirte.",
+      "El número que conectes deja de funcionar en la aplicación de WhatsApp del teléfono: sus mensajes dejan de aparecer ahí y pasan a este sistema. Por eso va un número para los mensajes automáticos —un chip nuevo alcanza— y seguís usando el de siempre para hablar con tus clientas como hasta hoy.",
   },
   {
-    titulo: "Las respuestas llegan acá, no a tu teléfono",
+    titulo: "Para contestar a mano tenés 24 horas",
     detalle:
-      "Los botones de confirmar y cancelar se resuelven solos y te actualizan la agenda. Si además te escriben algo, el mensaje queda guardado en el sistema, y en la sección de mensajes podés leerlo y contestarlo a mano. cuando un cliente te manda un nuevo mensaje se abre una ventana de 24hs para que respondas a ese mensaje, luego de ese tiempo ya no puedes escribirle al clientes a menos que este te vuelva a mandar un mensaje, en ese caso se vuelve a abrir una ventana de 24hs.",
+      "Los botones de confirmar y cancelar se resuelven solos y te actualizan la agenda. Si además te escriben algo, lo leés y lo contestás desde Mensajes. Cuando una clienta te escribe se abre una ventana de 24 horas para responderle; pasado ese tiempo WhatsApp ya no deja escribirle, salvo con los recordatorios aprobados. Si te vuelve a escribir —o toca Confirmar o Cancelar— la ventana se abre de nuevo.",
   },
   {
-    titulo: "Una tarjeta",
-    detalle:
-      "Meta cobra cada mensaje que sale: hoy son $37,68 por recordatorio. Sin una tarjeta cargada no habilita el envío, así que este paso no se puede saltear.",
+    titulo: "Una tarjeta, para Meta",
+    detalle: `Meta cobra cada mensaje que sale: hoy son ${formatPriceExacto(COSTO_MENSAJE_META_CENTS)} por recordatorio, contra la tarjeta que cargues en tu cuenta de WhatsApp. Eso va aparte del abono de Dlay y no pasa por nosotros. Sin una tarjeta cargada Meta no habilita el envío, así que este paso no se puede saltear.`,
   },
   {
     titulo: "Un rato tranquilo",

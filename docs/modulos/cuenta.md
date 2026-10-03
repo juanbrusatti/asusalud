@@ -47,8 +47,8 @@ De la más general a la más puntual. La de abajo siempre gana:
 
 | Forma | Dónde vive | Para qué |
 |---|---|---|
-| Porcentaje de lo facturado | `billing_settings.commission_bps` | La de fábrica: 3%. Se ajusta sola con la inflación. |
-| Abono fijo por mes | `billing_settings.fixed_cents` | Para el cliente que no quiere trabajar por porcentaje. |
+| Porcentaje de lo facturado | `billing_settings.commission_bps` | Para quien prefiera pagar en proporción a lo que factura. Ya no es el de fábrica. |
+| Abono fijo por mes | `billing_settings.fixed_cents` | **El de fábrica: $10.000.** Todo negocio nuevo nace así (trigger `tenants_cobro_de_fabrica`). |
 | Importe de un mes puesto a mano | `billing_amounts` | Para apartarse de lo pactado sin cambiar el acuerdo. |
 
 El porcentaje se guarda en **puntos básicos y entero** —3% es 300— por la
@@ -93,3 +93,17 @@ notificaciones, le manda una al teléfono.
 - **Factura.** El cobro por Mercado Pago no reemplaza emitirla.
 - **Los servicios «a convenir»** no tienen precio, así que no suman a lo
   facturado. La pantalla lo aclara.
+
+
+## El precio desde octubre de 2026
+
+Una cuenta nueva paga un **abono fijo de $10.000 por mes**, más lo que Meta
+cobre por cada mensaje de WhatsApp (hoy $37,68), que sale contra la tarjeta
+del negocio y no pasa por Dlay. El mes sin turnos atendidos no se cobra.
+
+El número vive en dos lugares y en ninguno más: `src/lib/precio.ts` para lo
+que se muestra y `billing_settings.fixed_cents` para lo que se cobra.
+
+Los negocios creados antes conservan lo que tienen configurado en el panel.
+Las funciones viejas todavía dicen 3% como valor de respaldo; no se usa
+porque todo negocio nace con su fila de cobro.

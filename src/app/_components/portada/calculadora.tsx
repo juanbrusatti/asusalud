@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { formatPrice } from "@/lib/money";
+import { ABONO_MENSUAL_CENTS, COSTO_MENSAJE_META_CENTS } from "@/lib/precio";
 
 /**
  * ¿Me conviene?
@@ -14,6 +15,11 @@ import { formatPrice } from "@/lib/money";
  * Tampoco se promete que los recordatorios hagan venir a nadie. Lo que hacen
  * es que quien no va a venir avise a tiempo, y ese lugar se pueda dar. La
  * comparación es contra eso: un turno recuperado por semana.
+ *
+ * El costo incluye los mensajes de WhatsApp aunque no los cobre Dlay. Mostrar
+ * sólo el abono sería la letra chica que la portada promete no tener: el
+ * negocio los paga igual, contra su tarjeta, y la cuenta tiene que cerrar con
+ * todo adentro.
  */
 
 function Deslizador({
@@ -60,9 +66,12 @@ export function Calculadora() {
   const [turnos, setTurnos] = useState(30);
   const [precio, setPrecio] = useState(20000);
 
-  const facturadoMes = turnos * SEMANAS_POR_MES * precio;
-  // El 3% de fábrica. Es el mismo número que cobra el sistema de verdad.
-  const cuestaDlay = Math.round(facturadoMes * 0.03);
+  // Un recordatorio por turno: el del día anterior, que es el que viene
+  // encendido de fábrica.
+  const turnosMes = Math.round(turnos * SEMANAS_POR_MES);
+  const mensajes = Math.round((turnosMes * COSTO_MENSAJE_META_CENTS) / 100);
+  const abono = ABONO_MENSUAL_CENTS / 100;
+  const cuestaDlay = abono + mensajes;
   const unTurnoPorSemana = Math.round(SEMANAS_POR_MES * precio);
   const veces = cuestaDlay > 0 ? unTurnoPorSemana / cuestaDlay : 0;
 
@@ -97,8 +106,10 @@ export function Calculadora() {
           <p className="mt-1 font-hand text-[40px] leading-none text-ink">
             {formatPrice(cuestaDlay * 100)}
           </p>
-          <p className="mt-1.5 text-[13px] text-muted">
-            por mes · el 3% de {formatPrice(Math.round(facturadoMes) * 100)}
+          <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
+            por mes · {formatPrice(abono * 100)} de abono más{" "}
+            {formatPrice(mensajes * 100)} en {turnosMes} recordatorios de
+            WhatsApp, que cobra Meta contra tu tarjeta
           </p>
         </div>
 
@@ -111,7 +122,7 @@ export function Calculadora() {
           </p>
           <p className="mt-1.5 text-[13px] opacity-90">
             {veces >= 1
-              ? `Eso es ${veces.toFixed(1)} veces lo que te sale Dlay.`
+              ? `Eso es ${veces.toLocaleString("es-AR", { maximumFractionDigits: 1 })} veces lo que te sale Dlay.`
               : "Con eso ya cubrís buena parte de lo que te sale Dlay."}
           </p>
         </div>

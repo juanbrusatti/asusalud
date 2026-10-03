@@ -16,6 +16,23 @@ export function formatPrice(cents: number | null | undefined): string {
   return AR.format(cents / 100);
 }
 
+const AR_CENTAVOS = new Intl.NumberFormat("es-AR", {
+  style: "currency",
+  currency: "ARS",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+/**
+ * 3768 → "$ 37,68"
+ *
+ * Para los montos chicos donde redondear miente: el costo de un mensaje de
+ * Meta redondeado a pesos dice $ 38, que no es lo que se cobra.
+ */
+export function formatPriceExacto(cents: number): string {
+  return AR_CENTAVOS.format(cents / 100);
+}
+
 /** 1000000 → "10000", para precargar un input. */
 export function centsToInput(cents: number | null | undefined): string {
   if (cents === null || cents === undefined) return "";
