@@ -20,7 +20,7 @@ export function ReglasWhatsapp({ costo = false }: { costo?: boolean }) {
           <strong className="font-semibold text-ink">
             24 horas para contestar.
           </strong>{" "}
-          Podés escribirle a una clienta durante las 24 horas siguientes a su
+          Podés escribirle a un cliente durante las 24 horas siguientes a su
           último mensaje. Después sólo salen los recordatorios aprobados, hasta
           que vuelva a escribir o toque Confirmar o Cancelar.
         </li>

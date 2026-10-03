@@ -58,7 +58,7 @@ export function minutosDeVentana(hasta: string | null): number | null {
 export function ventanaEnPalabras(hasta: string | null): string {
   const minutos = minutosDeVentana(hasta);
   if (minutos === null) return "Todavía no te escribió";
-  if (minutos <= 0) return "Cerrada: sólo podés escribirle si ella escribe";
+  if (minutos <= 0) return "Cerrada: sólo podés escribirle cuando vuelva a escribirte";
   if (minutos < 60) return `Te quedan ${minutos} min para contestarle`;
   const horas = Math.floor(minutos / 60);
   return `Te quedan ${horas} h para contestarle`;

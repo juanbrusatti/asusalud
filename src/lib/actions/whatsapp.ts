@@ -178,7 +178,7 @@ export async function revisarWhatsapp(
   const membership = await getCurrentTenant();
   if (!membership) return { error: "No encontramos tu negocio." };
   if (!atLeast(membership.role, "admin")) {
-    return { error: "Sólo la dueña o administración pueden revisar esto." };
+    return { error: "Sólo titulares y administración pueden revisar esto." };
   }
 
   const destino = String(formData.get("destino") ?? "").trim();
@@ -203,7 +203,7 @@ export async function crearPlantillasEnMeta(): Promise<RevisionState> {
   const membership = await getCurrentTenant();
   if (!membership) return { error: "No encontramos tu negocio." };
   if (!atLeast(membership.role, "admin")) {
-    return { error: "Sólo la dueña o administración pueden hacer esto." };
+    return { error: "Sólo titulares y administración pueden hacer esto." };
   }
 
   const r = await pedirleAlEmisor({

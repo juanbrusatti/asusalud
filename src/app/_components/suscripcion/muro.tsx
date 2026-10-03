@@ -36,14 +36,14 @@ export function MuroSuspension({
           El abono venció el {hasta} y no se pagó.
         </h1>
         <p className="text-[14.5px] leading-relaxed text-ink">
-          No se borró nada: tus clientas, tus turnos y tu configuración están
+          No se borró nada: tus clientes, tus turnos y tu configuración están
           intactos. Mientras tanto están frenados los recordatorios, la reserva
-          online y los enlaces para que tus clientas cambien su turno.
+          online y los enlaces para que tus clientes cambien su turno.
         </p>
         <p className="text-[14.5px] leading-relaxed text-ink">
           {puedePagar
             ? "En cuanto pagues, todo vuelve a funcionar tal como estaba."
-            : "Avisale a la dueña del negocio: en cuanto pague, todo vuelve a funcionar tal como estaba."}
+            : "Avisale a quien es titular del negocio: en cuanto pague, todo vuelve a funcionar tal como estaba."}
         </p>
         {puedePagar && (
           <div>
