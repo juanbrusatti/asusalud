@@ -36,6 +36,15 @@ export async function GET(request: NextRequest) {
     if (!error) return NextResponse.redirect(`${origin}${next}`);
   }
 
+  // El enlace de confirmación de una cuenta nueva que no pudo abrir sesión
+  // casi siempre se abrió en otro aparato: la cuenta se creó en la compu y el
+  // mail se tocó en el celular, donde no está la llave que el código necesita.
+  // Supabase confirmó el correo antes de redirigir, así que lo que corresponde
+  // es decir eso y pedir la contraseña, no «el enlace venció».
+  if (searchParams.get("alta") === "1") {
+    return NextResponse.redirect(`${origin}/entrar?enlace=confirmado`);
+  }
+
   // Un enlace vencido, ya usado o adulterado termina acá. No se dice cuál de
   // las tres: no hay nada que ganar contándoselo a quien lo esté probando.
   return NextResponse.redirect(`${origin}/entrar?enlace=vencido`);

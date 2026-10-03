@@ -29,7 +29,11 @@ export default async function EntrarPage({
         </div>
       </header>
 
-      <AuthForm volver={volver} enlaceVencido={enlace === "vencido"} />
+      <AuthForm
+        volver={volver}
+        enlaceVencido={enlace === "vencido"}
+        correoConfirmado={enlace === "confirmado"}
+      />
 
       <footer className="flex flex-wrap justify-center gap-x-5 gap-y-1 text-[13px] text-faint">
         <a className="hover:text-muted" href="/legal/privacidad">
