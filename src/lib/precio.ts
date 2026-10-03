@@ -1,7 +1,7 @@
 /**
  * Lo que sale Dlay, en un solo lugar.
  *
- * La portada, la calculadora y las pantallas de adentro tiran de acá. Si el
+ * La portada y las pantallas de adentro tiran de acá. Si el
  * precio cambia, cambia acá y en la base (`billing_settings.fixed_cents`), y
  * en ningún otro lado: un número repetido en tres textos es un número que
  * tarde o temprano dice tres cosas distintas.

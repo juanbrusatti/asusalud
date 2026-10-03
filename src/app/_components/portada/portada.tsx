@@ -7,7 +7,6 @@ import {
 } from "@/lib/precio";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
-import { Calculadora } from "./calculadora";
 import { DemoRecordatorio } from "./demo-recordatorio";
 import { QueHace } from "./que-hace";
 
@@ -95,14 +94,6 @@ export function Portada() {
             <DemoRecordatorio />
           </div>
         </section>
-
-        {/* ── La cuenta ──────────────────────────────────────────────── */}
-        <Seccion
-          titulo="Hacé la cuenta con tus números, no con los míos."
-          bajada="Movés los dos deslizadores y listo. Sin estadísticas de industria ni promedios inventados."
-        >
-          <Calculadora />
-        </Seccion>
 
         {/* ── Qué hay adentro ────────────────────────────────────────── */}
         <Seccion
