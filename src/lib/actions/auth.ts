@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { mensajeDeAlta, mensajeDeIngreso } from "@/lib/auth-errores";
 import { createClient } from "@/lib/supabase/server";
 import { publicEnv } from "@/lib/env";
 
@@ -48,11 +49,7 @@ export async function signIn(
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
-  if (error) {
-    // Mismo mensaje para usuario inexistente y contraseña incorrecta: decir
-    // cuál de los dos falló le confirma a un tercero qué correos existen.
-    return { error: "Correo o contraseña incorrectos." };
-  }
+  if (error) return { error: mensajeDeIngreso(error.code) };
 
   revalidatePath("/", "layout");
   redirect(destino(formData));
@@ -70,13 +67,35 @@ export async function signUp(
   if (!parsed.success) return { error: firstIssue(parsed.error) };
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
-    options: { data: { full_name: parsed.data.fullName } },
+    options: {
+      data: { full_name: parsed.data.fullName },
+      // Sin esto el enlace del mail vuelve a la Site URL —la portada— con un
+      // código que nadie canjea: el correo queda confirmado pero la persona
+      // cae en la página de ventas sin sesión. `/auth/confirmar` lo canjea y
+      // la deja adentro, lista para crear su negocio.
+      emailRedirectTo: `${publicEnv.NEXT_PUBLIC_SITE_URL}/auth/confirmar?next=/&alta=1`,
+    },
   });
 
-  if (error) return { error: error.message };
+  if (error) return { error: mensajeDeAlta(error.code) };
+
+  // Con la confirmación de correo encendida —como está en producción—
+  // Supabase crea la cuenta pero no abre sesión: la abre el enlace del mail.
+  // Antes se redirigía igual, a `/`, que sin sesión es la portada pública: la
+  // persona terminaba en la página de ventas sin saber que tenía un correo
+  // esperándola, que es la forma más corta de perder un negocio recién llegado.
+  if (!data.session) {
+    return {
+      error: null,
+      notice:
+        `Listo, te mandamos un correo a ${parsed.data.email}. Abrilo y tocá ` +
+        "el enlace para entrar a tu cuenta. Si en unos minutos no lo ves, " +
+        "mirá en el correo no deseado.",
+    };
+  }
 
   revalidatePath("/", "layout");
   redirect(destino(formData));

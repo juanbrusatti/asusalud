@@ -25,21 +25,37 @@ function Submit({ label }: { label: string }) {
 
 type Modo = "in" | "up" | "reset";
 
+/**
+ * Una sola acción para las tres cosas, que decide por el campo `modo`.
+ *
+ * Antes se le pasaba a `useActionState` una acción distinta según la pestaña,
+ * pero React se queda con la del primer envío: quien creaba la cuenta, tocaba
+ * «Ya tengo cuenta» e intentaba entrar, seguía mandando al alta, que le
+ * reclamaba un nombre que ya no estaba en pantalla con un error de validación
+ * en inglés. Es justo el camino de quien acaba de registrarse y no encuentra
+ * el mail. Con una acción fija, lo que viaja en el formulario es lo que manda.
+ */
+async function enviar(prev: FormState, formData: FormData): Promise<FormState> {
+  const modo = formData.get("modo");
+  if (modo === "reset") return requestPasswordReset(prev, formData);
+  if (modo === "up") return signUp(prev, formData);
+  return signIn(prev, formData);
+}
+
 export function AuthForm({
   volver,
   enlaceVencido,
+  correoConfirmado,
 }: {
   volver?: string;
   enlaceVencido?: boolean;
+  correoConfirmado?: boolean;
 }) {
   const [mode, setMode] = useState<Modo>("in");
   const isSignUp = mode === "up";
   const isReset = mode === "reset";
 
-  const [state, action] = useActionState(
-    isReset ? requestPasswordReset : isSignUp ? signUp : signIn,
-    INITIAL,
-  );
+  const [state, action] = useActionState(enviar, INITIAL);
 
   return (
     <Card>
@@ -84,6 +100,16 @@ export function AuthForm({
           </p>
         )}
 
+        {correoConfirmado && (
+          <p
+            role="status"
+            className="rounded-[14px] bg-ok-wash px-3.5 py-2.5 text-[13.5px] leading-relaxed text-ink"
+          >
+            Tu correo quedó confirmado. Entrá con el correo y la contraseña que
+            elegiste al crear la cuenta.
+          </p>
+        )}
+
         {enlaceVencido && (
           <p className="rounded-[14px] bg-warn-wash px-3.5 py-2.5 text-[13.5px] leading-relaxed text-ink">
             Ese enlace venció o ya se usó. Pedí uno nuevo con «Olvidé mi
@@ -92,6 +118,7 @@ export function AuthForm({
         )}
 
         <form action={action} className="grid gap-4">
+          <input type="hidden" name="modo" value={mode} />
           {/* Adónde volver después de entrar. Lo pone el guardia cuando
               alguien llega a una pantalla que pide sesión. */}
           {volver && <input type="hidden" name="volver" value={volver} />}
@@ -102,7 +129,7 @@ export function AuthForm({
               name="fullName"
               autoComplete="name"
               required
-              placeholder="Jesica Morlhiere"
+              placeholder="Ana Gómez"
             />
           )}
 
@@ -113,7 +140,7 @@ export function AuthForm({
             inputMode="email"
             autoComplete="email"
             required
-            placeholder="vos@tuestetica.com"
+            placeholder="vos@tunegocio.com"
           />
 
           {!isReset && (
