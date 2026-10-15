@@ -167,3 +167,18 @@
     }
   }
 }
+
+/* La demo de la portada: lo que entra en escena aparece, no salta. */
+@keyframes demo-aparece {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.demo-aparece {
+  animation: demo-aparece 0.45s ease both;
+}

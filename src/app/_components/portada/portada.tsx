@@ -7,8 +7,8 @@ import {
 } from "@/lib/precio";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
+import { DemoAutomatica } from "./demo-automatica";
 import { DemoRecordatorio } from "./demo-recordatorio";
-import { QueHace } from "./que-hace";
 
 /**
  * La portada: lo único que ve alguien que todavía no sabe qué es Dlay.
@@ -19,7 +19,7 @@ import { QueHace } from "./que-hace";
  * colores y el mismo lenguaje que va a encontrar adentro. Lo que se promete y
  * lo que se entrega son la misma pantalla.
  *
- * El envoltorio se dibuja en el servidor y sólo las tres piezas que se tocan
+ * El envoltorio se dibuja en el servidor y sólo las dos demostraciones
  * mandan JavaScript. Pesa poco a propósito: buena parte de esta gente la va a
  * abrir con datos móviles en un local.
  */
@@ -89,18 +89,18 @@ export function Portada() {
 
           <div className="grid gap-3 pt-2">
             <p className="font-hand text-[24px] leading-none text-accent-text">
-              Probalo acá mismo ↓
+              Un día con Dlay, en un minuto ↓
             </p>
-            <DemoRecordatorio />
+            <DemoAutomatica />
           </div>
         </section>
 
-        {/* ── Qué hay adentro ────────────────────────────────────────── */}
+        {/* ── Para tocar ────────────────────────────────────────────── */}
         <Seccion
-          titulo="No es sólo la agenda."
-          bajada="Tocá cada parte para verla. Es la pantalla de verdad, no un dibujo."
+          titulo="Ahora probalo vos."
+          bajada="Sos el cliente: tocá un botón del recordatorio y mirá cómo cambia la agenda."
         >
-          <QueHace />
+          <DemoRecordatorio />
         </Seccion>
 
         {/* ── El precio ──────────────────────────────────────────────── */}
